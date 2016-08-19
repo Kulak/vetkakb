@@ -1,0 +1,21 @@
+{
+  "name": "vetkakb",
+  "authors": [
+    "Sergei G <sergeig.public@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "^15.3.0"
+  }
+}

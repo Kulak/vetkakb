@@ -1,0 +1,6 @@
+[main]
+AppRoot =
+DataRoot = data    # relative to current working directory
+WebEndpoint = :8080
+PidFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.pid
+LogFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.log
