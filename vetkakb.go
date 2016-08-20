@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"horse.lan.gnezdovi.com/vetkakb/core"
+	"horse.lan.gnezdovi.com/vetkakb/backend/core"
 
 	"github.com/sevlyar/go-daemon"
 )
