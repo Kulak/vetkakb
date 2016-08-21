@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func (ws WebSvc) writeJson(w http.ResponseWriter, v interface{}) {
+func (ws WebSvc) writeJSON(w http.ResponseWriter, v interface{}) {
 	encoded, err := json.Marshal(v)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Failed to encode to JSON: %v", err))
@@ -30,11 +30,11 @@ func (ws WebSvc) writeResult(w http.ResponseWriter, v interface{}, err error, ms
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("%s: %v", msg, err))
 	} else {
-		ws.writeJson(w, v)
+		ws.writeJSON(w, v)
 	}
 }
 
-func (ws WebSvc) loadJsonBody(r *http.Request, v interface{}) error {
+func (ws WebSvc) loadJSONBody(r *http.Request, v interface{}) error {
 	// load post data
 	var respBytes []byte
 	respBytes, err := ioutil.ReadAll(r.Body)
