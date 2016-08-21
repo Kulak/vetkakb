@@ -2,12 +2,35 @@
 <html>
 	<head>
 		<title></title>
-        <link rel="stylesheet" type="text/css" href="res/css/_base.css">
+        <link rel="stylesheet" type="text/css" href="res/base.css">
+		<script src="vendors/system.js/dist/system.src.js"></script>
+		<!--
 	    <script src="vendors/react/react.js"></script>
 		<script src="vendors/react/react-dom.js"></script>
+				meta:
+					[{'react': 'vendors/react/react.js'},
+					{'react-dom': 'vendors/react/react-dom.js'}]
+		-->
 	</head>
 	<body>
+		<h1>h1!</h1>
         <div id="app"></div>
-		<script src="js/bundle-index.js"></script>
+		<script type="text/javascript">
+			// set our baseURL reference path
+			// *** map section ***
+			// 'react-dom' on left side is a "common" name of the package, a shortcut, an alias
+			// 'react/react-dom.js' is a script to load.  This path is prefixed with baseURL and it becomes:
+			// 'vendors/react/react-dom.js' (if base url is set to 'vendors')
+			// react-dom.js script imports react and thus we have to use the 'alias' name.
+			SystemJS.config({
+				baseURL: 'vendors',
+				map: {
+					'react-dom': 'react/react-dom.js',
+					'react': 'react/react.js'
+				}
+			});
+			// load application entry point
+			SystemJS.import('app/main.js');
+		</script>
 	</body>
 </html>

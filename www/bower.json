@@ -16,6 +16,7 @@
     "tests"
   ],
   "dependencies": {
-    "react": "^15.3.0"
+    "react": "^15.3.0",
+    "system.js": "^0.19.36"
   }
 }

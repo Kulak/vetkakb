@@ -2,7 +2,7 @@
 # bower or npm package name
 pn=
 
-.PHONY: default bower-install npm-install go-build
+.PHONY: default bower-install npm-install go-build one-time-install
 
 default:
 	@cat GNUmakefile
@@ -30,3 +30,12 @@ npm-install:
 # Main go build:
 go-build:
 	go build
+
+one-time-install:
+	npm install typescript -g
+	npm install typings --global
+
+	cd frontend; typings init
+	cd frontend; typings install react
+
+	cd www; bower install system.js --save

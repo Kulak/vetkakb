@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "system",
+        "sourceMap": true,
+        "jsx": "react",
+        "outDir": "../www/bower_components/app"
+    }
+}
