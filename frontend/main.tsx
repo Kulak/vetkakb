@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import './common/test.js';
+import * as CommonData from './common/test';
 
 class AppProps {
   constructor(public defaultUrl: string){}
@@ -20,7 +20,6 @@ class App extends React.Component<AppProps, AppState> {
     this.state = new AppState(props.defaultUrl);
   }
   render() {
-    new CommonData();
     if (this.state.url == '/') {
       return <div>Default page</div>
     } else {
