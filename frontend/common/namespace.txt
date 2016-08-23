@@ -1,0 +1,20 @@
+
+
+Namespace can be defined in any directory.  To create a complex name separate it with dot as in the following example:
+
+	namespace app.common {
+		export class CommonData {}
+	}
+
+To reference namespace from another file sitting in the parent directory:
+
+	import './common/test.js';
+	new app.common.CommonData();
+
+The above example uses relative to current client file URL.  I am **NOT** sure if
+
+	import './common/test.ts';
+
+would work better.
+
+Other forms of import are possible.  The relative
