@@ -37,5 +37,6 @@ one-time-install:
 
 	cd frontend; typings init
 	cd frontend; typings install react
+	cd frontend; typings install react-dom
 
 	cd www; bower install system.js --save
