@@ -15,8 +15,17 @@
 			// 'react/react-dom.js' is a script to load.  This path is prefixed with baseURL and it becomes:
 			// 'vendors/react/react-dom.js' (if base url is set to 'vendors')
 			// react-dom.js script imports react and thus we have to use the 'alias' name.
+			//
+			// https://github.com/systemjs/systemjs/blob/master/docs/config-api.md
+			// defaultJSExtensions: true allows to omit extension of the imported module
+			// This allows for
+			// 		import {ClassName} from './pages/landing'
+			// format instead of
+			//		import {ClassName} from './pages/landing.js'
+			// because .js does not map in TypeScript editor.
 			SystemJS.config({
 				baseURL: 'vendors',
+				defaultJSExtensions: true,
 				map: {
 					'react-dom': 'react/react-dom.js',
 					'react': 'react/react.js'

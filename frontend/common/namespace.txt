@@ -17,4 +17,11 @@ The above example uses relative to current client file URL.  I am **NOT** sure i
 
 would work better.
 
-Other forms of import are possible.  The relative
+Other forms of import are possible.
+
+
+Code without namespace is referenceable as is.
+
+About module imports:
+https://www.typescriptlang.org/docs/handbook/module-resolution.html
+

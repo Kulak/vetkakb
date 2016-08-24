@@ -2,7 +2,7 @@
 // / <reference path="./typings/modules/react/index.d.ts" />
 
 
-export class CommonData {
+class CommonData {
 	public constructor() {
 	}
 }
