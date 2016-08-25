@@ -1,3 +1,8 @@
+/*
+entryEdit provides a way to create new and update existing
+entries.
+*/
+
 import * as React from 'react'
 import {Entry} from '../model/entry'
 
@@ -10,6 +15,10 @@ class EntryState {
 		public entry: Entry = new Entry()) {}
 }
 
+/*
+	EntryBox provides basic editor to create or update an entry
+	and save to the server.
+*/
 export class EntryBox extends React.Component<EntryProps, EntryState> {
 	public constructor(props: EntryProps, context) {
 		super(props, context)
