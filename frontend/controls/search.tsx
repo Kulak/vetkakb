@@ -12,11 +12,16 @@ export class SearchProps {}
 
 class SearchState {}
 
-export class Search extends React.Component<SearchProps, Search> {
+export class Search extends React.Component<SearchProps, SearchState> {
+	onRecentClick() {
+		console.log("in onRecentClick")
+	}
 	public constructor(props: SearchProps, context: any) {
-		super(SearchProps, context)
+		super(props, context)
 	}  // end of constructor
 	render() {
-		return <div>Search Bar from menu bar.</div>
+		return <div>
+			<button onClick={e => this.onRecentClick()}>Recent</button>
+		</div>
 	}
 }  // end of class
