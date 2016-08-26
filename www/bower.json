@@ -17,6 +17,7 @@
   ],
   "dependencies": {
     "react": "^15.3.0",
-    "system.js": "^0.19.36"
+    "system.js": "^0.19.36",
+    "fetch": "^1.0.0"
   }
 }

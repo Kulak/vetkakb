@@ -40,3 +40,10 @@ one-time-install:
 	cd frontend; typings install react-dom
 
 	cd www; bower install system.js --save
+
+	# fetch project installed here
+	# has a second name whatwg-fetch
+	cd www; bower install fetch --save
+	cd frontend; typings install dt~whatwg-fetch --global --save
+
+onetime:
