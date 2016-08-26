@@ -127,5 +127,9 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 ## Plan
 
-Continue on visual design through web UI development.
+"Recent" button is fully capable of loading data with GET REST call.  Create has core functionality ready.  It is time to
 
+1. review Entry creation data model on web UI
+2. create DB structure to support data model
+3. implement insert and GET calls on the backend
+4. sync UI with calls
