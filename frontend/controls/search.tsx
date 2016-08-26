@@ -20,7 +20,7 @@ export class Search extends React.Component<SearchProps, SearchState> {
 
 	onRecentClick() {
 		console.log("in onRecentClick")
-		fetch('/users.html', 5)
+		fetch('/res/base.css')
   	.then(function(response) {
     	return response.text()
   	}).then(function(body) {

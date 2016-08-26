@@ -42,13 +42,17 @@ command.  However, this command depends on Promise and ES6 functionality.
 
 Installing promise typings did not help.  The solution was to alter compiler configuration in `tsconfig.json` file:
 
-	"lib": ["es6"],
+	"lib": ["es6", "dom"],
 
-This magically enabled ES6 Promise support and compilation error was gone.
+Option "lib" requires TypeScript 2.0 to work.
+
+This magically enabled ES6 Promise support and compilation error was gone.  Once "lib" is used other options have to be specified explicitly.  "dom" option is required for "react" dependencies to work properly.
 
 If typing is installed with option --global, then it does not need to be imported (it is imported automatically).
 
 The systemjs still needs to map polyfil name 'whatwg-fetch' to the actual library.  So, a change in HTML file was necessary.
+
+Because "fetch" is global in typescript I dont' use "import".  Because there is no import in source code, "fetch" polyfill does not get imported and we have to import it directly in `index.html` file.
 
 ### Seach Typings
 
@@ -71,6 +75,24 @@ or
 	cd frontend; typings uninstall promise --global --save
 
 NOTE: in package above `dt~promise` uninstall lists package name without source (dt~).
+
+### Update to TypeScript 2.0
+
+It turns out that "lig": ["es6"] is supported only by TypeScript 2.0.  I have TypeScript 1.8.10.
+
+I uninstalled 1.8.10 with:
+
+	sudo npm uninstall typescript -g
+
+To install beta version:
+
+	sudo npm install -g typescript@beta
+
+VS Code needs to be told to use updated version of TypeScript through change in `.vscode\settings.json" file:
+
+	"typescript.tsdk": "/usr/local/lib/node_modules/typescript/lib"
+
+
 
 ## Plan
 
