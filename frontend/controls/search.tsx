@@ -7,6 +7,7 @@ It is a core search controller.
 */
 
 import * as React from 'react'
+import {DataService} from '../common/dataService'
 
 export class SearchProps {}
 
@@ -20,12 +21,14 @@ export class Search extends React.Component<SearchProps, SearchState> {
 
 	onRecentClick() {
 		console.log("in onRecentClick")
-		fetch('/res/base.css')
-  	.then(function(response) {
-    	return response.text()
-  	}).then(function(body) {
-    	document.body.innerHTML = body
-  	})
+
+		DataService.get('/res/test.json')
+		.then(function(jsonText) {
+			console.log("json text", jsonText)
+		})
+		.catch(function(err) {
+			console.log("err loading json: ", err)
+		})
 	}
 
 	  // end of constructor

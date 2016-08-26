@@ -120,6 +120,9 @@ VS Code needs to be told to use updated version of TypeScript through change in 
 
 	"typescript.tsdk": "/usr/local/lib/node_modules/typescript/lib"
 
+### Promise API
+
+About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-promises-catch-then-block>
 
 
 ## Plan
