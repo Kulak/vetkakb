@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
+	"horse.lan.gnezdovi.com/vetkakb/backend/vetka"
 
 	"github.com/sevlyar/go-daemon"
 )
@@ -82,6 +83,6 @@ func main() {
 	}
 
 	log.Println("Startign web service")
-	ws := core.NewWebSvc(conf)
+	ws := vetka.NewWebSvc(conf)
 	log.Fatal(http.ListenAndServe(conf.Main.WebEndpoint, ws.Router))
 }

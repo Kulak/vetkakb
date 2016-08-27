@@ -1,9 +1,10 @@
-package core
+package vetka
 
 import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"horse.lan.gnezdovi.com/vetkakb/backend/core"
 )
 
 // Helper functions
@@ -11,11 +12,11 @@ import (
 // WebSvc is a web service structure.
 type WebSvc struct {
 	Router *httprouter.Router
-	conf   *Configuration
+	conf   *core.Configuration
 }
 
 // NewWebSvc creates new WebSvc structure.
-func NewWebSvc(conf *Configuration) *WebSvc {
+func NewWebSvc(conf *core.Configuration) *WebSvc {
 
 	ws := &WebSvc{
 		Router: httprouter.New(),

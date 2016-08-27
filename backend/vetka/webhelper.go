@@ -1,4 +1,4 @@
-package core
+package vetka
 
 import (
 	"encoding/json"
