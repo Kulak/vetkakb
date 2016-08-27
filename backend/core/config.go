@@ -13,8 +13,9 @@ import (
 
 // MainSection of the configuration file.
 type MainSection struct {
-	// AppRoot is a directory that's a parent of www directory.
-	AppRoot string
+	// SqlRoot is a parent directory of SQL scripts.
+	SQLRoot string
+	WebRoot string
 	// DataRoot is a database file parent.  It not accessible by web service or not in web server subtree.
 	DataRoot    string
 	WebEndpoint string
@@ -32,7 +33,8 @@ type Configuration struct {
 func NewConfiguration() *Configuration {
 	return &Configuration{
 		Main: MainSection{
-			AppRoot:     "",
+			SQLRoot:     "sql",
+			WebRoot:     "www",
 			DataRoot:    "data",
 			WebEndpoint: "localhost:8080",
 			PidFileName: "/var/run/vetkakb.pid",
@@ -54,23 +56,23 @@ func LoadConfig(cutomFileName string) (*Configuration, error) {
 	return cfg, err
 }
 
-// WebDir returns http directory relative to AppRoot.
-func (c Configuration) WebDir(dir string) http.Dir {
-	// don't use filepath.Join, because it strips ending slash '/'
-	d := http.Dir(c.Main.AppRoot + dir)
-	log.Printf("WebDir for %s is: %s\n", dir, d)
-	return d
-}
-
 // EntryDBFileName returns name of the entry DB file.
 func (c Configuration) entryDBFileName() string {
 	return filepath.Join(c.Main.DataRoot, "entry.db")
 }
 
+// WebDir returns http directory relative to WebRoot.
+func (c Configuration) WebDir(dir string) http.Dir {
+	// don't use filepath.Join, because it strips ending slash '/'
+	d := http.Dir(c.Main.WebRoot + dir)
+	log.Printf("WebDir for %s is: %s\n", dir, d)
+	return d
+}
+
 // SQLDir returns name of the directory that contains
 // SQL scripts.
 func (c Configuration) sqlDir(dbDir string) string {
-	return filepath.Join(c.Main.AppRoot, "backend/db-sql", dbDir)
+	return filepath.Join(c.Main.SQLRoot, dbDir)
 }
 
 // InitializeFilesystem creates directory tree, creates

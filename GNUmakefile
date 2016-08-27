@@ -2,7 +2,8 @@
 # bower or npm package name
 pn=
 
-.PHONY: default bower-install npm-install go-build one-time-install
+.PHONY: default bower-install npm-install go-build one-time-install \
+	clean-data
 
 default:
 	@cat GNUmakefile
@@ -31,6 +32,9 @@ npm-install:
 go-build:
 	go build
 
+run:
+	go run vetkakb.go
+
 one-time-install:
 	npm install typescript -g
 	npm install typings --global
@@ -47,3 +51,6 @@ one-time-install:
 	cd frontend; typings install dt~whatwg-fetch --global --save
 
 onetime:
+
+clean-data:
+	rm data/*

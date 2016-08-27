@@ -1,0 +1,4 @@
+[main]
+SqlRoot =../db-sql
+WebRoot = ../../www
+DataRoot = testData

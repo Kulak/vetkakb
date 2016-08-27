@@ -31,11 +31,11 @@ func NewWebSvc(conf *core.Configuration) *WebSvc {
 	//   delete - DELETE
 
 	router := ws.Router
-	router.GET("/index.html", ws.AddHeaders(http.FileServer(conf.WebDir("www/index.html"))))
-	router.Handler("GET", "/", http.FileServer(conf.WebDir("www/")))
-	router.ServeFiles("/vendors/*filepath", conf.WebDir("www/bower_components/"))
-	router.ServeFiles("/res/*filepath", conf.WebDir("www/res/"))
-	router.ServeFiles("/frontend/*filepath", conf.WebDir("frontend/"))
+	router.GET("/index.html", ws.AddHeaders(http.FileServer(conf.WebDir("index.html"))))
+	router.Handler("GET", "/", http.FileServer(conf.WebDir("/")))
+	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
+	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
+	//router.ServeFiles("/frontend/*filepath", conf.WebDir("frontend/"))
 
 	return ws
 }

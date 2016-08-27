@@ -1,5 +1,6 @@
 [main]
-AppRoot =
+SqlRoot =backend/db-sql
+WebRoot = www
 DataRoot = data    # relative to current working directory
 WebEndpoint = :8080
 PidFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.pid
