@@ -12,9 +12,10 @@ import (
 )
 
 // MainSection of the configuration file.
-// AppRoot is a directory that's a parent of www directory.
 type MainSection struct {
-	AppRoot     string
+	// AppRoot is a directory that's a parent of www directory.
+	AppRoot string
+	// DataRoot is a database file parent.  It not accessible by web service or not in web server subtree.
 	DataRoot    string
 	WebEndpoint string
 	PidFileName string
@@ -61,15 +62,15 @@ func (c Configuration) WebDir(dir string) http.Dir {
 	return d
 }
 
-// VetkaDBFileName returns name of the DB file.
-func (c Configuration) VetkaDBFileName() string {
-	return filepath.Join(c.Main.DataRoot, "vetka.db")
+// EntryDBFileName returns name of the entry DB file.
+func (c Configuration) entryDBFileName() string {
+	return filepath.Join(c.Main.DataRoot, "entry.db")
 }
 
 // SQLDir returns name of the directory that contains
 // SQL scripts.
-func (c Configuration) SQLDir(dbDir string) string {
-	return filepath.Join(c.Main.AppRoot, "sql", dbDir)
+func (c Configuration) sqlDir(dbDir string) string {
+	return filepath.Join(c.Main.AppRoot, "backend/db-sql", dbDir)
 }
 
 // InitializeFilesystem creates directory tree, creates
@@ -81,7 +82,7 @@ func (c Configuration) InitializeFilesystem() (err error) {
 		return fmt.Errorf("Failed to create a data directory due to error: %v", err)
 	}
 
-	_, err = sqlitemaint.UpgradeSQLite(c.VetkaDBFileName(), c.SQLDir("vetka"))
+	_, err = sqlitemaint.UpgradeSQLite(c.entryDBFileName(), c.sqlDir("entrydb"))
 	if err != nil {
 		return fmt.Errorf("Failed to upgrade DB.  Error: %v", err)
 	}
