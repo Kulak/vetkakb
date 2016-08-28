@@ -5,6 +5,8 @@ entries.
 
 import * as React from 'react'
 import {Entry} from '../model/entry'
+import {WSEntryPut} from '../model/wsentry'
+import {DataService} from '../common/dataService'
 
 export class EntryProps {
 	constructor(public id: number){}
@@ -32,7 +34,19 @@ export class EntryBox extends React.Component<EntryProps, EntryState> {
 	}
 	onEditSaveClick() {
 		// save data
-		this.setState(new EntryState(false, this.state.entry))
+		let e: Entry = this.state.entry
+		let wsEntry: WSEntryPut = new WSEntryPut(e.title, e.raw, e.rawType, e.tags)
+
+		DataService.put('/entry/', wsEntry)
+		.then(function(jsonText) {
+			console.log("PUT json response", jsonText)
+		})
+		.catch(function(err) {
+			console.log("PUT err: ", err)
+		})
+
+		// collapse editor
+		// this.setState(new EntryState(false, this.state.entry))
 	}
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EntryState(), this.state) as EntryState;
@@ -41,7 +55,7 @@ export class EntryBox extends React.Component<EntryProps, EntryState> {
 	}
 	onEntryOrigBodyChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EntryState(), this.state) as EntryState;
-		state.entry.origBody = (event.target as any).value
+		state.entry.raw = (event.target as any).value
 		this.setState(state)
 	}
 	render() {
@@ -56,10 +70,10 @@ export class EntryBox extends React.Component<EntryProps, EntryState> {
 				</p>
 				<p>
 					<label>Raw Text:</label><br />
-					<textarea value={this.state.entry.origBody} onChange={e => this.onEntryOrigBodyChange(e)} />
+					<textarea value={this.state.entry.raw} onChange={e => this.onEntryOrigBodyChange(e)} />
 				</p>
 				<label>Preview:</label>
-				<pre>{this.state.entry.origBody}</pre>
+				<pre>{this.state.entry.raw}</pre>
 			</div>
 		} else {
 			return <div><button onClick={e => this.onEditClick()}>New Entry</button></div>
