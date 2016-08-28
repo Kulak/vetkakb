@@ -1,6 +1,7 @@
 package vetka
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -35,6 +36,7 @@ func NewWebSvc(conf *core.Configuration) *WebSvc {
 	router.Handler("GET", "/", http.FileServer(conf.WebDir("/")))
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
+	router.PUT("/entry/", ws.putEntry)
 	//router.ServeFiles("/frontend/*filepath", conf.WebDir("frontend/"))
 
 	return ws
@@ -55,3 +57,17 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 		handler.ServeHTTP(w, r)
 	}
 }
+
+// putEntry creates new entry and assigns it an EntryID.
+func (ws WebSvc) putEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var e WSEntryPut
+	err := ws.loadJSONBody(r, &e)
+	if err != nil {
+		ws.writeError(w, err.Error())
+		return
+	}
+	fmt.Printf("Got request to create an entry with %v.\n", e)
+	ws.writeError(w, "Can't save entries yet.")
+}
+
+// use POST to modify

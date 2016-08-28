@@ -15,6 +15,7 @@ import (
 type MainSection struct {
 	// SqlRoot is a parent directory of SQL scripts.
 	SQLRoot string
+	// WebRoot must end with slash.
 	WebRoot string
 	// DataRoot is a database file parent.  It not accessible by web service or not in web server subtree.
 	DataRoot    string
