@@ -89,3 +89,27 @@ DONE:
 	}
 	return err
 }
+
+// RecentHTMLEntries returns limit recent entries with HTML content
+// ordered in DESC order.  The data is suitable for viewing, but not editing.
+func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err error) {
+	if edb.db == nil {
+		return result, fmt.Errorf("Database connection is closed.")
+	}
+	var rows *sql.Rows
+	sql := "SELECT entryID, rawType, title, html, updated order by updated desc limit ?"
+	rows, err = edb.db.Query(sql, limit)
+	if err != nil {
+		return nil, err
+	}
+	result = []WSEntryGetHTML{}
+	var r WSEntryGetHTML
+	for rows.Next() {
+		err = rows.Scan(&r.EntryID, &r.RawType, &r.Title, &r.HTML, &r.Updated)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, r)
+	}
+	return result, err
+}

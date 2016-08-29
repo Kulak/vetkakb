@@ -1,4 +1,6 @@
-package vetka
+package core
+
+import "time"
 
 /*
 This file collects data structures that support REST API calls.
@@ -16,6 +18,12 @@ type WSEntryPut struct {
 type WSEntryPost struct {
 }
 
-// WSEntryGet is used to load entries.
-type WSEntryGet struct {
+// WSEntryGetHTML is used to load entries to display text and HTML oriented content.
+// This structure is populated directly by DAL.
+type WSEntryGetHTML struct {
+	EntryID int64
+	Title   string
+	RawType int
+	HTML    string
+	Updated time.Time
 }

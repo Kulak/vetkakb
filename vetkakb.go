@@ -82,9 +82,13 @@ func main() {
 		log.Fatalf("Failed to InitializeFilesystem.  Error: %v", err)
 	}
 
-	log.Println("Startign web service")
+	ts := core.NewTypeService()
+	ts.Initialize()
+
 	edb := core.NewEntryDB(conf.EntryDBFileName())
 	edb.Open()
-	ws := vetka.NewWebSvc(conf, edb)
+
+	log.Println("Startign web service")
+	ws := vetka.NewWebSvc(conf, edb, ts)
 	log.Fatal(http.ListenAndServe(conf.Main.WebEndpoint, ws.Router))
 }
