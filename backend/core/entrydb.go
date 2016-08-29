@@ -97,7 +97,7 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 		return result, fmt.Errorf("Database connection is closed.")
 	}
 	var rows *sql.Rows
-	sql := "SELECT entryID, rawType, title, html, updated order by updated desc limit ?"
+	sql := "SELECT entryID, rawType, title, html, updated from `entry` order by updated desc limit ?"
 	rows, err = edb.db.Query(sql, limit)
 	if err != nil {
 		return nil, err

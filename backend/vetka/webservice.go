@@ -42,6 +42,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
 	router.PUT("/entry/", ws.putEntry)
+	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
 	// Enable access to source code files from web browser debugger
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
