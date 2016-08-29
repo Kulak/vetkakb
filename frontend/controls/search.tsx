@@ -9,6 +9,7 @@ It is a core search controller.
 import * as React from 'react'
 import {DataService} from '../common/dataService'
 import {WSEntryGetHTML} from '../model/wsentry'
+import {EntryViewBox} from './EntryView'
 
 export class SearchProps {}
 
@@ -41,11 +42,7 @@ export class Search extends React.Component<SearchProps, SearchState> {
 	  // end of constructor
 	render() {
 		let entries = this.state.entries.map(function(entry: WSEntryGetHTML) {
-
-			return [<div>
-				<h2>{entry.Title}</h2>
-				<div dangerouslySetInnerHTML={{__html: entry.HTML}} />
-			</div>]
+			return [<EntryViewBox entry={entry} />]
 		})
 		return <div>
 			<button onClick={e => this.onRecentClick()}>Recent</button>
