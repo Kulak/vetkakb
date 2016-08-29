@@ -47,7 +47,7 @@ export class EntryBox extends React.Component<EntryProps, EntryState> {
 		})
 
 		// collapse editor
-		// this.setState(new EntryState(false, this.state.entry))
+		this.setState(new EntryState(false, this.state.entry))
 	}
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EntryState(), this.state) as EntryState;
