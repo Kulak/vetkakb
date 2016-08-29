@@ -14,10 +14,10 @@ export class WSEntryPut {
 // and is used to load view only form of entry.
 export class WSEntryGetHTML {
 	constructor(
-		public entryID: number,
-		public title: string,
-		public rawType: number,
-		public html: string,
-		public updated: string
+		public EntryID: number,
+		public Title: string,
+		public TawType: number,
+		public HTML: string,
+		public Updated: string
 	) {}
 }
