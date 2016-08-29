@@ -12,16 +12,18 @@ import (
 
 // WebSvc is a web service structure.
 type WebSvc struct {
-	Router *httprouter.Router
-	conf   *core.Configuration
+	Router  *httprouter.Router
+	conf    *core.Configuration
+	entryDB *core.EntryDB
 }
 
 // NewWebSvc creates new WebSvc structure.
-func NewWebSvc(conf *core.Configuration) *WebSvc {
+func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB) *WebSvc {
 
 	ws := &WebSvc{
-		Router: httprouter.New(),
-		conf:   conf,
+		Router:  httprouter.New(),
+		conf:    conf,
+		entryDB: entryDB,
 	}
 
 	// CRUD model in REST:
@@ -69,8 +71,14 @@ func (ws WebSvc) putEntry(w http.ResponseWriter, r *http.Request, _ httprouter.P
 	}
 	fmt.Printf("Got request to create an entry with %v.\n", wse)
 	fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
-
-	ws.writeError(w, "Can't save entries yet.")
+	en := core.NewEntry(wse.Title, wse.Raw, wse.RawType)
+	es := core.NewEntrySearch(wse.Tags)
+	err = ws.entryDB.SaveEntry(en, es)
+	if err != nil {
+		ws.writeError(w, err.Error())
+	} else {
+		ws.writeJSON(w, en)
+	}
 }
 
 // use POST to modify

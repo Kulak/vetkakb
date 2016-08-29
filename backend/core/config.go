@@ -58,7 +58,7 @@ func LoadConfig(cutomFileName string) (*Configuration, error) {
 }
 
 // EntryDBFileName returns name of the entry DB file.
-func (c Configuration) entryDBFileName() string {
+func (c Configuration) EntryDBFileName() string {
 	return filepath.Join(c.Main.DataRoot, "entry.db")
 }
 
@@ -85,7 +85,7 @@ func (c Configuration) InitializeFilesystem() (err error) {
 		return fmt.Errorf("Failed to create a data directory due to error: %v", err)
 	}
 
-	_, err = sqlitemaint.UpgradeSQLite(c.entryDBFileName(), c.sqlDir("entrydb"))
+	_, err = sqlitemaint.UpgradeSQLite(c.EntryDBFileName(), c.sqlDir("entrydb"))
 	if err != nil {
 		return fmt.Errorf("Failed to upgrade DB.  Error: %v", err)
 	}

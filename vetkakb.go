@@ -83,6 +83,8 @@ func main() {
 	}
 
 	log.Println("Startign web service")
-	ws := vetka.NewWebSvc(conf)
+	edb := core.NewEntryDB(conf.EntryDBFileName())
+	edb.Open()
+	ws := vetka.NewWebSvc(conf, edb)
 	log.Fatal(http.ListenAndServe(conf.Main.WebEndpoint, ws.Router))
 }

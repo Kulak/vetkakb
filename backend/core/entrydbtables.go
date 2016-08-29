@@ -42,6 +42,15 @@ func sqlRequireAffected(result sql.Result, expected int64) error {
 
 /* ========== Entry ========== */
 
+// NewEntry creates new entry to be inserted into DB.
+func NewEntry(title string, raw []byte, rawType int) *Entry {
+	return &Entry{
+		Title:   title,
+		Raw:     raw,
+		RawType: rawType,
+	}
+}
+
 // savdbInserteToDB inserts record into DB.  EntryID must be zero.
 // If operation is successful EntryID is set to inserted record.
 func (en *Entry) dbInsert(tx *sql.Tx) (err error) {
@@ -92,6 +101,13 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 }
 
 /* ========== EntrySearch ========== */
+
+// NewEntrySearch creates new entry search item to be inserted into DB.
+func NewEntrySearch(tags string) *EntrySearch {
+	return &EntrySearch{
+		Tags: tags,
+	}
+}
 
 func (es *EntrySearch) dbInsert(tx *sql.Tx) (err error) {
 	var result sql.Result
