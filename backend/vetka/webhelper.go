@@ -36,13 +36,13 @@ func (ws WebSvc) writeResult(w http.ResponseWriter, v interface{}, err error, ms
 
 func (ws WebSvc) loadJSONBody(r *http.Request, v interface{}) error {
 	// load post data
-	var respBytes []byte
-	respBytes, err := ioutil.ReadAll(r.Body)
+	var bodyBytes []byte
+	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("Failed to read request body: %v", err)
 	}
-	//fmt.Printf("request body: %s\n", string(respBytes))
-	err = json.Unmarshal(respBytes, v)
+	fmt.Printf("request body: %s\n", string(bodyBytes))
+	err = json.Unmarshal(bodyBytes, v)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshall request body: %v", err)
 	}

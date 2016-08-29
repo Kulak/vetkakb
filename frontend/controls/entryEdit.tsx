@@ -35,7 +35,8 @@ export class EntryBox extends React.Component<EntryProps, EntryState> {
 	onEditSaveClick() {
 		// save data
 		let e: Entry = this.state.entry
-		let wsEntry: WSEntryPut = new WSEntryPut(e.title, e.raw, e.rawType, e.tags)
+		let base64: string = btoa(e.raw)
+		let wsEntry: WSEntryPut = new WSEntryPut(e.title, base64, e.rawType, e.tags)
 
 		DataService.put('/entry/', wsEntry)
 		.then(function(jsonText) {

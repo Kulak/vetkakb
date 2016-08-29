@@ -61,13 +61,15 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 
 // putEntry creates new entry and assigns it an EntryID.
 func (ws WebSvc) putEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var e WSEntryPut
-	err := ws.loadJSONBody(r, &e)
+	var wse WSEntryPut
+	err := ws.loadJSONBody(r, &wse)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
-	fmt.Printf("Got request to create an entry with %v.\n", e)
+	fmt.Printf("Got request to create an entry with %v.\n", wse)
+	fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
+
 	ws.writeError(w, "Can't save entries yet.")
 }
 
