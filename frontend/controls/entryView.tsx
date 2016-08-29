@@ -4,6 +4,7 @@ a list of entries like search results.
 */
 import * as React from 'react'
 import {WSEntryGetHTML} from '../model/wsentry'
+import {EntryEditor} from './EntryEditor'
 
 export class EntryViewProps {
 	constructor(
@@ -32,13 +33,16 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	render() {
 		let en = this.props.entry
 		if (this.state.editing) {
+			return <div>
+				<h2>Editing Entry: {en.Title}</h2>
 
+			</div>
 		} else {
 			if (this.state.expanded) {
 				return <div>
 					<h2 onClick={e => this.onExpandClick(false)}>{en.Title}
-						<button onClick={e => this.onEditClick(true)}>Change</button>
 					</h2>
+					<button onClick={e => this.onEditClick(true)}>Change</button>
 					<div dangerouslySetInnerHTML={{__html: en.HTML}} />
 				</div>
 			} else {
