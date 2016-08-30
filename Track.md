@@ -216,5 +216,4 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 "Recent" button is fully capable of loading data with GET REST call.  Create has core functionality ready.  It is time to
 
-1. test: putEntry call on backend
-2. implement put entry to backend
+Add Entry POST (update) to backend and frontend.  Review "New" entry code on frontend, because it needs to use entryEditor.

@@ -3,7 +3,7 @@ EXPERIMENTAL: entryEditor focuses on changing content, saving it
 */
 
 import * as React from 'react'
-import {Entry} from '../model/entry'
+import {WSFullEntry} from '../model/wsentry'
 import {WSEntryPut} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 
@@ -15,13 +15,13 @@ import {DataService} from '../common/dataService'
 export type EditorCloseReqFunc = (e: any) => void;
 
 export interface EditorProps extends React.Props<any>{
-		entry: Entry;
+		entry: WSFullEntry;
 		editorCloseReq: EditorCloseReqFunc;
 }
 
 class EditorState {
 	constructor(
-		public entry: Entry = new Entry()
+		public entry: WSFullEntry = new WSFullEntry()
 	) {}
 }
 
@@ -37,10 +37,10 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 	public constructor(props: EditorProps, context) {
 		super(props, context)
-		let pen: Entry = props.entry
+		let pen: WSFullEntry = props.entry
 		// make a copy of entry for easy cancellation
-		this.state = new EditorState(new Entry(
-			pen.entryID, pen.title, pen.raw, pen.rawType, pen.tags
+		this.state = new EditorState(new WSFullEntry(
+			pen.EntryID, pen.Title, pen.Raw, pen.RawType, pen.Tags, pen.HTML, pen.Updated
 		));
 	}
 	onEditCancelClick() {
@@ -48,9 +48,9 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 	onEditSaveClick(close: boolean) {
 		// save data
-		let e: Entry = this.props.entry
-		let base64: string = btoa(e.raw)
-		let wsEntry: WSEntryPut = new WSEntryPut(e.title, base64, e.rawType, e.tags)
+		let e: WSFullEntry = this.props.entry
+		let base64: string = btoa(e.Raw)
+		let wsEntry: WSEntryPut = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
 
 		DataService.put('/entry/', wsEntry)
 		.then(function(jsonText) {
@@ -66,12 +66,12 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.title = (event.target as any).value
+		state.entry.Title = (event.target as any).value
 		this.setState(new EditorState())
 	}
 	onEntryOrigBodyChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.raw = (event.target as any).value
+		state.entry.Raw = (event.target as any).value
 		this.setState(state)
 	}
 	render() {
@@ -82,14 +82,14 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 				<button onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
 			</p>
 			<p>
-				<label>Title:</label><input type="text" value={this.state.entry.title} onChange={e => this.onEntryTitleChange(e)} />
+				<label>Title:</label><input type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
 			</p>
 			<p>
 				<label>Raw Text:</label><br />
-				<textarea value={this.state.entry.raw} onChange={e => this.onEntryOrigBodyChange(e)} />
+				<textarea value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} />
 			</p>
 			<label>Preview:</label>
-			<pre>{this.state.entry.raw}</pre>
+			<pre>{this.state.entry.Raw}</pre>
 		</div>
 	} // end of render function
 } // end of class

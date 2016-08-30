@@ -97,7 +97,7 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 		return result, fmt.Errorf("Database connection is closed.")
 	}
 	var rows *sql.Rows
-	sql := "SELECT entryID, rawType, title, html, updated from `entry` order by updated desc limit ?"
+	sql := "SELECT entryID, title, html, updated from `entry` order by updated desc limit ?"
 	rows, err = edb.db.Query(sql, limit)
 	if err != nil {
 		return nil, err
@@ -105,11 +105,28 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 	result = []WSEntryGetHTML{}
 	var r WSEntryGetHTML
 	for rows.Next() {
-		err = rows.Scan(&r.EntryID, &r.RawType, &r.Title, &r.HTML, &r.Updated)
+		err = rows.Scan(&r.EntryID, &r.Title, &r.HTML, &r.Updated)
 		if err != nil {
 			return result, err
 		}
 		result = append(result, r)
 	}
 	return result, err
+}
+
+// GetFullEntry loads all Entry data for editing.
+func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
+	r = &WSFullEntry{EntryID: entryID}
+	if edb.db == nil {
+		return r, fmt.Errorf("Database connection is closed.")
+	}
+	sql := `
+	SELECT e.title, e.rawType, e.raw, e.html, e.updated, es.tags
+	from entry e
+	inner join entrySearch es on e.entryID = es.entryFK
+	where e.entryID = ?
+	`
+	err = edb.db.QueryRow(sql, entryID).
+		Scan(&r.Title, &r.RawType, &r.Raw, &r.HTML, &r.Updated, &r.Tags)
+	return r, err
 }

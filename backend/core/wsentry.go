@@ -23,7 +23,17 @@ type WSEntryPost struct {
 type WSEntryGetHTML struct {
 	EntryID int64
 	Title   string
-	RawType int
 	HTML    string
+	Updated time.Time
+}
+
+// WSFullEntry is used to load detailed Entry data used in entry editor.
+type WSFullEntry struct {
+	EntryID int64
+	Title   string
+	RawType int
+	Raw     []byte
+	HTML    string
+	Tags    string
 	Updated time.Time
 }

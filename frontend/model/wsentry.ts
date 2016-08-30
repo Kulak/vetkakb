@@ -16,7 +16,20 @@ export class WSEntryGetHTML {
 	constructor(
 		public EntryID: number = 0,
 		public Title: string = "",
+		public HTML: string = "",
+		public Updated: string = ""
+	) {}
+}
+
+// WSFullEntry is returned by GET entry call.
+// It is used by entryEditor.
+export class WSFullEntry {
+	constructor(
+		public EntryID: number = 0,
+		public Title: string = "",
+		public Raw: string = null,
 		public RawType: number = 0,
+		public Tags: string = "",
 		public HTML: string = "",
 		public Updated: string = ""
 	) {}

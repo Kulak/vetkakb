@@ -44,6 +44,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.PUT("/entry/", ws.putEntry)
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
+	router.GET("/api/entry/:entryID", ws.getFullEntry)
 	// Enable access to source code files from web browser debugger
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
 
@@ -109,6 +110,21 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 		return
 	}
 	ws.writeJSON(w, entries)
+}
+
+func (ws WebSvc) getFullEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	idStr := p.ByName("entryID")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot parse entryID.  Error: %v", err))
+		return
+	}
+	entry, err := ws.entryDB.GetFullEntry(id)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get Entry with ID %v.  Error: %v", id, err))
+		return
+	}
+	ws.writeJSON(w, entry)
 }
 
 // use POST to modify

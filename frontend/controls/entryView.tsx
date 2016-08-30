@@ -3,9 +3,10 @@ entryView provides standard view of the entry from
 a list of entries like search results.
 */
 import * as React from 'react'
-import {WSEntryGetHTML} from '../model/wsentry'
+import {WSEntryGetHTML, WSFullEntry} from '../model/wsentry'
 import {EntryEditor, EditorProps} from './EntryEditor'
 import {Entry} from '../model/entry'
+import {DataService} from '../common/dataService'
 
 export interface EntryViewProps {
 		entry: WSEntryGetHTML
@@ -14,7 +15,8 @@ export interface EntryViewProps {
 class EntryViewState {
 	constructor(
 		public expanded: boolean = false,
-		public editing: boolean = false
+		public editing: boolean = false,
+		public fullEntry: WSFullEntry = null
 	) {}
 }
 
@@ -27,18 +29,32 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 		this.setState(new EntryViewState(expandAction, false))
 	}
 	onEditClick(editAction: boolean) {
-		this.setState(new EntryViewState(false, editAction))
+		if (editAction) {
+			// load a full entry
+			DataService.get('/api/entry/' + this.props.entry.EntryID)
+			.then(function(jsonEntry) {
+				console.log("json text", jsonEntry)
+				let entry = jsonEntry as WSFullEntry
+				entry.Raw = atob(entry.Raw)
+				this.setState(new EntryViewState(false, editAction, jsonEntry as WSFullEntry))
+			}.bind(this))
+			.catch(function(err) {
+				console.log("err loading json: ", err)
+			}.bind(this))
+		} else {
+			this.setState(new EntryViewState(false, editAction))
+		}
 	}
 	onEditorCloseRequested() {
 		this.setState(new EntryViewState(false, false))
 	}
 	render() {
 		let en: WSEntryGetHTML = this.props.entry
-		let entry: Entry = new Entry(en.EntryID, en.Title, "raw is missing", en.RawType, "tags is missing")
+		let fullEntry: WSFullEntry = this.state.fullEntry
 		if (this.state.editing) {
 			return <div>
 				<h2>Editing Entry: {en.Title}</h2>
-				<EntryEditor entry={entry} editorCloseReq={e => this.onEditorCloseRequested()}/>
+				<EntryEditor entry={fullEntry} editorCloseReq={e => this.onEditorCloseRequested()}/>
 			</div>
 		} else {
 			if (this.state.expanded) {
