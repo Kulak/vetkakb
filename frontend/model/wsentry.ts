@@ -16,7 +16,7 @@ export class WSEntryGetHTML {
 	constructor(
 		public EntryID: number = 0,
 		public Title: string = "",
-		public TawType: number = 0,
+		public RawType: number = 0,
 		public HTML: string = "",
 		public Updated: string = ""
 	) {}

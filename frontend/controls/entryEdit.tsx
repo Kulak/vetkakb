@@ -8,8 +8,7 @@ import {Entry} from '../model/entry'
 import {WSEntryPut} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 
-export class EntryProps {
-	constructor(public id: number){}
+export interface EntryProps {
 }
 
 class EntryState {

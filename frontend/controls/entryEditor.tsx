@@ -12,14 +12,11 @@ import {DataService} from '../common/dataService'
 // var handler: MyHandler;
 
 
-export type EditorCloseReqFunc = () => void;
+export type EditorCloseReqFunc = (e: any) => void;
 
-export class EditorProps {
-
-	constructor(
-		public entry: Entry,
-		public editorCloseReq: EditorCloseReqFunc
-	){}
+export interface EditorProps extends React.Props<any>{
+		entry: Entry;
+		editorCloseReq: EditorCloseReqFunc;
 }
 
 class EditorState {
@@ -35,7 +32,7 @@ class EditorState {
 export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	sendCloseRequest() {
 		if (this.props.editorCloseReq != null) {
-			this.props.editorCloseReq()
+			this.props.editorCloseReq({})
 		}
 	}
 	public constructor(props: EditorProps, context) {

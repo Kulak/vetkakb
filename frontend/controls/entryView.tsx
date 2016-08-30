@@ -4,12 +4,11 @@ a list of entries like search results.
 */
 import * as React from 'react'
 import {WSEntryGetHTML} from '../model/wsentry'
-import {EntryEditor} from './EntryEditor'
+import {EntryEditor, EditorProps} from './EntryEditor'
+import {Entry} from '../model/entry'
 
-export class EntryViewProps {
-	constructor(
-		public entry: WSEntryGetHTML
-	){}
+export interface EntryViewProps {
+		entry: WSEntryGetHTML
 }
 
 class EntryViewState {
@@ -20,8 +19,8 @@ class EntryViewState {
 }
 
 export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState> {
-	public constructor(props: EntryViewProps, context) {
-		super(props, context)
+	public constructor(props: EntryViewProps) {
+		super(props)
 		this.state = new EntryViewState();
 	}
 	onExpandClick(expandAction: boolean) {
@@ -35,10 +34,11 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	}
 	render() {
 		let en: WSEntryGetHTML = this.props.entry
+		let entry: Entry = new Entry(en.EntryID, en.Title, "raw is missing", en.RawType, "tags is missing")
 		if (this.state.editing) {
 			return <div>
 				<h2>Editing Entry: {en.Title}</h2>
-				<EntryEditor entry={en} editorCloseReq={e => this.onEditorCloseRequested()}/>
+				<EntryEditor entry={entry} editorCloseReq={e => this.onEditorCloseRequested()}/>
 			</div>
 		} else {
 			if (this.state.expanded) {

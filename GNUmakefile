@@ -40,8 +40,11 @@ one-time-install:
 	npm install typings --global
 
 	cd frontend; typings init
-	cd frontend; typings install react
-	cd frontend; typings install react-dom
+
+	# cd frontend; typings install react
+	# cd frontend; typings uninstall react --save
+	# cd frontend; typings install react-dom
+	# cd frontend; typings uninstall react-dom --save
 
 	cd www; bower install system.js --save
 
@@ -49,6 +52,9 @@ one-time-install:
 	# has a second name whatwg-fetch
 	cd www; bower install fetch --save
 	cd frontend; typings install dt~whatwg-fetch --global --save
+
+	cd frontend; typings install dt~react --global --save
+	cd frontend; typings install dt~react-dom --global --save
 
 onetime:
 
