@@ -30,12 +30,15 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	onEditClick(editAction: boolean) {
 		this.setState(new EntryViewState(false, editAction))
 	}
+	onEditorCloseRequested() {
+		this.setState(new EntryViewState(false, false))
+	}
 	render() {
-		let en = this.props.entry
+		let en: WSEntryGetHTML = this.props.entry
 		if (this.state.editing) {
 			return <div>
 				<h2>Editing Entry: {en.Title}</h2>
-
+				<EntryEditor entry={en} editorCloseReq={e => this.onEditorCloseRequested()}/>
 			</div>
 		} else {
 			if (this.state.expanded) {

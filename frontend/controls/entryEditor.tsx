@@ -7,9 +7,18 @@ import {Entry} from '../model/entry'
 import {WSEntryPut} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 
+// example:
+// declare type MyHandler = (myArgument: string) => void;
+// var handler: MyHandler;
+
+
+export type EditorCloseReqFunc = () => void;
+
 export class EditorProps {
+
 	constructor(
-		public entry: Entry
+		public entry: Entry,
+		public editorCloseReq: EditorCloseReqFunc
 	){}
 }
 
@@ -24,18 +33,23 @@ class EditorState {
 	and save to the server.
 */
 export class EntryEditor extends React.Component<EditorProps, EditorState> {
+	sendCloseRequest() {
+		if (this.props.editorCloseReq != null) {
+			this.props.editorCloseReq()
+		}
+	}
 	public constructor(props: EditorProps, context) {
 		super(props, context)
-		let pen = props.entry
+		let pen: Entry = props.entry
 		// make a copy of entry for easy cancellation
 		this.state = new EditorState(new Entry(
 			pen.entryID, pen.title, pen.raw, pen.rawType, pen.tags
 		));
 	}
 	onEditCancelClick() {
-		// notify owner?
+		this.sendCloseRequest();
 	}
-	onEditSaveClick() {
+	onEditSaveClick(close: boolean) {
 		// save data
 		let e: Entry = this.props.entry
 		let base64: string = btoa(e.raw)
@@ -49,8 +63,9 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			console.log("PUT err: ", err)
 		})
 
-		// collapse editor
-		//this.setState(new EditorState())
+		if (close) {
+			this.sendCloseRequest();
+		}
 	}
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
@@ -66,7 +81,8 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		return <div>
 			<p>
 				<button onClick={e => this.onEditCancelClick()}>Cancel Changes</button>
-				<button onClick={e => this.onEditSaveClick()}>Save and Close</button>
+				<button onClick={e => this.onEditSaveClick(false)}>Save and Edit</button>
+				<button onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
 			</p>
 			<p>
 				<label>Title:</label><input type="text" value={this.state.entry.title} onChange={e => this.onEntryTitleChange(e)} />
