@@ -12,7 +12,7 @@ import {DataService} from '../common/dataService'
 // var handler: MyHandler;
 
 
-export type EditorCloseReqFunc = (e: any) => void;
+export type EditorCloseReqFunc = (fe: WSFullEntry) => void;
 
 export interface EditorProps extends React.Props<any>{
 		entry: WSFullEntry;
@@ -30,9 +30,9 @@ class EditorState {
 	and save to the server.
 */
 export class EntryEditor extends React.Component<EditorProps, EditorState> {
-	sendCloseRequest() {
+	sendCloseRequest(fe: WSFullEntry) {
 		if (this.props.editorCloseReq != null) {
-			this.props.editorCloseReq({})
+			this.props.editorCloseReq(fe)
 		}
 	}
 	public constructor(props: EditorProps, context) {
@@ -44,7 +44,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		));
 	}
 	onEditCancelClick() {
-		this.sendCloseRequest();
+		this.sendCloseRequest(this.props.entry);
 	}
 	onEditSaveClick(close: boolean) {
 		// save data
@@ -63,14 +63,18 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		DataService.handleFetch("/entry/", reqInit)
 		.then(function(jsonText) {
 			console.log("json response", jsonText)
-		})
+			let fe = jsonText as WSFullEntry
+			this.setState(fe)
+			if (close) {
+				this.sendCloseRequest(fe);
+			}
+		}.bind(this))
 		.catch(function(err) {
 			console.log("response err: ", err)
-		})
-
-		if (close) {
-			this.sendCloseRequest();
-		}
+			if (close) {
+				this.sendCloseRequest(e)
+			}
+		}.bind(this))
 	}
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
