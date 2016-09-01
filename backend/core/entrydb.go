@@ -49,6 +49,9 @@ func (edb *EntryDB) SaveEntry(en *Entry, es *EntrySearch) (err error) {
 	if edb.db == nil {
 		return fmt.Errorf("Database connection is closed.")
 	}
+	if en.EntryID != es.EntryFK {
+		return fmt.Errorf("EntryID %v does not match EntryFK %v", en.EntryID, es.EntryFK)
+	}
 	// crate transaction
 	var tx *sql.Tx
 	tx, err = edb.db.Begin()

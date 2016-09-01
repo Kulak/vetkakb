@@ -16,6 +16,8 @@ type WSEntryPut struct {
 
 // WSEntryPost is used to udpate enries.
 type WSEntryPost struct {
+	EntryID int64
+	WSEntryPut
 }
 
 // WSEntryGetHTML is used to load entries to display text and HTML oriented content.

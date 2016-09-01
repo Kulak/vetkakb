@@ -39,7 +39,7 @@ export class EntryBox extends React.Component<EntryProps, EntryState> {
 
 		DataService.put('/entry/', wsEntry)
 		.then(function(jsonText) {
-			console.log("PUT json response", jsonText)
+			console.log("PUT only json response", jsonText)
 		})
 		.catch(function(err) {
 			console.log("PUT err: ", err)

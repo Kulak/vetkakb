@@ -10,6 +10,17 @@ export class WSEntryPut {
 		public tags: string) {}
 }
 
+// WSEntryPut mirrors backend structure with the same name.
+export class WSEntryPost {
+	constructor(
+		public entryID: number,
+		public title: string,
+		// raw shall be base64 encoded
+		public raw: string,
+		public rawType: number,
+		public tags: string) {}
+}
+
 // WSEntryGetHTML mirrows backend structure
 // and is used to load view only form of entry.
 export class WSEntryGetHTML {

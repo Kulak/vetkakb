@@ -4,7 +4,7 @@ EXPERIMENTAL: entryEditor focuses on changing content, saving it
 
 import * as React from 'react'
 import {WSFullEntry} from '../model/wsentry'
-import {WSEntryPut} from '../model/wsentry'
+import {WSEntryPut, WSEntryPost} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 
 // example:
@@ -48,16 +48,24 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 	onEditSaveClick(close: boolean) {
 		// save data
-		let e: WSFullEntry = this.props.entry
+		let e: WSFullEntry = this.state.entry
 		let base64: string = btoa(e.Raw)
-		let wsEntry: WSEntryPut = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
-
-		DataService.put('/entry/', wsEntry)
+		let reqInit: RequestInit
+		if (e.EntryID == 0) {
+			// create new entry with PUT
+			let wsEntry = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
+			reqInit = DataService.newRequestInit("PUT", wsEntry)
+		} else {
+			// update existing entry with POST
+			let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
+			reqInit = DataService.newRequestInit("POST", wsEntry)
+		}
+		DataService.handleFetch("/entry/", reqInit)
 		.then(function(jsonText) {
-			console.log("PUT json response", jsonText)
+			console.log("json response", jsonText)
 		})
 		.catch(function(err) {
-			console.log("PUT err: ", err)
+			console.log("response err: ", err)
 		})
 
 		if (close) {

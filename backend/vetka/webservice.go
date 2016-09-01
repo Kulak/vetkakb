@@ -42,6 +42,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
 	router.PUT("/entry/", ws.putEntry)
+	router.POST("/entry", ws.postEntry)
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
 	router.GET("/api/entry/:entryID", ws.getFullEntry)
@@ -69,19 +70,30 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 
 // putEntry creates new entry and assigns it an EntryID.
 func (ws WebSvc) putEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var wse core.WSEntryPut
+	// Post has one additional Parameter (EntryID) that will be set to zero.
+	// If EntryID is zero, then it is a new item to be inserted.
+	ws.handleWSEntryPost(w, r)
+}
+
+// postEntry updates existing entry and requires EntryID to exist.
+func (ws WebSvc) postEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ws.handleWSEntryPost(w, r)
+}
+
+func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request) {
+	var wse core.WSEntryPost
 	err := ws.loadJSONBody(r, &wse)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
-	fmt.Printf("Got request to create an entry with %v.\n", wse)
-	fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
+	fmt.Printf("Got request with entry %v.\n", wse)
+	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
 	var tp *core.TypeProvider
 	tp, err = ws.typeSvc.Provider(wse.RawType)
-	en := core.NewEntry(wse.Title, wse.Raw, wse.RawType)
+	en := core.NewEntry(wse.EntryID, wse.Title, wse.Raw, wse.RawType)
 	en.HTML, err = tp.ToHTML(wse.Raw)
-	es := core.NewEntrySearch(wse.Tags)
+	es := core.NewEntrySearch(wse.EntryID, wse.Tags)
 	es.Plain, err = tp.ToPlain(wse.Raw)
 	err = ws.entryDB.SaveEntry(en, es)
 	if err != nil {

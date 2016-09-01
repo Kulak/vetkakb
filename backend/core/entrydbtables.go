@@ -43,8 +43,9 @@ func sqlRequireAffected(result sql.Result, expected int64) error {
 /* ========== Entry ========== */
 
 // NewEntry creates new entry to be inserted into DB.
-func NewEntry(title string, raw []byte, rawType int) *Entry {
+func NewEntry(entryID int64, title string, raw []byte, rawType int) *Entry {
 	return &Entry{
+		EntryID: entryID,
 		Title:   title,
 		Raw:     raw,
 		RawType: rawType,
@@ -103,9 +104,10 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 /* ========== EntrySearch ========== */
 
 // NewEntrySearch creates new entry search item to be inserted into DB.
-func NewEntrySearch(tags string) *EntrySearch {
+func NewEntrySearch(entryFK int64, tags string) *EntrySearch {
 	return &EntrySearch{
-		Tags: tags,
+		EntryFK: entryFK,
+		Tags:    tags,
 	}
 }
 
@@ -148,8 +150,8 @@ func (es *EntrySearch) dbUpdate(tx *sql.Tx) (err error) {
 	err = sqlRequireAffected(result, 1)
 	if err != nil {
 		return fmt.Errorf(
-			"Failed to get affected `entrySearch` records after update. Error: %v",
-			err)
+			"Failed after update check of `entrySearch` affected records for EntryFK %v. Error: %v",
+			es.EntryFK, err)
 	}
 	return err
 }
