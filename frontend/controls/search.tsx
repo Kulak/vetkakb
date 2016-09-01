@@ -39,10 +39,10 @@ export class Search extends React.Component<SearchProps, SearchState> {
 		}.bind(this))
 	}
 
-	  // end of constructor
 	render() {
 		let entries = this.state.entries.map(function(entry: WSEntryGetHTML) {
-			return [<EntryViewBox entry={entry} />]
+			console.log("map entryId, title", entry.EntryID, entry.Title)
+			return <EntryViewBox entry={entry} key={entry.EntryID} />
 		})
 		return <div>
 			<button onClick={e => this.onRecentClick()}>Recent</button>
