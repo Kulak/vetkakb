@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"log"
 )
 
@@ -63,7 +65,13 @@ func plainTextProvider() *TypeProvider {
 		TypeNum: 1,
 		Name:    "Plain Text",
 		ToHTML: func(raw []byte) (string, error) {
-			return fmt.Sprintf("<pre>%v</pre>", string(raw)), nil
+			t, err := template.New("foo").Parse(`{{define "T"}}{{.}}{{end}}`)
+			if err != nil {
+				return "", err
+			}
+			sanitized := &bytes.Buffer{}
+			err = t.ExecuteTemplate(sanitized, "T", string(raw))
+			return fmt.Sprintf("<pre>%s</pre>", string(sanitized.Bytes())), err
 		},
 		ToPlain: func(raw []byte) (string, error) {
 			return string(raw), nil
