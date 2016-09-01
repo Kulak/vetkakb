@@ -14,19 +14,21 @@ export interface EntryViewProps {
 
 class EntryViewState {
 	constructor(
-		public expanded: boolean = false,
-		public editing: boolean = false,
-		public fullEntry: WSFullEntry = null
+		public fullEntry: WSFullEntry,
+		public expanded: boolean,
+		public editing: boolean,
 	) {}
 }
 
 export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState> {
 	public constructor(props: EntryViewProps) {
 		super(props)
-		this.state = new EntryViewState();
+		let pe = props.entry
+		let fe = new WSFullEntry(pe.EntryID, pe.Title, null, 0, "", pe.HTML, pe.Updated)
+		this.state = new EntryViewState(fe, false, false);
 	}
 	onExpandClick(expandAction: boolean) {
-		this.setState(new EntryViewState(expandAction, false))
+		this.setState(new EntryViewState(this.state.fullEntry, expandAction, false))
 	}
 	onEditClick(editAction: boolean) {
 		if (editAction) {
@@ -36,36 +38,34 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				console.log("json text", jsonEntry)
 				let entry = jsonEntry as WSFullEntry
 				entry.Raw = atob(entry.Raw)
-				this.setState(new EntryViewState(false, editAction, jsonEntry as WSFullEntry))
+				this.setState(new EntryViewState(jsonEntry as WSFullEntry, false, editAction))
 			}.bind(this))
 			.catch(function(err) {
 				console.log("err loading json: ", err)
 			}.bind(this))
 		} else {
-			this.setState(new EntryViewState(false, editAction))
+			this.setState(new EntryViewState(this.state.fullEntry, false, editAction))
 		}
 	}
 	onEditorCloseRequested() {
-		this.setState(new EntryViewState(false, false))
+		this.setState(new EntryViewState(this.state.fullEntry, true, false))
 	}
 	render() {
-		let en: WSEntryGetHTML = this.props.entry
-		let fullEntry: WSFullEntry = this.state.fullEntry
+		let fe: WSFullEntry = this.state.fullEntry
 		if (this.state.editing) {
 			return <div>
-				<h2>Editing Entry: {en.Title}</h2>
-				<EntryEditor entry={fullEntry} editorCloseReq={e => this.onEditorCloseRequested()} />
+				<h2>Editing Entry: {fe.Title}</h2>
+				<EntryEditor entry={fe} editorCloseReq={e => this.onEditorCloseRequested()} />
 			</div>
 		} else {
 			if (this.state.expanded) {
 				return <div>
-					<h2 onClick={e => this.onExpandClick(false)}>{en.Title}
-					</h2>
+					<h2 onClick={e => this.onExpandClick(false)}>{fe.Title}</h2>
 					<button onClick={e => this.onEditClick(true)}>Change</button>
-					<div dangerouslySetInnerHTML={{__html: en.HTML}} />
+					<div dangerouslySetInnerHTML={{__html: fe.HTML}} />
 				</div>
 			} else {
-				return <div><h2 onClick={e => this.onExpandClick(true)}>{en.Title}</h2></div>
+				return <div><h2 onClick={e => this.onExpandClick(true)}>{fe.Title}</h2></div>
 			}
 		}
 	} // end of render function
