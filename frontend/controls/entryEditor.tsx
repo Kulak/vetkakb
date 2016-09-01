@@ -4,7 +4,7 @@ EXPERIMENTAL: entryEditor focuses on changing content, saving it
 
 import * as React from 'react'
 import {WSFullEntry} from '../model/wsentry'
-import {WSEntryPut, WSEntryPost} from '../model/wsentry'
+import {WSEntryPut, WSEntryPost, RawType} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 
 // example:
@@ -75,7 +75,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
 		state.entry.Title = (event.target as any).value
-		this.setState(new EditorState())
+		this.setState(state)
 	}
 	onEntryOrigBodyChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;

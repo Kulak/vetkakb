@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 // RawToTextFunc provides raw data to text or html conversion.
 type RawToTextFunc func(raw []byte) (string, error)
@@ -34,7 +37,7 @@ func (ts *TypeService) AddProvider(tp *TypeProvider) {
 	if !exists {
 		ts.byType[tp.TypeNum] = tp
 	} else {
-
+		log.Fatalf("Type provider number %d already exists", tp.TypeNum)
 	}
 }
 

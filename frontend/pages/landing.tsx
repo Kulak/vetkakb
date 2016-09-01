@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import * as ee from '../controls/entryEdit';
+import * as ee from '../controls/entryCreate';
 import * as s from '../controls/search';
 
 export class LandingPage extends React.Component<Object, Object> {
@@ -10,7 +10,7 @@ export class LandingPage extends React.Component<Object, Object> {
 	render() {
       return <div>
         <h1>Landing page</h1>
-        <ee.EntryBox />
+        <ee.EntryCreateBox />
         <s.Search />
       </div>
   } // end of render function

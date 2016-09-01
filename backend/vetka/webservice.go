@@ -91,6 +91,10 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request) {
 	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
 	var tp *core.TypeProvider
 	tp, err = ws.typeSvc.Provider(wse.RawType)
+	if err != nil {
+		ws.writeError(w, err.Error())
+		return
+	}
 	en := core.NewEntry(wse.EntryID, wse.Title, wse.Raw, wse.RawType)
 	en.HTML, err = tp.ToHTML(wse.Raw)
 	es := core.NewEntrySearch(wse.EntryID, wse.Tags)

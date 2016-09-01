@@ -1,6 +1,9 @@
 package core
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 /*
 This file collects data structures that support REST API calls.
@@ -38,4 +41,15 @@ type WSFullEntry struct {
 	HTML    string
 	Tags    string
 	Updated time.Time
+}
+
+// **** Functions ****
+
+func (eput WSEntryPut) String() string {
+	return fmt.Sprintf("WSEntryPut {Title: %s, RawType: %d, Tags: %s, Raw: %q}",
+		eput.Title, eput.RawType, eput.Tags, eput.Raw)
+}
+
+func (epost WSEntryPost) String() string {
+	return fmt.Sprintf("WSEntryPost {EntryID: %d, %s}", epost.EntryID, epost.WSEntryPut.String())
 }
