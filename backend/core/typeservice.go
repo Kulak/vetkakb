@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"os/exec"
 )
 
 // RawToTextFunc provides raw data to text or html conversion.
@@ -77,4 +78,33 @@ func plainTextProvider() *TypeProvider {
 			return string(raw), nil
 		},
 	}
+}
+
+func htmlProvider() *TypeProvider {
+	return &TypeProvider{
+		TypeNum: 2,
+		Name:    "HTML",
+		ToHTML: func(raw []byte) (string, error) {
+			return string(raw), nil
+		},
+		ToPlain: func(raw []byte) (string, error) {
+			plain, err := pandoc("html", "plain", raw)
+			plainStr := string(plain)
+			return plainStr, err
+		},
+	}
+}
+
+func pandoc(from, to string, stdin []byte) (stdout []byte, err error) {
+	cmd := exec.Command("/opt/local/bin/pandoc", "-f", from, "-t", to)
+	cmd.Stdin = bytes.NewBuffer(stdin)
+	out := &bytes.Buffer{}
+	cmd.Stdout = out
+	err = cmd.Run()
+	if err != nil {
+		err = fmt.Errorf("Run error: %v", err)
+		return
+	}
+	stdout = out.Bytes()
+	return
 }
