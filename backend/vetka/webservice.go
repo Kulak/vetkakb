@@ -46,6 +46,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
 	router.GET("/api/entry/:entryID", ws.getFullEntry)
+	router.GET("/api/rawtype/list", ws.getRawTypeList)
 	// Enable access to source code files from web browser debugger
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
 
@@ -143,4 +144,14 @@ func (ws WebSvc) getFullEntry(w http.ResponseWriter, r *http.Request, p httprout
 	ws.writeJSON(w, entry)
 }
 
-// use POST to modify
+func (ws WebSvc) getRawTypeList(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	type WSRawType struct {
+		TypeNum int
+		Name    string
+	}
+	list := []WSRawType{}
+	for k, v := range ws.typeSvc.List() {
+		list = append(list, WSRawType{TypeNum: k, Name: v.Name})
+	}
+	ws.writeJSON(w, list)
+}

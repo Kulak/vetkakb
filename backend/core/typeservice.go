@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"log"
 	"os/exec"
+
+	"github.com/russross/blackfriday"
 )
 
 // RawToTextFunc provides raw data to text or html conversion.
@@ -37,6 +39,7 @@ func NewTypeService() *TypeService {
 func (ts *TypeService) Initialize() {
 	ts.AddProvider(plainTextProvider())
 	ts.AddProvider(htmlProvider())
+	ts.AddProvider(markdownProvider())
 }
 
 // AddProvider registers new provider.
@@ -48,6 +51,11 @@ func (ts *TypeService) AddProvider(tp *TypeProvider) {
 	} else {
 		log.Fatalf("Type provider number %d already exists", tp.TypeNum)
 	}
+}
+
+// List returns mapping.
+func (ts TypeService) List() map[int]*TypeProvider {
+	return ts.byType
 }
 
 // Provider returns provider for specified type num.
@@ -95,6 +103,20 @@ func htmlProvider() *TypeProvider {
 			plain, err := pandoc("html", "plain", raw)
 			plainStr := string(plain)
 			return plainStr, err
+		},
+	}
+}
+
+func markdownProvider() *TypeProvider {
+	return &TypeProvider{
+		TypeNum: 3,
+		Name:    "Markdown",
+		ToHTML: func(raw []byte) (string, error) {
+			output := blackfriday.MarkdownBasic(raw)
+			return string(output), nil
+		},
+		ToPlain: func(raw []byte) (string, error) {
+			return string(raw), nil
 		},
 	}
 }

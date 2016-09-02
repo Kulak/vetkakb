@@ -6,11 +6,11 @@ import * as React from 'react'
 import {WSFullEntry} from '../model/wsentry'
 import {WSEntryPut, WSEntryPost, RawType} from '../model/wsentry'
 import {DataService} from '../common/dataService'
+import {WSRawType} from '../common/rawtypes'
 
 // example:
 // declare type MyHandler = (myArgument: string) => void;
 // var handler: MyHandler;
-
 
 export type EditorCloseReqFunc = (fe: WSFullEntry) => void;
 
@@ -21,7 +21,8 @@ export interface EditorProps extends React.Props<any>{
 
 class EditorState {
 	constructor(
-		public entry: WSFullEntry = new WSFullEntry()
+		public entry: WSFullEntry = new WSFullEntry(),
+		public rawTypes: Array<WSRawType> = null
 	) {}
 }
 
@@ -42,6 +43,15 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.state = new EditorState(new WSFullEntry(
 			pen.EntryID, pen.Title, pen.Raw, pen.RawType, pen.Tags, pen.HTML, pen.Updated
 		));
+		WSRawType.List()
+			.then(function(rawTypes: Array<WSRawType>) {
+				console.log("WSRawType LIST", rawTypes)
+				let es = new EditorState(this.state.entry, rawTypes)
+				this.setState(es)
+			}.bind(this))
+			.catch(function(err) {
+				console.log("WSRawType err: ", err)
+			})
 	}
 	onEditCancelClick() {
 		this.sendCloseRequest(this.props.entry);
@@ -87,11 +97,17 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.setState(state)
 	}
 	render() {
+		let rawTypes = <span>Loading raw type...</span>
+		if (this.state.rawTypes != null) {
+			rawTypes = <select>
+            </select>
+		}
 		return <div>
 			<p>
 				<button onClick={e => this.onEditCancelClick()}>Cancel Changes</button>
 				<button onClick={e => this.onEditSaveClick(false)}>Save and Edit</button>
 				<button onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
+				{rawTypes}
 			</p>
 			<p>
 				<label>Title:</label><input type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
