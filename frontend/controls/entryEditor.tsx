@@ -99,7 +99,11 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	render() {
 		let rawTypes = <span>Loading raw type...</span>
 		if (this.state.rawTypes != null) {
+			let options = this.state.rawTypes.map(function(each) {
+				return <option key={each.TypeNum} value={each.TypeNum}>{each.Name}</option>
+			})
 			rawTypes = <select>
+							{options}
             </select>
 		}
 		return <div>
