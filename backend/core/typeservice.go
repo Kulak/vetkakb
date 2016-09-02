@@ -62,6 +62,7 @@ func (ts TypeService) Provider(typeNum int) (tp *TypeProvider, err error) {
 }
 
 // plainTextProvider implements simple plain text provider.
+// Input is sanitized.
 func plainTextProvider() *TypeProvider {
 	return &TypeProvider{
 		TypeNum: 1,
@@ -81,6 +82,8 @@ func plainTextProvider() *TypeProvider {
 	}
 }
 
+// htmlProvider implements HTML format through pandoc.
+// Input is NOT sanitized.
 func htmlProvider() *TypeProvider {
 	return &TypeProvider{
 		TypeNum: 2,
