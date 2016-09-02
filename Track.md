@@ -214,6 +214,13 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 # Plan
 
+!!!
+
+A) Raw Types dropdown in entryeditor shall set properly current raw type.
+B) Make sure editor uses dropdown selection when creating or saving existing records.
+
+
+
 "Recent" button is fully capable of loading data with GET REST call.  Create has core functionality ready.  It is time to
 
 Add Entry POST (update) to backend and frontend.  Review "New" entry code on frontend, because it needs to use entryEditor.
