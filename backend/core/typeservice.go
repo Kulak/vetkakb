@@ -33,6 +33,12 @@ func NewTypeService() *TypeService {
 	}
 }
 
+// Initialize populates service with default type providers.
+func (ts *TypeService) Initialize() {
+	ts.AddProvider(plainTextProvider())
+	ts.AddProvider(htmlProvider())
+}
+
 // AddProvider registers new provider.
 // If provider exists it does nothing (does not update).
 func (ts *TypeService) AddProvider(tp *TypeProvider) {
@@ -53,11 +59,6 @@ func (ts TypeService) Provider(typeNum int) (tp *TypeProvider, err error) {
 		return tp, nil
 	}
 	return nil, fmt.Errorf("Cannot find type provider for type number %v", typeNum)
-}
-
-// Initialize populates service with default type providers.
-func (ts *TypeService) Initialize() {
-	ts.AddProvider(plainTextProvider())
 }
 
 // plainTextProvider implements simple plain text provider.
