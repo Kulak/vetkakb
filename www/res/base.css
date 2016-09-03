@@ -19,7 +19,7 @@ div.toolbar {
 }
 
 .entryHeader {
-	background: #EBE5D9;
+	border-top: solid 1px;
 	font-size: 25px;
 }
 
