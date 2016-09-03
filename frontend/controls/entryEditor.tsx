@@ -86,6 +86,11 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		state.entry.Raw = (event.target as any).value
 		this.setState(state)
 	}
+	onEntryTagsChange(event: React.FormEvent) {
+		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
+		state.entry.Tags = (event.target as any).value
+		this.setState(state)
+	}
 	onRawTypeChange(rawType: number) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
 		state.entry.RawType = rawType
@@ -95,7 +100,8 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		return <div>
 			<div className="toolbar entryHeader">
 				<h2 className='leftStack'>Editing title:</h2>
-				<input className='leftStack' type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
+				<input className='leftStack entryEdit' type="text" value={this.state.entry.Title}
+					onChange={e => this.onEntryTitleChange(e)} />
 			</div>
 			<div className='toolbar'>
 				<button className='leftStack' onClick={e => this.onEditSaveClick(false)}>Save</button>
@@ -108,7 +114,11 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			</p>
 			<p>
 				<label>Raw Text:</label><br />
-				<textarea value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} />
+				<textarea  value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} className='entryEdit' />
+			</p>
+			<p>
+				<label>Tags:</label><br />
+				<input value={this.state.entry.Tags} onChange={e => this.onEntryTagsChange(e)} className='entryEdit' />
 			</p>
 		</div>
 	} // end of render function

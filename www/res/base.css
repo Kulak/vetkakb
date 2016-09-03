@@ -8,12 +8,6 @@ h2 {
 	margin: 7px 0px 0px 2px;
 }
 
-textarea {
-	width: 600px;
-	height: 120px;
-	padding: 5px;
-}
-
 div.toolbar {
 	display: flex;
 	align-items: center;
@@ -31,4 +25,21 @@ div.toolbar {
 
 div.entryBody {
 	clear: left;
+}
+
+/* set size of input with class entryEdit
+ and parent div with class .entryHeader
+*/
+div.entryHeader > input.entryEdit {
+	width: 60%;
+}
+
+.entryEdit {
+	width: 80%;
+	padding: 1px;
+	margin: 3px;
+}
+
+textarea.entryEdit {
+	height: 140px;
 }
