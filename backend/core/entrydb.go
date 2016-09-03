@@ -123,10 +123,13 @@ func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGet
 		return result, fmt.Errorf("Database connection is closed.")
 	}
 	var rows *sql.Rows
-	sql := "SELECT entryID, title, html, updated from entry where entryID in (select entryFK from entrySearch where plain match $1)"
-	// order by updated desc limit $1
+	sql := `
+SELECT entryID, title, html, updated from entry where entryID in
+(select entryFK from entrySearch where entrySearch match $1)
+`
+	// order by updated desc limit $2
 
-	rows, err = edb.db.Query(sql, query)
+	rows, err = edb.db.Query(sql, query, query)
 	if err != nil {
 		return nil, err
 	}
