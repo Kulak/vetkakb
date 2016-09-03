@@ -102,19 +102,7 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 	var rows *sql.Rows
 	sql := "SELECT entryID, title, html, updated from `entry` order by updated desc limit ?"
 	rows, err = edb.db.Query(sql, limit)
-	if err != nil {
-		return nil, err
-	}
-	result = []WSEntryGetHTML{}
-	var r WSEntryGetHTML
-	for rows.Next() {
-		err = rows.Scan(&r.EntryID, &r.Title, &r.HTML, &r.Updated)
-		if err != nil {
-			return result, err
-		}
-		result = append(result, r)
-	}
-	return result, err
+	return edb.rowsToWSEntryGetHTML(rows, err)
 }
 
 // MatchEntries searches enrySearch table for matching entires.
@@ -126,14 +114,19 @@ func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGet
 	sql := `
 SELECT entryID, title, html, updated from entry where entryID in
 (select entryFK from entrySearch where entrySearch match $1)
+order by updated desc limit $2
 `
-	// order by updated desc limit $2
+	rows, err = edb.db.Query(sql, query, limit)
+	return edb.rowsToWSEntryGetHTML(rows, err)
+}
 
-	rows, err = edb.db.Query(sql, query, query)
+// rowsToWSEntryGetHTML is a common results processing function
+// to return list of entries to view.
+func (edb *EntryDB) rowsToWSEntryGetHTML(rows *sql.Rows, err error) ([]WSEntryGetHTML, error) {
 	if err != nil {
 		return nil, err
 	}
-	result = []WSEntryGetHTML{}
+	result := []WSEntryGetHTML{}
 	var r WSEntryGetHTML
 	for rows.Next() {
 		err = rows.Scan(&r.EntryID, &r.Title, &r.HTML, &r.Updated)
