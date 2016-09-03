@@ -61,7 +61,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				return <div>
 					<div className='toolbar entryHeader'>
 						<h2 className='leftStack' onClick={e => this.onExpandClick(false)}>{fe.Title}</h2>
-						<button className='leftStack' onClick={e => this.onEditClick(true)}>Change</button>
+						<button className='leftStack' onClick={e => this.onEditClick(true)}>Edit</button>
 					</div>
 					<div className='entryBody' dangerouslySetInnerHTML={{__html: fe.HTML}} />
 				</div>
