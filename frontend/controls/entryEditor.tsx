@@ -93,22 +93,23 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 	render() {
 		return <div>
-			<p>
-				<button onClick={e => this.onEditCancelClick()}>Cancel Changes</button>
-				<button onClick={e => this.onEditSaveClick(false)}>Save and Edit</button>
-				<button onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
+			<div className="toolbar entryHeader">
+				<h2 className='leftStack'>Editing title:</h2>
+				<input className='leftStack' type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
+			</div>
+			<div className='toolbar'>
+				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel Changes</button>
+				<button className='leftStack' onClick={e => this.onEditSaveClick(false)}>Save and Edit</button>
+				<button className='leftStack' onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
 				<RawTypeDropdown num={this.props.entry.RawType}
 					rawTypeSelected={e => this.onRawTypeChange(e)} />
-			</p>
+			</div>
 			<p>
-				<label>Title:</label><input type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
 			</p>
 			<p>
 				<label>Raw Text:</label><br />
 				<textarea value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} />
 			</p>
-			<label>Preview:</label>
-			<pre>{this.state.entry.Raw}</pre>
 		</div>
 	} // end of render function
 } // end of class

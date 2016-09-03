@@ -48,24 +48,25 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 		}
 	}
 	onEditorCloseRequested(fe: WSFullEntry) {
+		console.log("entryView: set new EntryViewState", fe)
 		this.setState(new EntryViewState(fe, true, false))
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
+		console.log("entryView: render entry", fe)
 		if (this.state.editing) {
-			return <div>
-				<h2>Editing Entry: {fe.Title}</h2>
-				<EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
-			</div>
+			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {
 			if (this.state.expanded) {
 				return <div>
-					<h2 onClick={e => this.onExpandClick(false)}>{fe.Title}</h2>
-					<button onClick={e => this.onEditClick(true)}>Change</button>
-					<div dangerouslySetInnerHTML={{__html: fe.HTML}} />
+					<div className='toolbar entryHeader'>
+						<h2 className='leftStack' onClick={e => this.onExpandClick(false)}>{fe.Title}</h2>
+						<button className='leftStack' onClick={e => this.onEditClick(true)}>Change</button>
+					</div>
+					<div className='entryBody' dangerouslySetInnerHTML={{__html: fe.HTML}} />
 				</div>
 			} else {
-				return <div><h2 onClick={e => this.onExpandClick(true)}>{fe.Title}</h2></div>
+				return <div><h2 className='entryHeader' onClick={e => this.onExpandClick(true)}>{fe.Title}</h2></div>
 			}
 		}
 	} // end of render function
