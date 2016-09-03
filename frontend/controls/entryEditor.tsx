@@ -98,11 +98,11 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 				<input className='leftStack' type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
 			</div>
 			<div className='toolbar'>
-				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel Changes</button>
-				<button className='leftStack' onClick={e => this.onEditSaveClick(false)}>Save and Edit</button>
-				<button className='leftStack' onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
+				<button className='leftStack' onClick={e => this.onEditSaveClick(false)}>Save</button>
 				<RawTypeDropdown num={this.props.entry.RawType}
 					rawTypeSelected={e => this.onRawTypeChange(e)} />
+				<button className='leftStack' onClick={e => this.onEditSaveClick(true)}>OK</button>
+				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel</button>
 			</div>
 			<p>
 			</p>
