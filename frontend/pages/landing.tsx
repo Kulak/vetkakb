@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import * as ee from '../controls/entryCreate';
-import * as s from '../controls/search';
+import {Recent} from '../controls/recent';
 import {WSFullEntry} from '../model/wsentry'
 
 class LandingPageState {
@@ -34,7 +34,7 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
     if (this.state.path == 'new') {
       body = <ee.EntryCreateBox editorCloseReq={fe => this.onNewClose(fe) } />
     } else if (this.state.path == 'recent') {
-      body = <s.Search />
+      body = <Recent />
     }
 
     return <div>

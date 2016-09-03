@@ -214,8 +214,4 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 # Plan
 
-Create `EntryList` and move original `search.tsx` code into it.  Make sure that array of entries is a paramter.
-
-Create `recent.tsx` and make it load recent entries and pass to EntryList.
-
 Create `search.tsx` use search REST API and pass results to EntryList.

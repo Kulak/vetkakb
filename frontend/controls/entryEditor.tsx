@@ -12,11 +12,11 @@ import {RawTypeDropdown} from './rawTypeDropdown'
 // declare type MyHandler = (myArgument: string) => void;
 // var handler: MyHandler;
 
-export type EditorCloseReqFunc = (fe: WSFullEntry) => void;
+export type EditorCloseReqFunc = (fe: WSFullEntry) => void
 
 export interface EditorProps extends React.Props<any>{
-		entry: WSFullEntry;
-		editorCloseReq: EditorCloseReqFunc;
+		entry: WSFullEntry
+		editorCloseReq: EditorCloseReqFunc
 }
 
 class EditorState {
