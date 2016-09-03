@@ -214,13 +214,8 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 # Plan
 
-!!!
+Create `EntryList` and move original `search.tsx` code into it.  Make sure that array of entries is a paramter.
 
-A) Raw Types dropdown in entryeditor shall set properly current raw type.
-B) Make sure editor uses dropdown selection when creating or saving existing records.
+Create `recent.tsx` and make it load recent entries and pass to EntryList.
 
-
-
-"Recent" button is fully capable of loading data with GET REST call.  Create has core functionality ready.  It is time to
-
-Add Entry POST (update) to backend and frontend.  Review "New" entry code on frontend, because it needs to use entryEditor.
+Create `search.tsx` use search REST API and pass results to EntryList.
