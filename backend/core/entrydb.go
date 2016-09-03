@@ -117,6 +117,31 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 	return result, err
 }
 
+// MatchEntries searches enrySearch table for matching entires.
+func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGetHTML, err error) {
+	if edb.db == nil {
+		return result, fmt.Errorf("Database connection is closed.")
+	}
+	var rows *sql.Rows
+	sql := "SELECT entryID, title, html, updated from entry where entryID in (select entryFK from entrySearch where plain match $1)"
+	// order by updated desc limit $1
+
+	rows, err = edb.db.Query(sql, query)
+	if err != nil {
+		return nil, err
+	}
+	result = []WSEntryGetHTML{}
+	var r WSEntryGetHTML
+	for rows.Next() {
+		err = rows.Scan(&r.EntryID, &r.Title, &r.HTML, &r.Updated)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, r)
+	}
+	return result, err
+}
+
 // GetFullEntry loads all Entry data for editing.
 func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 	r = &WSFullEntry{EntryID: entryID}

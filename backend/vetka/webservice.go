@@ -45,6 +45,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.POST("/entry", ws.postEntry)
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
+	router.GET("/api/search/*query", ws.getSearch)
 	router.GET("/api/entry/:entryID", ws.getFullEntry)
 	router.GET("/api/rawtype/list", ws.getRawTypeList)
 	// Enable access to source code files from web browser debugger
@@ -109,21 +110,35 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	limitStr := p.ByName("limit")
-	if limitStr == "" {
-		limitStr = "10"
-	}
-	limit, err := strconv.ParseInt(limitStr, 10, 64)
+	limit, err := ws.getLimit(p)
 	if err != nil {
-		ws.writeError(w, fmt.Sprintf("Cannot parse limit.  Error: %v", err))
+		ws.writeError(w, err.Error())
 		return
-	}
-	if limit > 200 {
-		limit = 200
 	}
 	entries, err := ws.entryDB.RecentHTMLEntries(limit)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Failed to load recent HTML entries. Error: %v", err))
+		return
+	}
+	ws.writeJSON(w, entries)
+}
+
+// getMatch searches for entries matching criteria.
+func (ws WebSvc) getSearch(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	limit, err := ws.getLimit(p)
+	if err != nil {
+		ws.writeError(w, err.Error())
+		return
+	}
+	query := p.ByName("query")
+	if len(query) < 2 {
+		ws.writeError(w, fmt.Sprintf("Query is not supplied (len:%v).", len(query)))
+		return
+	}
+	query = query[1:]
+	entries, err := ws.entryDB.MatchEntries(query, limit)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to match HTML entries. Error: %v", err))
 		return
 	}
 	ws.writeJSON(w, entries)

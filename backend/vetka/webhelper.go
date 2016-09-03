@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (ws WebSvc) writeJSON(w http.ResponseWriter, v interface{}) {
@@ -47,4 +50,19 @@ func (ws WebSvc) loadJSONBody(r *http.Request, v interface{}) error {
 		return fmt.Errorf("Failed to unmarshall request body: %v", err)
 	}
 	return nil
+}
+
+func (ws WebSvc) getLimit(p httprouter.Params) (int64, error) {
+	limitStr := p.ByName("limit")
+	if limitStr == "" {
+		limitStr = "30"
+	}
+	limit, err := strconv.ParseInt(limitStr, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("Cannot parse limit.  Error: %v", err)
+	}
+	if limit > 200 {
+		limit = 200
+	}
+	return limit, nil
 }
