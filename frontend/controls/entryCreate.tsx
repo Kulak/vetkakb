@@ -6,14 +6,14 @@ entries.
 import * as React from 'react'
 //import {Entry} from '../model/entry'
 import {WSFullEntry, RawType} from '../model/wsentry'
-import {EntryEditor, EditorProps} from './entryEditor'
+import {EntryEditor, EditorProps, EditorCloseReqFunc} from './entryEditor'
 
 export interface EntryCreateProps {
+		editorCloseReq: EditorCloseReqFunc
 }
 
 class EntryCreateState {
 	constructor(
-		public isEditing: boolean = false,
 		public entry: WSFullEntry = new WSFullEntry()
 	) {}
 }
@@ -28,19 +28,13 @@ export class EntryCreateBox extends React.Component<EntryCreateProps, EntryCreat
 		this.state = new EntryCreateState()
 		this.state.entry.RawType = RawType.PlainText
 	}
-	onEditClick() {
-		this.setState(new EntryCreateState(true, this.state.entry))
-	}
-	onEditorCloseRequested() {
-		this.setState(new EntryCreateState(false, this.state.entry))
+	onEditorCloseRequested(fe: WSFullEntry) {
+		this.setState(new EntryCreateState(this.state.entry))
+		this.props.editorCloseReq(fe)
 	}
 	render() {
-		if (this.state.isEditing) {
-			return <div>
-				<EntryEditor entry={this.state.entry} editorCloseReq={e => this.onEditorCloseRequested()} />
-			</div>
-		} else {
-			return <div><button onClick={e => this.onEditClick()}>New Entry</button></div>
-		}
+		return <div>
+			<EntryEditor entry={this.state.entry} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
+		</div>
 	} // end of render function
 } // end of class

@@ -24,11 +24,6 @@ export class Search extends React.Component<SearchProps, SearchState> {
 	public constructor(props: SearchProps, context: any) {
 		super(props, context)
 		this.state = new SearchState()
-	}
-
-	onRecentClick() {
-		console.log("in onRecentClick")
-
 		DataService.get('/api/recent/20')
 		.then(function(jsonEntries) {
 			console.log("json text", jsonEntries)
@@ -45,7 +40,6 @@ export class Search extends React.Component<SearchProps, SearchState> {
 			return <EntryViewBox entry={entry} key={entry.EntryID}  />
 		})
 		return <div>
-			<button onClick={e => this.onRecentClick()}>Recent</button>
 			{entries}
 		</div>
 	}
