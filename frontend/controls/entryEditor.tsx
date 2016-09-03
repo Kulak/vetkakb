@@ -1,12 +1,12 @@
 /*
-EXPERIMENTAL: entryEditor focuses on changing content, saving it
+entryEditor focuses on changing content, saving it
 */
 
 import * as React from 'react'
 import {WSFullEntry} from '../model/wsentry'
 import {WSEntryPut, WSEntryPost, RawType} from '../model/wsentry'
 import {DataService} from '../common/dataService'
-import {WSRawType} from '../common/rawtypes'
+import {RawTypeDropdown} from './rawTypeDropdown'
 
 // example:
 // declare type MyHandler = (myArgument: string) => void;
@@ -21,8 +21,7 @@ export interface EditorProps extends React.Props<any>{
 
 class EditorState {
 	constructor(
-		public entry: WSFullEntry = new WSFullEntry(),
-		public rawTypes: Array<WSRawType> = null
+		public entry: WSFullEntry = new WSFullEntry()
 	) {}
 }
 
@@ -43,15 +42,6 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.state = new EditorState(new WSFullEntry(
 			pen.EntryID, pen.Title, pen.Raw, pen.RawType, pen.Tags, pen.HTML, pen.Updated
 		));
-		WSRawType.List()
-			.then(function(rawTypes: Array<WSRawType>) {
-				console.log("WSRawType LIST", rawTypes)
-				let es = new EditorState(this.state.entry, rawTypes)
-				this.setState(es)
-			}.bind(this))
-			.catch(function(err) {
-				console.log("WSRawType err: ", err)
-			})
 	}
 	onEditCancelClick() {
 		this.sendCloseRequest(this.props.entry);
@@ -70,7 +60,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
 			reqInit = DataService.newRequestInit("POST", wsEntry)
 		}
-		DataService.handleFetch("/entry/", reqInit)
+		DataService.handleFetch("/entry", reqInit)
 		.then(function(jsonText) {
 			console.log("json response", jsonText)
 			let fe = jsonText as WSFullEntry
@@ -96,22 +86,19 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		state.entry.Raw = (event.target as any).value
 		this.setState(state)
 	}
+	onRawTypeChange(rawType: number) {
+		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
+		state.entry.RawType = rawType
+		this.setState(state)
+	}
 	render() {
-		let rawTypes = <span>Loading raw type...</span>
-		if (this.state.rawTypes != null) {
-			let options = this.state.rawTypes.map(function(each) {
-				return <option key={each.TypeNum} value={each.TypeNum}>{each.Name}</option>
-			})
-			rawTypes = <select>
-							{options}
-            </select>
-		}
 		return <div>
 			<p>
 				<button onClick={e => this.onEditCancelClick()}>Cancel Changes</button>
 				<button onClick={e => this.onEditSaveClick(false)}>Save and Edit</button>
 				<button onClick={e => this.onEditSaveClick(true)}>Save and Close</button>
-				{rawTypes}
+				<RawTypeDropdown num={this.props.entry.RawType}
+					rawTypeSelected={e => this.onRawTypeChange(e)} />
 			</p>
 			<p>
 				<label>Title:</label><input type="text" value={this.state.entry.Title} onChange={e => this.onEntryTitleChange(e)} />
