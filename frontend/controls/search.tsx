@@ -11,6 +11,7 @@ export class SearchProps {}
 
 class SearchState {
 	constructor(
+		public query: string = "",
 		public entries: Array<WSEntryGetHTML> = []
 	) {}
 }
@@ -20,10 +21,24 @@ export class Search extends React.Component<SearchProps, SearchState> {
 	public constructor(props: SearchProps, context: any) {
 		super(props, context)
 		this.state = new SearchState()
-		DataService.get('/api/search/')
+	}
+
+	onQueryChange(event: React.FormEvent) {
+		let query = (event.target as any).value
+		this.setState(new SearchState(query))
+	}
+
+	onQuerySubmit(event: React.FormEvent) {
+		event.preventDefault()
+		this.sendQuery()
+	}
+
+	sendQuery() {
+		let query = this.state.query
+		DataService.get('/api/search/' + query)
 		.then(function(jsonEntries) {
 			console.log("search results", jsonEntries)
-			this.setState(new SearchState(jsonEntries as Array<WSEntryGetHTML>))
+			this.setState(new SearchState(query, jsonEntries as Array<WSEntryGetHTML>))
 		}.bind(this))
 		.catch(function(err) {
 			console.log("search error: ", err)
@@ -31,6 +46,17 @@ export class Search extends React.Component<SearchProps, SearchState> {
 	}
 
 	render() {
-		return <EntryList entries={this.state.entries} />
+		// value={this.state.entry.Title}
+		return <div>
+			<div className='toolbar'>
+				<label className='leftStack'>Search:</label>
+				<form onSubmit={e => this.onQuerySubmit(e)} >
+					<input className='leftStack' type="input"
+						onChange={e => this.onQueryChange(e)} />
+						<button className='leftStack' type="submit">Submit</button>
+				</form>
+			</div>
+			<EntryList entries={this.state.entries} />
+		</div>
 	}
 }  // end of class
