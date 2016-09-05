@@ -4,16 +4,15 @@
 export class DataService {
 
 	// tnewGetRequest is targeting GET requests 1st
-	public static newGetRequest(url: string): Request {
+	public static newBareRequestInit(method: string): RequestInit {
 		// About fetch API and Request object as part of fetch:
 		// https://developer.mozilla.org/en-US/docs/Web/API/Request/Request
-		return new Request(
-			url, {
-        // with 'include' basic authentication header is sent with request
-        //credentials: 'include'
-        credentials: 'same-origin'
-			}
-		)
+		return {
+			method: method,
+			// with 'include' basic authentication header is sent with request
+			//credentials: 'include'
+			credentials: 'same-origin'
+		}
 	}
 
 	// newRequestWith is targeting PUT and POST requests 1st
@@ -52,7 +51,7 @@ export class DataService {
 
 	// get function executes GET method and treats 404 response code as an error.
 	public static get<T>(url: string): Promise<T> {
-		return DataService.handleFetch(url, DataService.newGetRequest(url))
+		return DataService.handleFetch(url, DataService.newBareRequestInit("GET"))
 	}
 
 	// put creates a PUT request and treates 404 as an error.

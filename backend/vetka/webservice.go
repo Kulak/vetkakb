@@ -2,6 +2,9 @@ package vetka
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -85,7 +88,7 @@ func (ws WebSvc) postEntry(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request) {
 	var wse core.WSEntryPost
-	err := ws.loadJSONBody(r, &wse)
+	err := ws.loadJSONBody(r.Body, &wse)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
@@ -174,4 +177,57 @@ func (ws WebSvc) getRawTypeList(w http.ResponseWriter, r *http.Request, _ httpro
 
 func (ws WebSvc) putBinaryEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Printf("receiving binary data")
+
+	// handle image upload
+	mr, err := r.MultipartReader()
+	if err != nil {
+		log.Printf("Error reading form data in JournalUploadImageHandler: %v\n", err)
+		ws.writeError(w, fmt.Sprintf("Error reading form data: %v", err))
+	}
+
+	//response := ""
+Loop:
+	for {
+		p, err := mr.NextPart()
+		if err == io.EOF {
+			log.Printf("EOF reading payload.\n")
+			break Loop
+		} else if err != nil {
+			log.Printf("Error reading payload: %v\n", err)
+			break Loop
+		}
+		log.Printf("Part file name: %s, form name: %s\n", p.FileName(), p.FormName())
+		// Header for entry: map[Content-Disposition:[form-data; name="entry"]]
+		// Header for image: Header: map[Content-Disposition:[form-data; name="rawFile"; filename="1upatime-pronoun-icon.png"] Content-Type:[image/png]]
+		// log.Printf("Header: %v", p.Header)
+
+		// FormName on javaScript side corresponds to 1st argument of FormData.append
+		switch p.FormName() {
+		case "entry":
+			// decode standard JSON message: {"title":"","raw":null,"rawType":4,"tags":""}
+			var wse core.WSEntryPut
+			err := ws.loadJSONBody(p, &wse)
+			if err != nil {
+				log.Printf("Error reading entry part: %v\n", err)
+				break Loop
+			}
+		case "rawFile":
+			// read raw bytes
+			// var origFileName = p.FileName()
+			content, err := ioutil.ReadAll(p)
+			if err != nil {
+				log.Printf("Error reading rawFile part: %v\n", err)
+				break Loop
+			}
+			targetFile := "target.jpg"
+			err = ioutil.WriteFile(targetFile, content, 0777)
+			if err != nil {
+				ws.writeError(w, fmt.Sprintf("Failed to save receipt image in the database: %v", err))
+				return
+			}
+		default:
+			log.Printf("unrecognized FormName: %v", p.FormName())
+		}
+	}
+
 }

@@ -3,6 +3,7 @@ package vetka
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -37,10 +38,10 @@ func (ws WebSvc) writeResult(w http.ResponseWriter, v interface{}, err error, ms
 	}
 }
 
-func (ws WebSvc) loadJSONBody(r *http.Request, v interface{}) error {
+func (ws WebSvc) loadJSONBody(rBody io.ReadCloser, v interface{}) error {
 	// load post data
 	var bodyBytes []byte
-	bodyBytes, err := ioutil.ReadAll(r.Body)
+	bodyBytes, err := ioutil.ReadAll(rBody)
 	if err != nil {
 		return fmt.Errorf("Failed to read request body: %v", err)
 	}
