@@ -21,7 +21,8 @@ export interface EditorProps extends React.Props<any>{
 
 class EditorState {
 	constructor(
-		public entry: WSFullEntry = new WSFullEntry()
+		public entry: WSFullEntry = new WSFullEntry(),
+		public rawTypeName: string = ""
 	) {}
 }
 
@@ -30,6 +31,12 @@ class EditorState {
 	and save to the server.
 */
 export class EntryEditor extends React.Component<EditorProps, EditorState> {
+	// used to manager refs
+	// https://medium.com/@basarat/strongly-typed-refs-for-react-typescript-9a07419f807#.27st7hkss
+	ctrls: {
+		rawFile? :HTMLInputElement
+	} = {}
+
 	sendCloseRequest(fe: WSFullEntry) {
 		if (this.props.editorCloseReq != null) {
 			this.props.editorCloseReq(fe)
@@ -47,6 +54,84 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.sendCloseRequest(this.props.entry);
 	}
 	onEditSaveClick(close: boolean) {
+		let r: Promise<any>
+		if (this.state.rawTypeName.startsWith("Binary")) {
+			r = this.onSaveBinary(close)
+		} else {
+			r = this.onSaveJson(close)
+		}
+		r.then((response) => {
+			let fe: WSFullEntry = response
+			fe.Raw = atob(fe.Raw)
+			this.setState(new EditorState(fe, this.state.rawTypeName))
+			if (close) {
+				this.sendCloseRequest(fe);
+			}
+		})
+		.catch((err) => {
+			console.log("Failed to save", err)
+			if (close) {
+				this.sendCloseRequest(this.props.entry);
+			}
+		})
+
+	}
+	// saves binary file
+	// example: https://www.raymondcamden.com/2016/05/10/uploading-multiple-files-at-once-with-fetch/
+	onSaveBinary(close: boolean) :Promise<any> {
+		// save data
+		let e: WSFullEntry = this.state.entry
+		let base64: string = btoa(e.Raw)
+		let fileBlob = this.ctrls.rawFile.files[0]
+
+		//var fd = new FormData();
+		//fd.append('json', JSON.stringify(e))
+		// first arg is the "formName" in multipartreader part
+		//fd.append('rawFile', this.ctrls.rawFile.files[0]);
+
+		return this.binaryContent(fileBlob)
+		.then((fileContent) => {
+			base64 = btoa(fileContent)
+			console.log("file content: ", base64)
+
+			let reqInit: RequestInit
+			if (e.EntryID == 0) {
+				// create new entry with PUT
+				let wsEntry = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
+				reqInit = DataService.newRequestInit("PUT", wsEntry)
+			} else {
+				// update existing entry with POST
+				let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
+				reqInit = DataService.newRequestInit("POST", wsEntry)
+			}
+			return DataService.handleFetch("/entrybad", reqInit)
+		})
+		.catch((errMsg) => {
+			console.log("file content error: ", errMsg)
+		})
+
+		//var fr = new FileReader()
+		//fr.readAsDataURL(fileBlob)
+
+	}
+
+	binaryContent(fileBlob: Blob) :Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			let fr = new FileReader()
+			fr.onload = (ev: Event) => {
+				let data = (event.target as any).result as string;
+				resolve(data)
+			}
+			fr.onerror = (ev: ErrorEvent) => {
+				return reject(ev.error)
+			}
+			//fr.readAsDataURL(fileBlob)
+			fr.readAsBinaryString(fileBlob)
+		})
+	}
+
+	// saves standard scenario (JSON message)
+	onSaveJson(close: boolean): Promise<any> {
 		// save data
 		let e: WSFullEntry = this.state.entry
 		let base64: string = btoa(e.Raw)
@@ -60,22 +145,15 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
 			reqInit = DataService.newRequestInit("POST", wsEntry)
 		}
-		DataService.handleFetch("/entry", reqInit)
-		.then(function(jsonText) {
-			console.log("json response", jsonText)
-			let fe = jsonText as WSFullEntry
-			this.setState(fe)
-			if (close) {
-				this.sendCloseRequest(fe);
-			}
-		}.bind(this))
-		.catch(function(err) {
-			console.log("response err: ", err)
-			if (close) {
-				this.sendCloseRequest(e)
-			}
-		}.bind(this))
+		return DataService.handleFetch("/entry", reqInit)
 	}
+	// 	onSaveBinary(close: boolean) :Promise<WSFullEntry> {
+	// 	return new Promise<WSFullEntry>((resolve, reject) => {
+	// 		let reqInit: RequestInit
+	// 		return DataService.handleFetch("/entry", reqInit)
+	// 	})
+	// }
+
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
 		state.entry.Title = (event.target as any).value
@@ -91,12 +169,23 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		state.entry.Tags = (event.target as any).value
 		this.setState(state)
 	}
-	onRawTypeChange(rawType: number) {
+	onRawTypeChange(rawType: number, name: string) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
 		state.entry.RawType = rawType
+		state.rawTypeName = name
 		this.setState(state)
 	}
 	render() {
+		let rawPayload = <p>
+				<label>Raw Text:</label><br />
+				<textarea  value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} className='entryEdit' />
+			</p>
+		if (this.state.rawTypeName.startsWith("Binary")) {
+			rawPayload = <p>
+				<label>File upload:</label>
+				<input type="file" ref={(input) => this.ctrls.rawFile = input} />
+			</p>
+		}
 		return <div>
 			<div className="toolbar entryHeader">
 				<h2 className='leftStack'>Editing title:</h2>
@@ -106,16 +195,13 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			<div className='toolbar'>
 				<button className='leftStack' onClick={e => this.onEditSaveClick(false)}>Save</button>
 				<RawTypeDropdown num={this.props.entry.RawType}
-					rawTypeSelected={e => this.onRawTypeChange(e)} />
+					rawTypeSelected={(num, name) => this.onRawTypeChange(num, name)} />
 				<button className='leftStack' onClick={e => this.onEditSaveClick(true)}>OK</button>
 				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel</button>
 			</div>
 			<p>
 			</p>
-			<p>
-				<label>Raw Text:</label><br />
-				<textarea  value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} className='entryEdit' />
-			</p>
+			{rawPayload}
 			<p>
 				<label>Tags:</label><br />
 				<input value={this.state.entry.Tags} onChange={e => this.onEntryTagsChange(e)} className='entryEdit' />

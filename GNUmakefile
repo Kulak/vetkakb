@@ -56,6 +56,9 @@ one-time-install:
 	cd frontend; typings install dt~react --global --save
 	cd frontend; typings install dt~react-dom --global --save
 
+	cd frontend; typings install es6-promise
+	cd frontend; typings uninstall es6-promise
+
 onetime:
 
 clean-data:

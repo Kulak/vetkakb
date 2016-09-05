@@ -42,6 +42,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
 	router.PUT("/entry/", ws.putEntry)
+	router.PUT("/binaryentry/", ws.putBinaryEntry)
 	router.POST("/entry", ws.postEntry)
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
@@ -169,4 +170,8 @@ func (ws WebSvc) getRawTypeList(w http.ResponseWriter, r *http.Request, _ httpro
 		list = append(list, WSRawType{TypeNum: k, Name: v.Name})
 	}
 	ws.writeJSON(w, list)
+}
+
+func (ws WebSvc) putBinaryEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Printf("receiving binary data")
 }

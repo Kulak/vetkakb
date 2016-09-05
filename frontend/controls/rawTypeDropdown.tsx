@@ -5,7 +5,7 @@ A dropdown control to select entry type.
 import * as React from 'react'
 import {WSRawType} from '../common/rawtypes'
 
-export type RawTypeSelectedFunc = (num: number) => void;
+export type RawTypeSelectedFunc = (num: number, name: string) => void;
 
 export interface RawTypeDropdownProps extends React.Props<any> {
 	num: number,
@@ -41,7 +41,10 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 			let num = e.target.selectedOptions[0].value  // or label
 			this.setState(new RawTypeDropdownState(num, this.state.rawTypes))
 			console.log("RawTypeDD selected : ", num)
-			this.props.rawTypeSelected(parseInt(num))
+			let name: string = this.state.rawTypes.find(function(each) {
+				return each.TypeNum == num
+			}).Name
+			this.props.rawTypeSelected(parseInt(num), name)
 		}
 	}
 

@@ -40,6 +40,7 @@ func (ts *TypeService) Initialize() {
 	ts.AddProvider(plainTextProvider())
 	ts.AddProvider(htmlProvider())
 	ts.AddProvider(markdownProvider())
+	ts.AddProvider(binaryProvider())
 }
 
 // AddProvider registers new provider.
@@ -117,6 +118,20 @@ func markdownProvider() *TypeProvider {
 		},
 		ToPlain: func(raw []byte) (string, error) {
 			return string(raw), nil
+		},
+	}
+}
+
+// provides binary dat maaping
+func binaryProvider() *TypeProvider {
+	return &TypeProvider{
+		TypeNum: 4,
+		Name:    "Binary/Image",
+		ToHTML: func(raw []byte) (string, error) {
+			return "", nil
+		},
+		ToPlain: func(raw []byte) (string, error) {
+			return "", nil
 		},
 	}
 }
