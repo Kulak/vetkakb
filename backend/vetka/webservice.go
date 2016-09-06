@@ -169,7 +169,7 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 	// the goal of this loop is to populate wse variable
 	// with JSON and RAW data.
 	var wse core.WSEntryPost
-
+	var raw []byte
 	for {
 		p, err := mr.NextPart()
 		if err == io.EOF {
@@ -197,17 +197,15 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 			}
 		case "rawFile":
 			// read raw bytes
-			// var origFileName = p.FileName()
-			content, err := ioutil.ReadAll(p)
+			// Raw assignment is our primary goal
+			raw, err = ioutil.ReadAll(p)
 			if err != nil {
 				ws.writeError(w, fmt.Sprintf("Error reading rawFile part: %v", err))
 				return
 			}
-			// Raw assignment is our primary goal
-			wse.Raw = content
 			// Write a temporary diagnostics file
 			targetFile := ws.conf.DataFile("last-uploaded.jpg")
-			err = ioutil.WriteFile(targetFile, content, 0777)
+			err = ioutil.WriteFile(targetFile, raw, 0777)
 			if err != nil {
 				// don't write error message, because this is a diagnostics code; just log
 				log.Printf("Failed to save receipt image in the database: %v", err)
@@ -221,15 +219,15 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 		ws.writeError(w, "RawType is not received.")
 		return
 	}
-	if wse.Raw == nil {
+	if raw == nil {
 		ws.writeError(w, "Raw payload is not received.")
 		return
 	}
-	ws.handleWSEntryPost(w, r, &wse)
+	ws.handleWSEntryPost(w, r, &wse, raw)
 }
 
 // handleWSEntryPost inserts or updates Entry using standard algorithm.
-func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *core.WSEntryPost) {
+func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *core.WSEntryPost, raw []byte) {
 	var err error
 	// we cannot log everything, because Raw may contain very large data
 	fmt.Printf("Got request with entry id: %v, title: %v, rawType: %v.\n", wse.EntryID, wse.Title, wse.RawType)
@@ -240,10 +238,10 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 		ws.writeError(w, err.Error())
 		return
 	}
-	en := core.NewEntry(wse.EntryID, wse.Title, wse.Raw, wse.RawType)
-	en.HTML, err = tp.ToHTML(wse.Raw)
+	en := core.NewEntry(wse.EntryID, wse.Title, raw, wse.RawType)
+	en.HTML, err = tp.ToHTML(raw)
 	es := core.NewEntrySearch(wse.EntryID, wse.Tags)
-	es.Plain, err = tp.ToPlain(wse.Raw)
+	es.Plain, err = tp.ToPlain(raw)
 	err = ws.entryDB.SaveEntry(en, es)
 	if err != nil {
 		ws.writeError(w, err.Error())

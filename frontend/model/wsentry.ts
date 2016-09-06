@@ -10,8 +10,6 @@ export enum RawType {
 export class WSEntryPut {
 	constructor(
 		public title: string,
-		// raw shall be base64 encoded
-		public raw: string,
 		public rawType: number,
 		public tags: string) {}
 }
@@ -21,8 +19,6 @@ export class WSEntryPost {
 	constructor(
 		public entryID: number,
 		public title: string,
-		// raw shall be base64 encoded
-		public raw: string,
 		public rawType: number,
 		public tags: string) {}
 }

@@ -12,7 +12,6 @@ This file collects data structures that support REST API calls.
 // WSEntryPut describes REST API payload for creating entry.
 type WSEntryPut struct {
 	Title   string
-	Raw     []byte
 	RawType int
 	Tags    string
 }
@@ -46,8 +45,8 @@ type WSFullEntry struct {
 // **** Functions ****
 
 func (eput WSEntryPut) String() string {
-	return fmt.Sprintf("WSEntryPut {Title: %s, RawType: %d, Tags: %s, Raw: %q}",
-		eput.Title, eput.RawType, eput.Tags, eput.Raw)
+	return fmt.Sprintf("WSEntryPut {Title: %s, RawType: %d, Tags: %s}",
+		eput.Title, eput.RawType, eput.Tags)
 }
 
 func (epost WSEntryPost) String() string {

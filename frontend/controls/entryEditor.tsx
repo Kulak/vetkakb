@@ -89,15 +89,17 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		let e: WSFullEntry = this.state.entry
 
 		var fd = new FormData();
+		// check if entry is new or update
 		if (e.EntryID == 0) {
 			// create new entry with PUT
-			let wsEntry = new WSEntryPut(e.Title, null, e.RawType, e.Tags)
+			let wsEntry = new WSEntryPut(e.Title, e.RawType, e.Tags)
 			fd.append('entry', JSON.stringify(wsEntry))
 		} else {
 			// update existing entry with POST
-			let wsEntry = new WSEntryPost(e.EntryID, e.Title, null, e.RawType, e.Tags)
+			let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.RawType, e.Tags)
 			fd.append('entry', JSON.stringify(wsEntry))
 		}
+		// check if raw is binary or some other text
 		if (this.state.rawTypeName.startsWith("Binary")) {
 			let fileBlob = this.ctrls.rawFile.files[0]
 			fd.append('rawFile', fileBlob);
@@ -109,24 +111,6 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		reqInit.body = fd
 		return DataService.handleFetch("/binaryentry/", reqInit)
 	}
-
-	// saves standard scenario (JSON message)
-	// onSaveJson(close: boolean): Promise<any> {
-	// 	// save data
-	// 	let e: WSFullEntry = this.state.entry
-	// 	let base64: string = btoa(e.Raw)
-	// 	let reqInit: RequestInit
-	// 	if (e.EntryID == 0) {
-	// 		// create new entry with PUT
-	// 		let wsEntry = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
-	// 		reqInit = DataService.newRequestInit("PUT", wsEntry)
-	// 	} else {
-	// 		// update existing entry with POST
-	// 		let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
-	// 		reqInit = DataService.newRequestInit("POST", wsEntry)
-	// 	}
-	// 	return DataService.handleFetch("/entry", reqInit)
-	// }
 
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
