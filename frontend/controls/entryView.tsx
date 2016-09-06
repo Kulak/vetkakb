@@ -24,7 +24,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	public constructor(props: EntryViewProps) {
 		super(props)
 		let pe = props.entry
-		let fe = new WSFullEntry(pe.EntryID, pe.Title, null, 0, "", pe.HTML, pe.Updated)
+		let fe = new WSFullEntry(pe.EntryID, pe.Title, null, 0, pe.RawTypeName, "", pe.HTML, pe.Updated)
 		this.state = new EntryViewState(fe, false, false);
 	}
 	onExpandClick(expandAction: boolean) {
@@ -58,12 +58,18 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {
 			if (this.state.expanded) {
+				let entryBody
+				if (fe.RawTypeName == "Binary/Image") {
+					entryBody = <img className='' src={"re/" + fe.EntryID} />
+				} else {
+					entryBody = <div className='entryBody' dangerouslySetInnerHTML={{__html: fe.HTML}} />
+				}
 				return <div>
 					<div className='toolbar entryHeader'>
 						<h2 className='leftStack' onClick={e => this.onExpandClick(false)}>{fe.Title}</h2>
 						<button className='leftStack' onClick={e => this.onEditClick(true)}>Edit</button>
 					</div>
-					<div className='entryBody' dangerouslySetInnerHTML={{__html: fe.HTML}} />
+					{entryBody}
 				</div>
 			} else {
 				return <div><h2 className='entryHeader' onClick={e => this.onExpandClick(true)}>{fe.Title}</h2></div>

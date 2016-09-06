@@ -30,6 +30,7 @@ export class WSEntryGetHTML {
 		public EntryID: number = 0,
 		public Title: string = "",
 		public HTML: string = "",
+		public RawTypeName: string = "",
 		public Updated: string = ""
 	) {}
 }
@@ -42,6 +43,7 @@ export class WSFullEntry {
 		public Title: string = "",
 		public Raw: string = "",
 		public RawType: number = 0,
+		public RawTypeName: string = "",
 		public Tags: string = "",
 		public HTML: string = "",
 		public Updated: string = ""

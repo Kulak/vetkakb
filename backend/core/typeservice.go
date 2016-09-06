@@ -40,6 +40,7 @@ func (ts *TypeService) Initialize() {
 	ts.AddProvider(plainTextProvider())
 	ts.AddProvider(htmlProvider())
 	ts.AddProvider(markdownProvider())
+	ts.AddProvider(imageProvider())
 	ts.AddProvider(binaryProvider())
 }
 
@@ -57,6 +58,15 @@ func (ts *TypeService) AddProvider(tp *TypeProvider) {
 // List returns mapping.
 func (ts TypeService) List() map[int]*TypeProvider {
 	return ts.byType
+}
+
+// NameByNum returns type name or empty if not found.
+func (ts TypeService) NameByNum(typeNum int) string {
+	tp, exists := ts.byType[typeNum]
+	if exists {
+		return tp.Name
+	}
+	return ""
 }
 
 // Provider returns provider for specified type num.
@@ -123,10 +133,24 @@ func markdownProvider() *TypeProvider {
 }
 
 // provides binary dat maaping
-func binaryProvider() *TypeProvider {
+func imageProvider() *TypeProvider {
 	return &TypeProvider{
 		TypeNum: 4,
 		Name:    "Binary/Image",
+		ToHTML: func(raw []byte) (string, error) {
+			return "", nil
+		},
+		ToPlain: func(raw []byte) (string, error) {
+			return "", nil
+		},
+	}
+}
+
+// provides binary dat maaping
+func binaryProvider() *TypeProvider {
+	return &TypeProvider{
+		TypeNum: 5,
+		Name:    "Binary/Custom",
 		ToHTML: func(raw []byte) (string, error) {
 			return "", nil
 		},

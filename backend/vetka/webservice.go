@@ -50,6 +50,8 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.GET("/api/search/*query", ws.getSearch)
 	router.GET("/api/entry/:entryID", ws.getFullEntry)
 	router.GET("/api/rawtype/list", ws.getRawTypeList)
+	// allows to load RawTypeName "Binary/Image" as a link.
+	router.GET("/re/:entryID", ws.getResourceEntry)
 	// Enable access to source code files from web browser debugger
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
 
@@ -108,18 +110,43 @@ func (ws WebSvc) getSearch(w http.ResponseWriter, r *http.Request, p httprouter.
 }
 
 func (ws WebSvc) getFullEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	entry := ws.getWSFullEntry(w, r, p)
+	if entry == nil {
+		return
+	}
+	// resolve RawType to RawTypeName
+	entry.RawTypeName = ws.typeSvc.NameByNum(entry.RawType)
+	ws.writeJSON(w, entry)
+}
+
+func (ws WebSvc) getResourceEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	entry := ws.getWSFullEntry(w, r, p)
+	if entry == nil {
+		return
+	}
+	// resolve RawType to RawTypeName
+	entry.RawTypeName = ws.typeSvc.NameByNum(entry.RawType)
+	if entry.RawTypeName == "Binary/Image" {
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(entry.Raw)
+		return
+	}
+	ws.writeError(w, "re/:entryId url path represents only binary resource")
+}
+
+func (ws WebSvc) getWSFullEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) *core.WSFullEntry {
 	idStr := p.ByName("entryID")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot parse entryID.  Error: %v", err))
-		return
+		return nil
 	}
 	entry, err := ws.entryDB.GetFullEntry(id)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot get Entry with ID %v.  Error: %v", id, err))
-		return
+		return nil
 	}
-	ws.writeJSON(w, entry)
+	return entry
 }
 
 func (ws WebSvc) getRawTypeList(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

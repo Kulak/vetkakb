@@ -10,12 +10,14 @@ import (
 type EntryDB struct {
 	db         *sql.DB
 	dbFileName string
+	rawTypes   *TypeService
 }
 
 // NewEntryDB creates DB service, but does not open connection.
-func NewEntryDB(dbFileName string) *EntryDB {
+func NewEntryDB(dbFileName string, rawTypes *TypeService) *EntryDB {
 	return &EntryDB{
 		dbFileName: dbFileName,
+		rawTypes:   rawTypes,
 	}
 }
 
@@ -100,7 +102,7 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 		return result, fmt.Errorf("Database connection is closed.")
 	}
 	var rows *sql.Rows
-	sql := "SELECT entryID, title, html, updated from `entry` order by updated desc limit ?"
+	sql := "SELECT entryID, title, html, rawType, updated from `entry` order by updated desc limit ?"
 	rows, err = edb.db.Query(sql, limit)
 	return edb.rowsToWSEntryGetHTML(rows, err)
 }
@@ -112,7 +114,7 @@ func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGet
 	}
 	var rows *sql.Rows
 	sql := `
-SELECT entryID, title, html, updated from entry where entryID in
+SELECT entryID, title, html, rawType, updated from entry where entryID in
 (select entryFK from entrySearch where entrySearch match $1)
 order by updated desc limit $2
 `
@@ -129,10 +131,13 @@ func (edb *EntryDB) rowsToWSEntryGetHTML(rows *sql.Rows, err error) ([]WSEntryGe
 	result := []WSEntryGetHTML{}
 	var r WSEntryGetHTML
 	for rows.Next() {
-		err = rows.Scan(&r.EntryID, &r.Title, &r.HTML, &r.Updated)
+		var rawType int
+		err = rows.Scan(&r.EntryID, &r.Title, &r.HTML, &rawType, &r.Updated)
 		if err != nil {
 			return result, err
 		}
+		// resolve number to a name
+		r.RawTypeName = edb.rawTypes.NameByNum(rawType)
 		result = append(result, r)
 	}
 	return result, err

@@ -25,21 +25,23 @@ type WSEntryPost struct {
 // WSEntryGetHTML is used to load entries to display text and HTML oriented content.
 // This structure is populated directly by DAL.
 type WSEntryGetHTML struct {
-	EntryID int64
-	Title   string
-	HTML    string
-	Updated time.Time
+	EntryID     int64
+	Title       string
+	RawTypeName string
+	HTML        string
+	Updated     time.Time
 }
 
 // WSFullEntry is used to load detailed Entry data used in entry editor.
 type WSFullEntry struct {
-	EntryID int64
-	Title   string
-	RawType int
-	Raw     []byte
-	HTML    string
-	Tags    string
-	Updated time.Time
+	EntryID     int64
+	Title       string
+	RawType     int
+	RawTypeName string
+	Raw         []byte
+	HTML        string
+	Tags        string
+	Updated     time.Time
 }
 
 // **** Functions ****

@@ -85,7 +85,7 @@ func main() {
 	ts := core.NewTypeService()
 	ts.Initialize()
 
-	edb := core.NewEntryDB(conf.EntryDBFileName())
+	edb := core.NewEntryDB(conf.EntryDBFileName(), ts)
 	edb.Open()
 
 	log.Println("Startign web service")
