@@ -139,10 +139,19 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		if (this.state.rawTypeName == "") {
 			// do nothing
 		} else if (this.state.rawTypeName.startsWith("Binary")) {
-			rawPayload = <p>
-				<label>File upload:</label>
-				<input type="file" ref={(input) => this.ctrls.rawFile = input} />
-			</p>
+			if (this.state.rawTypeName == "Binary/Image" && this.state.entry.Raw != null) {
+				// display existing image
+				let imgUrl = "data:image/png;base64," + btoa(this.state.entry.Raw)
+				rawPayload = <p>Image:
+					<img src={imgUrl} />
+				</p>
+			} else {
+				// allow user to select new image
+				rawPayload = <p>
+					<label>File upload:</label>
+					<input type="file" ref={(input) => this.ctrls.rawFile = input} />
+				</p>
+			}
 		} else {
 			rawPayload = <p>
 				<label>Raw Text:</label><br />
