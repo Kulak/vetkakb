@@ -44,9 +44,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.Handler("GET", "/", http.FileServer(conf.WebDir("/")))
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
-	router.PUT("/entry/", ws.putEntry)
-	router.PUT("/binaryentry/", ws.putBinaryEntry)
-	router.POST("/entry", ws.postEntry)
+	router.POST("/binaryentry/", ws.postBinaryEntry)
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
 	router.GET("/api/search/*query", ws.getSearch)
@@ -72,20 +70,6 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 		// 	"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		handler.ServeHTTP(w, r)
 	}
-}
-
-// putEntry creates new entry and assigns it an EntryID.
-func (ws WebSvc) putEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// Post has one additional Parameter (EntryID) that will be set to zero.
-	// If EntryID is zero, then it is a new item to be inserted.
-	// ws.handleWSEntryPost(w, r)
-	ws.writeError(w, "PUT entry is currently not implemented.")
-}
-
-// postEntry updates existing entry and requires EntryID to exist.
-func (ws WebSvc) postEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	//ws.handleWSEntryPost(w, r)
-	ws.writeError(w, "POST entry is currently not implemented.")
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -150,7 +134,7 @@ func (ws WebSvc) getRawTypeList(w http.ResponseWriter, r *http.Request, _ httpro
 	ws.writeJSON(w, list)
 }
 
-func (ws WebSvc) putBinaryEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (ws WebSvc) postBinaryEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Printf("receiving binary data")
 	ws.handleAnyWSEntryPost(w, r)
 }

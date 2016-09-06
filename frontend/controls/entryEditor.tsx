@@ -107,7 +107,8 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			fd.append('rawFile', e.Raw)
 		}
 
-		let reqInit: RequestInit = DataService.newBareRequestInit("PUT")
+		// POST in thise case PUTs new entry and updates existing
+		let reqInit: RequestInit = DataService.newBareRequestInit("POST")
 		reqInit.body = fd
 		return DataService.handleFetch("/binaryentry/", reqInit)
 	}
