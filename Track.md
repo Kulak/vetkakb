@@ -214,6 +214,6 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 # Plan
 
-Create `search.tsx` use search REST API and pass results to EntryList.
+Fine tune backend and front end code that uploads binary data.
 
 Add title to entrySearch table, because it will result in more uniform experience.  Since operator match works on entire table at once use of new column is the best.
