@@ -214,6 +214,6 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 # Plan
 
-Fine tune backend and front end code that uploads binary data.
+Editor attempts to display Binary data when goes into "Edit" mode.
 
 Add title to entrySearch table, because it will result in more uniform experience.  Since operator match works on entire table at once use of new column is the best.

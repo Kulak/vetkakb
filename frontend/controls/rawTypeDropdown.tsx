@@ -29,6 +29,10 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 				console.log("WSRawType LIST", rawTypes)
 				let s = new RawTypeDropdownState(this.props.num, rawTypes)
 				this.setState(s)
+				// find proper number:
+				let name = WSRawType.NameForNum(props.num, rawTypes)
+				// send initial notification of raw type name
+				this.props.rawTypeSelected(props.num, name)
 			}.bind(this))
 			.catch(function(err) {
 				console.log("WSRawType err: ", err)

@@ -135,14 +135,18 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.setState(state)
 	}
 	render() {
-		let rawPayload = <p>
-				<label>Raw Text:</label><br />
-				<textarea  value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} className='entryEdit' />
-			</p>
-		if (this.state.rawTypeName.startsWith("Binary")) {
+		let rawPayload = <p>Data type name is not loaded yet.</p>
+		if (this.state.rawTypeName == "") {
+			// do nothing
+		} else if (this.state.rawTypeName.startsWith("Binary")) {
 			rawPayload = <p>
 				<label>File upload:</label>
 				<input type="file" ref={(input) => this.ctrls.rawFile = input} />
+			</p>
+		} else {
+			rawPayload = <p>
+				<label>Raw Text:</label><br />
+				<textarea  value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} className='entryEdit' />
 			</p>
 		}
 		return <div>

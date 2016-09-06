@@ -25,4 +25,15 @@ export class WSRawType {
 			}
 		})
 	}
+
+	public static NameForNum(typeNum: number, list: Array<WSRawType>): string {
+		let found = list.find(each => {
+			return each.TypeNum == typeNum
+		})
+		if (found != null) {
+			return found.Name
+		}
+		return ""
+	}
+
 }
