@@ -54,12 +54,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.sendCloseRequest(this.props.entry);
 	}
 	onEditSaveClick(close: boolean) {
-		let r: Promise<any>
-		if (this.state.rawTypeName.startsWith("Binary")) {
-			r = this.onSaveBinary(close)
-		} else {
-			r = this.onSaveJson(close)
-		}
+		let r: Promise<any> = this.onSaveBinary(close)
 		r.then((response) => {
 			let fe: WSFullEntry = response
 			fe.Raw = atob(fe.Raw)
@@ -92,7 +87,6 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	onSaveBinary(close: boolean) :Promise<any> {
 		// save data
 		let e: WSFullEntry = this.state.entry
-		let fileBlob = this.ctrls.rawFile.files[0]
 
 		var fd = new FormData();
 		if (e.EntryID == 0) {
@@ -104,50 +98,34 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			let wsEntry = new WSEntryPost(e.EntryID, e.Title, null, e.RawType, e.Tags)
 			fd.append('entry', JSON.stringify(wsEntry))
 		}
-		fd.append('rawFile', fileBlob);
+		if (this.state.rawTypeName.startsWith("Binary")) {
+			let fileBlob = this.ctrls.rawFile.files[0]
+			fd.append('rawFile', fileBlob);
+		} else {
+			fd.append('rawFile', e.Raw)
+		}
 
 		let reqInit: RequestInit = DataService.newBareRequestInit("PUT")
 		reqInit.body = fd
 		return DataService.handleFetch("/binaryentry/", reqInit)
 	}
 
-	// binaryContent(fileBlob: Blob) :Promise<string> {
-	// 	return new Promise<string>((resolve, reject) => {
-	// 		let fr = new FileReader()
-	// 		fr.onload = (ev: Event) => {
-	// 			let data = (event.target as any).result as string;
-	// 			resolve(data)
-	// 		}
-	// 		fr.onerror = (ev: ErrorEvent) => {
-	// 			return reject(ev.error)
-	// 		}
-	// 		//fr.readAsDataURL(fileBlob)
-	// 		fr.readAsBinaryString(fileBlob)
-	// 	})
-	// }
-
 	// saves standard scenario (JSON message)
-	onSaveJson(close: boolean): Promise<any> {
-		// save data
-		let e: WSFullEntry = this.state.entry
-		let base64: string = btoa(e.Raw)
-		let reqInit: RequestInit
-		if (e.EntryID == 0) {
-			// create new entry with PUT
-			let wsEntry = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
-			reqInit = DataService.newRequestInit("PUT", wsEntry)
-		} else {
-			// update existing entry with POST
-			let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
-			reqInit = DataService.newRequestInit("POST", wsEntry)
-		}
-		return DataService.handleFetch("/entry", reqInit)
-	}
-	// 	onSaveBinary(close: boolean) :Promise<WSFullEntry> {
-	// 	return new Promise<WSFullEntry>((resolve, reject) => {
-	// 		let reqInit: RequestInit
-	// 		return DataService.handleFetch("/entry", reqInit)
-	// 	})
+	// onSaveJson(close: boolean): Promise<any> {
+	// 	// save data
+	// 	let e: WSFullEntry = this.state.entry
+	// 	let base64: string = btoa(e.Raw)
+	// 	let reqInit: RequestInit
+	// 	if (e.EntryID == 0) {
+	// 		// create new entry with PUT
+	// 		let wsEntry = new WSEntryPut(e.Title, base64, e.RawType, e.Tags)
+	// 		reqInit = DataService.newRequestInit("PUT", wsEntry)
+	// 	} else {
+	// 		// update existing entry with POST
+	// 		let wsEntry = new WSEntryPost(e.EntryID, e.Title, base64, e.RawType, e.Tags)
+	// 		reqInit = DataService.newRequestInit("POST", wsEntry)
+	// 	}
+	// 	return DataService.handleFetch("/entry", reqInit)
 	// }
 
 	onEntryTitleChange(event: React.FormEvent) {
