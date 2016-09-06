@@ -63,7 +63,18 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		r.then((response) => {
 			let fe: WSFullEntry = response
 			fe.Raw = atob(fe.Raw)
-			this.setState(new EditorState(fe, this.state.rawTypeName))
+			// the following line triggers React mesage:
+			// 		react.js:20541 Warning: EntryEditor is changing a controlled input of type undefined to be uncontrolled.
+			// 		Input elements should not switch from controlled to uncontrolled (or vice versa).
+			// The setState call triggers React to think that state is different for controlled element.
+			//    this.setState(new EditorState(fe, this.state.rawTypeName))
+			// So, we simply rely on original state and merge most important properties here
+			let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
+			state.entry.EntryID = fe.EntryID
+			state.entry.HTML = fe.HTML
+			state.entry.Updated = fe.Updated
+			this.setState(state)
+
 			if (close) {
 				this.sendCloseRequest(fe);
 			}

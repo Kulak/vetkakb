@@ -79,16 +79,16 @@ DONE:
 	if err != nil {
 		// rollback due to error
 		log.Printf("Failed to save. Error: %v", err)
-		err = tx.Rollback()
+		err2 := tx.Rollback()
 		if err != nil {
-			log.Printf("Failed to rollback. Error: %v", err)
+			log.Printf("Failed to rollback. Error: %v", err2)
 		}
-	} else {
-		// commit
-		err = tx.Commit()
-		if err != nil {
-			err = fmt.Errorf("Failed to commit entry to DB. Error: %v", err)
-		}
+		return err
+	}
+	// commit
+	err = tx.Commit()
+	if err != nil {
+		err = fmt.Errorf("Failed to commit entry to DB. Error: %v", err)
 	}
 	return err
 }

@@ -78,39 +78,14 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 func (ws WebSvc) putEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Post has one additional Parameter (EntryID) that will be set to zero.
 	// If EntryID is zero, then it is a new item to be inserted.
-	ws.handleWSEntryPost(w, r)
+	// ws.handleWSEntryPost(w, r)
+	ws.writeError(w, "PUT entry is currently not implemented.")
 }
 
 // postEntry updates existing entry and requires EntryID to exist.
 func (ws WebSvc) postEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	ws.handleWSEntryPost(w, r)
-}
-
-func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request) {
-	var wse core.WSEntryPost
-	err := ws.loadJSONBody(r.Body, &wse)
-	if err != nil {
-		ws.writeError(w, err.Error())
-		return
-	}
-	fmt.Printf("Got request with entry %v.\n", wse)
-	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
-	var tp *core.TypeProvider
-	tp, err = ws.typeSvc.Provider(wse.RawType)
-	if err != nil {
-		ws.writeError(w, err.Error())
-		return
-	}
-	en := core.NewEntry(wse.EntryID, wse.Title, wse.Raw, wse.RawType)
-	en.HTML, err = tp.ToHTML(wse.Raw)
-	es := core.NewEntrySearch(wse.EntryID, wse.Tags)
-	es.Plain, err = tp.ToPlain(wse.Raw)
-	err = ws.entryDB.SaveEntry(en, es)
-	if err != nil {
-		ws.writeError(w, err.Error())
-	} else {
-		ws.writeJSON(w, en)
-	}
+	//ws.handleWSEntryPost(w, r)
+	ws.writeError(w, "POST entry is currently not implemented.")
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -177,57 +152,102 @@ func (ws WebSvc) getRawTypeList(w http.ResponseWriter, r *http.Request, _ httpro
 
 func (ws WebSvc) putBinaryEntry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Printf("receiving binary data")
+	ws.handleAnyWSEntryPost(w, r)
+}
 
-	// handle image upload
+func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
+	// Standard multi-part PULL or POST consists of 2 parts:
+	// Part 1 is a JSON message
+	// Part 2 is a binary message representing Raw column value of Entry table.
+
 	mr, err := r.MultipartReader()
 	if err != nil {
-		log.Printf("Error reading form data in JournalUploadImageHandler: %v\n", err)
-		ws.writeError(w, fmt.Sprintf("Error reading form data: %v", err))
+		ws.writeError(w, fmt.Sprintf("Error reading multipart header: %v", err))
+		return
 	}
 
-	//response := ""
-Loop:
+	// the goal of this loop is to populate wse variable
+	// with JSON and RAW data.
+	var wse core.WSEntryPost
+
 	for {
 		p, err := mr.NextPart()
 		if err == io.EOF {
-			log.Printf("EOF reading payload.\n")
-			break Loop
+			log.Printf("Reached EOF in multi-part read.")
+			break
 		} else if err != nil {
-			log.Printf("Error reading payload: %v\n", err)
-			break Loop
+			ws.writeError(w, fmt.Sprintf("Error reading multi-part message: %v", err))
+			return
 		}
-		log.Printf("Part file name: %s, form name: %s\n", p.FileName(), p.FormName())
+
+		// Here is a typical output for log line below.
+		// log.Printf("Header: %v", p.Header)
 		// Header for entry: map[Content-Disposition:[form-data; name="entry"]]
 		// Header for image: Header: map[Content-Disposition:[form-data; name="rawFile"; filename="1upatime-pronoun-icon.png"] Content-Type:[image/png]]
-		// log.Printf("Header: %v", p.Header)
 
 		// FormName on javaScript side corresponds to 1st argument of FormData.append
+		log.Printf("Part file name: %s, form name: %s\n", p.FileName(), p.FormName())
 		switch p.FormName() {
 		case "entry":
 			// decode standard JSON message: {"title":"","raw":null,"rawType":4,"tags":""}
-			var wse core.WSEntryPut
 			err := ws.loadJSONBody(p, &wse)
 			if err != nil {
-				log.Printf("Error reading entry part: %v\n", err)
-				break Loop
+				ws.writeError(w, fmt.Sprintf("Error reading entry part: %v", err))
+				return
 			}
 		case "rawFile":
 			// read raw bytes
 			// var origFileName = p.FileName()
 			content, err := ioutil.ReadAll(p)
 			if err != nil {
-				log.Printf("Error reading rawFile part: %v\n", err)
-				break Loop
+				ws.writeError(w, fmt.Sprintf("Error reading rawFile part: %v", err))
+				return
 			}
-			targetFile := "target.jpg"
+			// Raw assignment is our primary goal
+			wse.Raw = content
+			// Write a temporary diagnostics file
+			targetFile := ws.conf.DataFile("last-uploaded.jpg")
 			err = ioutil.WriteFile(targetFile, content, 0777)
 			if err != nil {
-				ws.writeError(w, fmt.Sprintf("Failed to save receipt image in the database: %v", err))
-				return
+				// don't write error message, because this is a diagnostics code; just log
+				log.Printf("Failed to save receipt image in the database: %v", err)
 			}
 		default:
 			log.Printf("unrecognized FormName: %v", p.FormName())
 		}
+	} // end of loop for multiple parts
+	// validate that we received expected data
+	if wse.RawType == 0 {
+		ws.writeError(w, "RawType is not received.")
+		return
 	}
+	if wse.Raw == nil {
+		ws.writeError(w, "Raw payload is not received.")
+		return
+	}
+	ws.handleWSEntryPost(w, r, &wse)
+}
 
+// handleWSEntryPost inserts or updates Entry using standard algorithm.
+func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *core.WSEntryPost) {
+	var err error
+	// we cannot log everything, because Raw may contain very large data
+	fmt.Printf("Got request with entry id: %v, title: %v, rawType: %v.\n", wse.EntryID, wse.Title, wse.RawType)
+	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
+	var tp *core.TypeProvider
+	tp, err = ws.typeSvc.Provider(wse.RawType)
+	if err != nil {
+		ws.writeError(w, err.Error())
+		return
+	}
+	en := core.NewEntry(wse.EntryID, wse.Title, wse.Raw, wse.RawType)
+	en.HTML, err = tp.ToHTML(wse.Raw)
+	es := core.NewEntrySearch(wse.EntryID, wse.Tags)
+	es.Plain, err = tp.ToPlain(wse.Raw)
+	err = ws.entryDB.SaveEntry(en, es)
+	if err != nil {
+		ws.writeError(w, err.Error())
+	} else {
+		ws.writeJSON(w, en)
+	}
 }

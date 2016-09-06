@@ -59,7 +59,12 @@ func LoadConfig(cutomFileName string) (*Configuration, error) {
 
 // EntryDBFileName returns name of the entry DB file.
 func (c Configuration) EntryDBFileName() string {
-	return filepath.Join(c.Main.DataRoot, "entry.db")
+	return c.DataFile("entry.db")
+}
+
+// DataFile retruns name of the file in Dataroot directory.
+func (c Configuration) DataFile(fileName string) string {
+	return filepath.Join(c.Main.DataRoot, fileName)
 }
 
 // WebDir returns http directory relative to WebRoot.
