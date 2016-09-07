@@ -47,7 +47,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		let pen: WSFullEntry = props.entry
 		// make a copy of entry for easy cancellation
 		this.state = new EditorState(new WSFullEntry(
-			pen.EntryID, pen.Title, pen.Raw, pen.RawType, pen.Tags, pen.HTML, pen.Updated
+			pen.EntryID, pen.Title, pen.Raw, pen.RawTypeName, pen.Tags, pen.HTML, pen.Updated
 		));
 	}
 	onEditCancelClick() {
@@ -92,11 +92,11 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		// check if entry is new or update
 		if (e.EntryID == 0) {
 			// create new entry with PUT
-			let wsEntry = new WSEntryPut(e.Title, e.RawType, e.Tags)
+			let wsEntry = new WSEntryPut(e.Title, e.RawTypeName, e.Tags)
 			fd.append('entry', JSON.stringify(wsEntry))
 		} else {
 			// update existing entry with POST
-			let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.RawType, e.Tags)
+			let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.RawTypeName, e.Tags)
 			fd.append('entry', JSON.stringify(wsEntry))
 		}
 		// check if raw is binary or some other text
@@ -128,10 +128,10 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		state.entry.Tags = (event.target as any).value
 		this.setState(state)
 	}
-	onRawTypeChange(rawType: number, name: string) {
+	onRawTypeChange(rawTypeName: string) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.RawType = rawType
-		state.rawTypeName = name
+		state.entry.RawTypeName = rawTypeName
+		state.rawTypeName = rawTypeName
 		this.setState(state)
 	}
 	render() {
@@ -166,8 +166,8 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			</div>
 			<div className='toolbar'>
 				<button className='leftStack' onClick={e => this.onEditSaveClick(false)}>Save</button>
-				<RawTypeDropdown num={this.props.entry.RawType}
-					rawTypeSelected={(num, name) => this.onRawTypeChange(num, name)} />
+				<RawTypeDropdown name={this.props.entry.RawTypeName}
+					rawTypeSelected={(name) => this.onRawTypeChange(name)} />
 				<button className='leftStack' onClick={e => this.onEditSaveClick(true)}>OK</button>
 				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel</button>
 			</div>

@@ -1,16 +1,16 @@
 
 
 // RawTypes defines data types that can be stored.
-export enum RawType {
-	Undefined = 0,
-	PlainText
+export class RawType {
+	public static Undefined = "Unknown"
+	public static PlainText = "Plain Text"
 }
 
 // WSEntryPut mirrors backend structure with the same name.
 export class WSEntryPut {
 	constructor(
 		public title: string,
-		public rawType: number,
+		public rawTypeName: string,
 		public tags: string) {}
 }
 
@@ -19,7 +19,7 @@ export class WSEntryPost {
 	constructor(
 		public entryID: number,
 		public title: string,
-		public rawType: number,
+		public rawTypeName: string,
 		public tags: string) {}
 }
 
@@ -42,7 +42,6 @@ export class WSFullEntry {
 		public EntryID: number = 0,
 		public Title: string = "",
 		public Raw: string = "",
-		public RawType: number = 0,
 		public RawTypeName: string = "",
 		public Tags: string = "",
 		public HTML: string = "",

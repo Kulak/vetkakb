@@ -102,7 +102,11 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 		return result, fmt.Errorf("Database connection is closed.")
 	}
 	var rows *sql.Rows
-	sql := "SELECT entryID, title, html, rawType, updated from `entry` order by updated desc limit ?"
+	sql := `
+	SELECT e.entryID, es.title, e.html, e.rawType, e.updated from entry e
+	inner join entrySearch es on es.EntryFK = e.EntryID
+	order by e.updated desc limit ?
+	`
 	rows, err = edb.db.Query(sql, limit)
 	return edb.rowsToWSEntryGetHTML(rows, err)
 }
@@ -114,8 +118,9 @@ func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGet
 	}
 	var rows *sql.Rows
 	sql := `
-SELECT entryID, title, html, rawType, updated from entry where entryID in
-(select entryFK from entrySearch where entrySearch match $1)
+SELECT e.entryID, es.title, e.html, e.rawType, e.updated from entry e
+inner join entrySearch es on es.EntryFK = e.EntryID
+where entryID in (select entryFK from entrySearch where entrySearch match $1)
 order by updated desc limit $2
 `
 	rows, err = edb.db.Query(sql, query, limit)
@@ -150,12 +155,20 @@ func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 		return r, fmt.Errorf("Database connection is closed.")
 	}
 	sql := `
-	SELECT e.title, e.rawType, e.raw, e.html, e.updated, es.tags
+	SELECT es.title, e.rawType, e.raw, e.html, e.updated, es.tags
 	from entry e
 	inner join entrySearch es on e.entryID = es.entryFK
 	where e.entryID = ?
 	`
+	var rawType int
 	err = edb.db.QueryRow(sql, entryID).
-		Scan(&r.Title, &r.RawType, &r.Raw, &r.HTML, &r.Updated, &r.Tags)
-	return r, err
+		Scan(&r.Title, &rawType, &r.Raw, &r.HTML, &r.Updated, &r.Tags)
+	if err != nil {
+		return r, err
+	}
+	r.RawTypeName = edb.rawTypes.NameByNum(rawType)
+	if r.RawTypeName == "" {
+		return r, fmt.Errorf("Error loading RawTypeName for number %v", rawType)
+	}
+	return r, nil
 }

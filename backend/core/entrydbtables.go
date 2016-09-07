@@ -8,19 +8,22 @@ import (
 
 // Entry represents content of Entry table in Entry databse.
 type Entry struct {
-	EntryID int64
-	Title   string
-	Raw     []byte
-	RawType int
-	HTML    string
-	Created time.Time
-	Updated time.Time
+	EntryID        int64
+	Raw            []byte
+	RawType        int
+	RawContentType string
+	RawFileName    string
+	HTML           string
+	Created        time.Time
+	Updated        time.Time
 }
 
 // EntrySearch represents content of EntrySearch in Entry databse.
 type EntrySearch struct {
 	// EntryFK is a foreign key into EntryID of Entry.
 	EntryFK int64
+	// Title is entry title.
+	Title string
 	// Plain represents indexed content of the entry.
 	Plain string
 	// Tags is a comma separated list of tags.
@@ -43,12 +46,13 @@ func sqlRequireAffected(result sql.Result, expected int64) error {
 /* ========== Entry ========== */
 
 // NewEntry creates new entry to be inserted into DB.
-func NewEntry(entryID int64, title string, raw []byte, rawType int) *Entry {
+func NewEntry(entryID int64, raw []byte, rawType int, rawContentType, rawFileName string) *Entry {
 	return &Entry{
-		EntryID: entryID,
-		Title:   title,
-		Raw:     raw,
-		RawType: rawType,
+		EntryID:        entryID,
+		Raw:            raw,
+		RawType:        rawType,
+		RawContentType: rawContentType,
+		RawFileName:    rawFileName,
 	}
 }
 
@@ -60,8 +64,9 @@ func (en *Entry) dbInsert(tx *sql.Tx) (err error) {
 	if en.EntryID != 0 {
 		return fmt.Errorf("Cannot insert record with existing EntryID %v.", en.EntryID)
 	}
-	sql = "insert into `entry` (title, rawType, raw, html) values($1, $2, $3, $4)"
-	result, err = tx.Exec(sql, en.Title, en.RawType, en.Raw, en.HTML)
+	sql = "insert into `entry` (raw, rawType, rawContentType, rawFileName, html) values($1, $2, $3, $4, $5)"
+	result, err = tx.Exec(sql,
+		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML)
 	if err != nil {
 		return fmt.Errorf("Failed to insert `entry` record to DB. Error: %v", err)
 	}
@@ -85,9 +90,10 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 	if en.EntryID == 0 {
 		return fmt.Errorf("Cannot update record, because EntryID is set to zero.")
 	}
-	sql = "update `entry` set title=$1, rawType=$2, raw=$3, html=$4, updated=$5 " +
-		"where entryID=$6"
-	result, err = tx.Exec(sql, en.Title, en.RawType, en.Raw, en.HTML, en.Updated,
+	sql = "update `entry` set raw=$1, rawType=$2, rawContentType=$3, rawFileName=$4, html=$5, updated=$6 " +
+		"where entryID=$7"
+	result, err = tx.Exec(sql,
+		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML, en.Updated,
 		en.EntryID)
 	if err != nil {
 		return fmt.Errorf("Failed to update EntryID %v. Error: %v", en.EntryID, err)
@@ -104,9 +110,10 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 /* ========== EntrySearch ========== */
 
 // NewEntrySearch creates new entry search item to be inserted into DB.
-func NewEntrySearch(entryFK int64, tags string) *EntrySearch {
+func NewEntrySearch(entryFK int64, title string, tags string) *EntrySearch {
 	return &EntrySearch{
 		EntryFK: entryFK,
+		Title:   title,
 		Tags:    tags,
 	}
 }
@@ -114,8 +121,8 @@ func NewEntrySearch(entryFK int64, tags string) *EntrySearch {
 func (es *EntrySearch) dbInsert(tx *sql.Tx) (err error) {
 	var result sql.Result
 	var sql string
-	sql = "insert into `entrySearch` (entryFK, plain, tags) values($1, $2, $3)"
-	result, err = tx.Exec(sql, es.EntryFK, es.Plain, es.Tags)
+	sql = "insert into `entrySearch` (entryFK, title, plain, tags) values($1, $2, $3, $4)"
+	result, err = tx.Exec(sql, es.EntryFK, es.Title, es.Plain, es.Tags)
 	if err != nil {
 		return fmt.Errorf("Failed to insert `entrySeach` record to DB. Error: %v", err)
 	}
@@ -142,8 +149,8 @@ func (es *EntrySearch) dbInsert(tx *sql.Tx) (err error) {
 func (es *EntrySearch) dbUpdate(tx *sql.Tx) (err error) {
 	var result sql.Result
 	var sql string
-	sql = "update `entrySearch` set plain=$1, tags=$2 where EntryFK=$3"
-	result, err = tx.Exec(sql, es.Plain, es.Tags, es.EntryFK)
+	sql = "update `entrySearch` set title=$1, plain=$2, tags=$3 where EntryFK=$4"
+	result, err = tx.Exec(sql, es.Title, es.Plain, es.Tags, es.EntryFK)
 	if err != nil {
 		return fmt.Errorf("Failed to update `entrySeach` record. Error: %v", err)
 	}

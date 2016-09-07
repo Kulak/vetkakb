@@ -5,16 +5,16 @@ A dropdown control to select entry type.
 import * as React from 'react'
 import {WSRawType} from '../common/rawtypes'
 
-export type RawTypeSelectedFunc = (num: number, name: string) => void;
+export type RawTypeSelectedFunc = (rawTypeName: string) => void;
 
 export interface RawTypeDropdownProps extends React.Props<any> {
-	num: number,
+	name: string,
 	rawTypeSelected: RawTypeSelectedFunc
 }
 
 class RawTypeDropdownState {
 	constructor(
-		public num: number = 0,
+		public name: string = "",
 		public rawTypes: Array<WSRawType> = null
 	) {}
 }
@@ -27,12 +27,10 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 		WSRawType.List()
 			.then(function(rawTypes: Array<WSRawType>) {
 				console.log("WSRawType LIST", rawTypes)
-				let s = new RawTypeDropdownState(this.props.num, rawTypes)
+				let s = new RawTypeDropdownState(this.props.name, rawTypes)
 				this.setState(s)
-				// find proper number:
-				let name = WSRawType.NameForNum(props.num, rawTypes)
 				// send initial notification of raw type name
-				this.props.rawTypeSelected(props.num, name)
+				this.props.rawTypeSelected(props.name)
 			}.bind(this))
 			.catch(function(err) {
 				console.log("WSRawType err: ", err)
@@ -48,7 +46,7 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 			let name: string = this.state.rawTypes.find(function(each) {
 				return each.TypeNum == num
 			}).Name
-			this.props.rawTypeSelected(parseInt(num), name)
+			this.props.rawTypeSelected(name)
 		}
 	}
 
@@ -59,7 +57,7 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 				return <option key={each.TypeNum}
 					value={each.TypeNum}>{each.Name}</option>
 			})
-			rawTypes = <select value={this.state.num}
+			rawTypes = <select value={this.state.name}
 				onChange={e => this.onSelectionChange(e)}>
 							{options}
             </select>

@@ -24,7 +24,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	public constructor(props: EntryViewProps) {
 		super(props)
 		let pe = props.entry
-		let fe = new WSFullEntry(pe.EntryID, pe.Title, null, 0, pe.RawTypeName, "", pe.HTML, pe.Updated)
+		let fe = new WSFullEntry(pe.EntryID, pe.Title, null, pe.RawTypeName, "", pe.HTML, pe.Updated)
 		this.state = new EntryViewState(fe, false, false);
 	}
 	onExpandClick(expandAction: boolean) {

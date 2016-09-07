@@ -26,7 +26,7 @@ export class EntryCreateBox extends React.Component<EntryCreateProps, EntryCreat
 	public constructor(props: EntryCreateProps, context) {
 		super(props, context)
 		this.state = new EntryCreateState()
-		this.state.entry.RawType = RawType.PlainText
+		this.state.entry.RawTypeName = RawType.PlainText
 	}
 	onEditorCloseRequested(fe: WSFullEntry) {
 		this.setState(new EntryCreateState(this.state.entry))

@@ -114,8 +114,6 @@ func (ws WebSvc) getFullEntry(w http.ResponseWriter, r *http.Request, p httprout
 	if entry == nil {
 		return
 	}
-	// resolve RawType to RawTypeName
-	entry.RawTypeName = ws.typeSvc.NameByNum(entry.RawType)
 	ws.writeJSON(w, entry)
 }
 
@@ -124,8 +122,6 @@ func (ws WebSvc) getResourceEntry(w http.ResponseWriter, r *http.Request, p http
 	if entry == nil {
 		return
 	}
-	// resolve RawType to RawTypeName
-	entry.RawTypeName = ws.typeSvc.NameByNum(entry.RawType)
 	if entry.RawTypeName == "Binary/Image" {
 		w.Header().Set("Content-Type", "image/png")
 		w.Write(entry.Raw)
@@ -226,8 +222,8 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 		}
 	} // end of loop for multiple parts
 	// validate that we received expected data
-	if wse.RawType == 0 {
-		ws.writeError(w, "RawType is not received.")
+	if wse.RawTypeName == "" {
+		ws.writeError(w, "RawTypeName is not received.")
 		return
 	}
 	if raw == nil {
@@ -241,17 +237,17 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *core.WSEntryPost, raw []byte) {
 	var err error
 	// we cannot log everything, because Raw may contain very large data
-	fmt.Printf("Got request with entry id: %v, title: %v, rawType: %v.\n", wse.EntryID, wse.Title, wse.RawType)
+	fmt.Printf("Got request with entry id: %v, title: %v, rawTypeName: %v.\n", wse.EntryID, wse.Title, wse.RawTypeName)
 	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
 	var tp *core.TypeProvider
-	tp, err = ws.typeSvc.Provider(wse.RawType)
+	tp, err = ws.typeSvc.ProviderByName(wse.RawTypeName)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
-	en := core.NewEntry(wse.EntryID, wse.Title, raw, wse.RawType)
+	en := core.NewEntry(wse.EntryID, raw, tp.TypeNum, wse.RawContentType, wse.RawFileName)
 	en.HTML, err = tp.ToHTML(raw)
-	es := core.NewEntrySearch(wse.EntryID, wse.Tags)
+	es := core.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
 	es.Plain, err = tp.ToPlain(raw)
 	err = ws.entryDB.SaveEntry(en, es)
 	if err != nil {

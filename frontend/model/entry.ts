@@ -1,12 +1,12 @@
 
-const RTTextPlain: number = 1
+const RTTextPlain: string = "Plain Text"
 
 export class Entry {
 	public constructor(
 		public entryID: number = 0,
 		public title: string = "",
 		public raw: string = "",
-		public rawType: number = RTTextPlain,
+		public rawTypeName: string = RTTextPlain,
 		public tags: string = ""
 	) {}
 }

@@ -69,15 +69,34 @@ func (ts TypeService) NameByNum(typeNum int) string {
 	return ""
 }
 
-// Provider returns provider for specified type num.
-// Returns error if provider is not registered.
-func (ts TypeService) Provider(typeNum int) (tp *TypeProvider, err error) {
+// NumByName returns type number from name or zero if not found.
+func (ts TypeService) NumByName(name string) int {
+	for k, v := range ts.byType {
+		if v.Name == name {
+			return k
+		}
+	}
+	return 0
+}
+
+// ProviderByNum returns error if provider is not registered.
+func (ts TypeService) ProviderByNum(typeNum int) (tp *TypeProvider, err error) {
 	var exists bool
 	tp, exists = ts.byType[typeNum]
 	if exists {
 		return tp, nil
 	}
 	return nil, fmt.Errorf("Cannot find type provider for type number %v", typeNum)
+}
+
+// ProviderByName returns provider by name.
+func (ts TypeService) ProviderByName(name string) (*TypeProvider, error) {
+	for _, v := range ts.byType {
+		if v.Name == name {
+			return v, nil
+		}
+	}
+	return nil, fmt.Errorf("Cannot find type provider for type name %v", name)
 }
 
 // plainTextProvider implements simple plain text provider.

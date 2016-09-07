@@ -216,6 +216,8 @@ About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-
 
 Issues:  During image upload we need to preserve Content-Type as it is the easiest way to manage it.
 
+Binary Image vs Custom is messed up.
+
 Cleanup: entry rawType shall be removed and replaced with rawTypeName, because DB service can resolve number to a name now.
 
 Add title to entrySearch table, because it will result in more uniform experience.  Since operator match works on entire table at once use of new column is the best.
