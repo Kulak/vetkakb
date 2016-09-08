@@ -38,7 +38,12 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 			.then(function(jsonEntry) {
 				console.log("json text", jsonEntry)
 				let entry = jsonEntry as WSFullEntry
-				entry.Raw = atob(entry.Raw)
+				// don't convert null, because it atob(null) returns "ée"
+				if (entry.Raw != null) {
+					entry.Raw = atob(entry.Raw)
+				} else {
+					entry.Raw = ""
+				}
 				this.setState(new EntryViewState(jsonEntry as WSFullEntry, false, editAction))
 			}.bind(this))
 			.catch(function(err) {

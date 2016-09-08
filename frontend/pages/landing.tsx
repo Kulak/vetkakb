@@ -4,10 +4,12 @@ import * as ee from '../controls/entryCreate';
 import {Recent} from '../controls/recent';
 import {Search} from '../controls/search';
 import {WSFullEntry} from '../model/wsentry'
+import {EntryViewBox} from '../controls/EntryView'
 
 class LandingPageState {
   constructor(
-    public path: string
+    public path: string,
+    public createdEntry: WSFullEntry = null
   ) {}
 }
 
@@ -31,7 +33,7 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
   }
 
   onNewClose(fe: WSFullEntry) {
-    this.setState(new LandingPageState(''))
+    this.setState(new LandingPageState('viewone', fe))
   }
 
 	render() {
@@ -42,6 +44,8 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
       body = <Recent />
     } else if (this.state.path == 'search') {
       body = <Search />
+    } else if (this.state.path == 'viewone') {
+      body = <EntryViewBox entry={this.state.createdEntry} />
     }
 
     return <div>

@@ -58,7 +58,16 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		let r: Promise<any> = this.onSaveBinary(close)
 		r.then((response) => {
 			let fe: WSFullEntry = response
-			fe.Raw = atob(fe.Raw)
+			// atob(null) returns "ée", which is not what we want
+			if (fe.Raw != null) {
+				// base64 to binary array
+				fe.Raw = atob(fe.Raw)
+			} else {
+				// assign to empty string, because of
+				// react.js:20541 Warning: `value` prop on `textarea` should not be null.
+				// Consider using the empty string to clear the component or `undefined` for uncontrolled components.
+				fe.Raw = ""
+			}
 			// the following line triggers React mesage:
 			// 		react.js:20541 Warning: EntryEditor is changing a controlled input of type undefined to be uncontrolled.
 			// 		Input elements should not switch from controlled to uncontrolled (or vice versa).

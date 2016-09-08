@@ -4,6 +4,7 @@ export class WSRawType {
 
 	public static Binary = "Binary/"
 	public static BinaryImage = "Binary/Image"
+	public static Markdown = "Markdown"
 
 	private static _list: Array<WSRawType>;
 

@@ -92,8 +92,9 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 	}
 	sql = "update `entry` set raw=$1, rawType=$2, rawContentType=$3, rawFileName=$4, html=$5, updated=$6 " +
 		"where entryID=$7"
+	en.Updated = time.Now()
 	result, err = tx.Exec(sql,
-		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML, en.Updated,
+		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML, en.Updated.Unix(),
 		en.EntryID)
 	if err != nil {
 		return fmt.Errorf("Failed to update EntryID %v. Error: %v", en.EntryID, err)
