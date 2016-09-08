@@ -23,6 +23,7 @@
 	- [Correct way to install typings](#correct-way-to-install-typings)
 	- [Update to TypeScript 2.0](#update-to-typescript-20)
 	- [Promise API](#promise-api)
+- [Version 1.0 Capability](#version-10-capability)
 - [Plan](#plan)
 
 <!-- /TOC -->
@@ -211,13 +212,23 @@ VS Code needs to be told to use updated version of TypeScript through change in 
 
 About chains: <http://stackoverflow.com/questions/32032588/how-to-return-from-a-promises-catch-then-block>
 
+# Version 1.0 Capability
+
+Core functionality is fully implemented in entry and entrySearch tables.
+
+Features:
+
+* plain text
+* html
+* markdown
+* binary image file
+* any other binary file
+* can display images
+
+Missing features:
+
+* Authentication is not available
+* Permission system is missing, because authentication is not there
 
 # Plan
 
-Issues:  During image upload we need to preserve Content-Type as it is the easiest way to manage it.
-
-Binary Image vs Custom is messed up.
-
-Cleanup: entry rawType shall be removed and replaced with rawTypeName, because DB service can resolve number to a name now.
-
-Add title to entrySearch table, because it will result in more uniform experience.  Since operator match works on entire table at once use of new column is the best.
