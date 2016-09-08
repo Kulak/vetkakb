@@ -15,6 +15,7 @@ export class WSRawType {
 				DataService.get("/api/rawtype/list")
 					.then(function(json) {
 						WSRawType._list = json as Array<WSRawType>
+						WSRawType._list.sort((a,b) => { return a.TypeNum - b.TypeNum })
 						fulfil(WSRawType._list)
 					})
 					.catch(function(err) {
