@@ -66,9 +66,16 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			//    this.setState(new EditorState(fe, this.state.rawTypeName))
 			// So, we simply rely on original state and merge most important properties here
 			let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-			state.entry.EntryID = fe.EntryID
-			state.entry.HTML = fe.HTML
-			state.entry.Updated = fe.Updated
+			let se = state.entry
+			// copy all fields
+			se.EntryID = fe.EntryID
+			se.HTML = fe.HTML
+			se.Raw = fe.Raw
+			se.RawTypeName = fe.RawTypeName
+			se.Tags = fe.Tags
+			se.Title = fe.Title
+			se.Updated = fe.Updated
+			console.log("editor's setState on success (se, fe)B", se, fe)
 			this.setState(state)
 
 			if (close) {
@@ -101,6 +108,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			fd.append('entry', JSON.stringify(wsEntry))
 		}
 		// check if raw is binary or some other text
+		console.log("on save entry", this.state.entry)
 		if (this.state.entry.RawTypeName.startsWith(WSRawType.Binary)) {
 			let fileBlob = this.ctrls.rawFile.files[0]
 			fd.append('rawFile', fileBlob);

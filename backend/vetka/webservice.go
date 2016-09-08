@@ -253,6 +253,11 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 	if err != nil {
 		ws.writeError(w, err.Error())
 	} else {
-		ws.writeJSON(w, en)
+		wen, err := ws.entryDB.GetFullEntry(en.EntryID)
+		if err != nil {
+			ws.writeError(w, fmt.Sprintf("Cannot get Entry with ID %v.  Error: %v", en.EntryID, err))
+			return
+		}
+		ws.writeJSON(w, wen)
 	}
 }
