@@ -193,7 +193,7 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 		// Header for image: Header: map[Content-Disposition:[form-data; name="rawFile"; filename="1upatime-pronoun-icon.png"] Content-Type:[image/png]]
 
 		// FormName on javaScript side corresponds to 1st argument of FormData.append
-		log.Printf("Part file name: %s, form name: %s\n", p.FileName(), p.FormName())
+		log.Printf("Part form name: %s, file: %s, content-type: %s\n", p.FormName(), p.FileName(), p.Header.Get("Content-Type"))
 		switch p.FormName() {
 		case "entry":
 			// decode standard JSON message: {"title":"","raw":null,"rawType":4,"tags":""}
@@ -210,6 +210,8 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 				ws.writeError(w, fmt.Sprintf("Error reading rawFile part: %v", err))
 				return
 			}
+			wse.RawContentType = p.Header.Get("Content-Type")
+			wse.RawFileName = p.FileName()
 			// Write a temporary diagnostics file
 			targetFile := ws.conf.DataFile("last-uploaded.jpg")
 			err = ioutil.WriteFile(targetFile, raw, 0777)

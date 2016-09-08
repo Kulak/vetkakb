@@ -157,7 +157,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			// do nothing
 		} else if (this.state.entry.RawTypeName.startsWith(WSRawType.Binary)) {
 			let image = <span />
-			if (this.state.entry.RawTypeName == WSRawType.BinaryImage) {
+			if (this.state.entry.RawTypeName == WSRawType.BinaryImage && this.state.entry.EntryID > 0) {
 				image = <img className='' src={"re/" + this.state.entry.EntryID} />
 			}
 			// allow user to select new image
