@@ -1,6 +1,10 @@
 import {DataService} from './dataService'
 
 export class WSRawType {
+
+	public static Binary = "Binary/"
+	public static BinaryImage = "Binary/Image"
+
 	private static _list: Array<WSRawType>;
 
 	constructor(

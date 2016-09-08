@@ -7,6 +7,7 @@ import {WSEntryGetHTML, WSFullEntry} from '../model/wsentry'
 import {EntryEditor, EditorProps} from './EntryEditor'
 import {Entry} from '../model/entry'
 import {DataService} from '../common/dataService'
+import {WSRawType} from '../common/rawtypes'
 
 export interface EntryViewProps {
 		entry: WSEntryGetHTML
@@ -59,7 +60,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 		} else {
 			if (this.state.expanded) {
 				let entryBody
-				if (fe.RawTypeName == "Binary/Image") {
+				if (fe.RawTypeName == WSRawType.BinaryImage) {
 					entryBody = <img className='' src={"re/" + fe.EntryID} />
 				} else {
 					entryBody = <div className='entryBody' dangerouslySetInnerHTML={{__html: fe.HTML}} />

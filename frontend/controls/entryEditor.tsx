@@ -7,6 +7,7 @@ import {WSFullEntry} from '../model/wsentry'
 import {WSEntryPut, WSEntryPost, RawType} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 import {RawTypeDropdown} from './rawTypeDropdown'
+import {WSRawType} from '../common/rawtypes'
 
 // example:
 // declare type MyHandler = (myArgument: string) => void;
@@ -21,8 +22,8 @@ export interface EditorProps extends React.Props<any>{
 
 class EditorState {
 	constructor(
-		public entry: WSFullEntry = new WSFullEntry(),
-		public rawTypeName: string = ""
+		public entry: WSFullEntry = new WSFullEntry()
+		//public rawTypeName: string = ""
 	) {}
 }
 
@@ -100,7 +101,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			fd.append('entry', JSON.stringify(wsEntry))
 		}
 		// check if raw is binary or some other text
-		if (this.state.rawTypeName.startsWith("Binary")) {
+		if (this.state.entry.RawTypeName.startsWith(WSRawType.Binary)) {
 			let fileBlob = this.ctrls.rawFile.files[0]
 			fd.append('rawFile', fileBlob);
 		} else {
@@ -131,27 +132,23 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	onRawTypeChange(rawTypeName: string) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
 		state.entry.RawTypeName = rawTypeName
-		state.rawTypeName = rawTypeName
 		this.setState(state)
 	}
 	render() {
 		let rawPayload = <p>Data type name is not loaded yet.</p>
-		if (this.state.rawTypeName == "") {
+		if (this.state.entry.RawTypeName == "") {
 			// do nothing
-		} else if (this.state.rawTypeName.startsWith("Binary")) {
-			if (this.state.rawTypeName == "Binary/Image" && this.state.entry.Raw != null) {
-				// display existing image
-				let imgUrl = "data:image/png;base64," + btoa(this.state.entry.Raw)
-				rawPayload = <p>Image:
-					<img src={imgUrl} />
-				</p>
-			} else {
-				// allow user to select new image
-				rawPayload = <p>
-					<label>File upload:</label>
-					<input type="file" ref={(input) => this.ctrls.rawFile = input} />
-				</p>
+		} else if (this.state.entry.RawTypeName.startsWith(WSRawType.Binary)) {
+			let image = <span />
+			if (this.state.entry.RawTypeName == WSRawType.BinaryImage) {
+				image = <img className='' src={"re/" + this.state.entry.EntryID} />
 			}
+			// allow user to select new image
+			rawPayload = <p>
+				<label>File upload:</label>
+				<input type="file" ref={(input) => this.ctrls.rawFile = input} />
+				{image}
+			</p>
 		} else {
 			rawPayload = <p>
 				<label>Raw Text:</label><br />
@@ -181,3 +178,15 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		</div>
 	} // end of render function
 } // end of class
+
+
+// We cannot simply display an image as we are not certain of its MIME Type.
+// The code below is for reference purpose.
+//
+// if (this.state.rawTypeName == WSRawType.BinaryImage && this.state.entry.Raw != null) {
+// 	// display existing image
+// 	let imgUrl = "data:image/png;base64," + btoa(this.state.entry.Raw)
+// 	rawPayload = <p>Image:
+// 		<img src={imgUrl} />
+// 	</p>
+// }

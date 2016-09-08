@@ -40,12 +40,9 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 	onSelectionChange(e) {
 		console.log("RawTypeDD on change: ", e)
 		if (e.target.selectedOptions.length) {
-			let num = e.target.selectedOptions[0].value  // or label
-			this.setState(new RawTypeDropdownState(num, this.state.rawTypes))
-			console.log("RawTypeDD selected : ", num)
-			let name: string = this.state.rawTypes.find(function(each) {
-				return each.TypeNum == num
-			}).Name
+			let name = e.target.selectedOptions[0].value  // or label
+			this.setState(new RawTypeDropdownState(name, this.state.rawTypes))
+			console.log("RawTypeDD selected : ", name)
 			this.props.rawTypeSelected(name)
 		}
 	}
@@ -54,8 +51,8 @@ export class RawTypeDropdown extends React.Component<RawTypeDropdownProps, RawTy
 		let rawTypes = <span>Loading raw type...</span>
 		if (this.state.rawTypes != null) {
 			let options = this.state.rawTypes.map(function(each) {
-				return <option key={each.TypeNum}
-					value={each.TypeNum}>{each.Name}</option>
+				return <option key={each.Name}
+					value={each.Name}>{each.Name}</option>
 			})
 			rawTypes = <select value={this.state.name}
 				onChange={e => this.onSelectionChange(e)}>
