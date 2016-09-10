@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	"github.com/markbates/goth"
 )
 
 // EntryDB is a service to interact with EntryDB database.
@@ -171,4 +173,71 @@ func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 		return r, fmt.Errorf("Error loading RawTypeName for number %v", rawType)
 	}
 	return r, nil
+}
+
+// GetOrCreateUser gets existing user or creates new one with basic (Guest) clearance.
+func (edb *EntryDB) GetOrCreateUser(gUser goth.User) (user *User, err error) {
+	if edb.db == nil {
+		return user, fmt.Errorf("Database connection is closed.")
+	}
+	query := `
+	SELECT u.userID, clearances from user u
+	inner join oauthUser ou on ou.UserFK = u.UserID
+	where ou.provider = ? and ou.provUserID = ?
+	`
+	user = &User{}
+	err = edb.db.QueryRow(query, gUser.Provider, gUser.UserID).
+		Scan(&user.UserID, &user.Clearances)
+	if err == sql.ErrNoRows {
+		return edb.createUser(gUser)
+	}
+	return
+}
+
+func (edb *EntryDB) createUser(gUser goth.User) (user *User, err error) {
+	var tx *sql.Tx
+	tx, err = edb.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	user = &User{}
+	ou := OAuthUser{
+		Provider:          gUser.Provider,
+		Email:             gUser.Email,
+		Name:              gUser.Name,
+		FirstName:         gUser.FirstName,
+		LastName:          gUser.LastName,
+		NickName:          gUser.NickName,
+		Description:       gUser.Description,
+		ProvUserID:        gUser.UserID,
+		AvatarURL:         gUser.AvatarURL,
+		Location:          gUser.Location,
+		AccessToken:       gUser.AccessToken,
+		AccessTokenSecret: gUser.AccessTokenSecret,
+		RefreshToken:      gUser.RefreshToken,
+		ExpiresAt:         gUser.ExpiresAt,
+	}
+	err = user.dbInsert(tx)
+	if err != nil {
+		goto DONE
+	}
+	ou.UserFK = user.UserID
+	err = ou.dbInsert(tx)
+DONE:
+	// check transaction status
+	if err != nil {
+		// rollback due to error
+		log.Printf("Failed to save. Error: %v", err)
+		err2 := tx.Rollback()
+		if err != nil {
+			log.Printf("Failed to rollback. Error: %v", err2)
+		}
+		return nil, err
+	}
+	// commit
+	err = tx.Commit()
+	if err != nil {
+		err = fmt.Errorf("Failed to commit entry to DB. Error: %v", err)
+	}
+	return user, err
 }

@@ -21,7 +21,7 @@ create table if not exists oauthUser (
 	accessToken text,
 	accessTokenSecret text,
 	refreshToken text,
-	expiresAt text,
+	expiresAt timestamp,
 	created timestamp default (strftime('%s', 'now')) NOT NULL,
 	updated timestamp default (strftime('%s', 'now')) NOT NULL
 );

@@ -92,13 +92,17 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 	}
 }
 
+// getGplusCallback is called by "Google Plus" OAuth2 API when user is authenticated.
+// It creates new user if user is absent and sets "vetka" cookie with user id.
 func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
-	log.Printf("Logged in user: %v", user)
+	//log.Printf("Logged in user: %v", user)
+
+	ws.entryDB.GetOrCreateUser(user)
 
 	session, err := ws.store.Get(r, "vetka")
 	if err != nil {
