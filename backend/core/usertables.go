@@ -64,7 +64,7 @@ func (u *User) dbInsert(tx *sql.Tx) (err error) {
 		return fmt.Errorf("Cannot insert User record, because UserID is not zero, but %v.",
 			u.UserID)
 	}
-	query := `insert into user`
+	query := `insert into user (clearances) values(0x1)`
 	var result sql.Result
 	result, err = tx.Exec(query)
 	if err != nil {
