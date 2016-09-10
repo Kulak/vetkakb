@@ -23,6 +23,8 @@ type MainSection struct {
 	PidFileName string
 	LogFileName string
 	User        string
+	// SiteURL is used to construct OAuth callback URL.
+	SiteURL string
 }
 
 // Configuration represents content of the configuration file.
@@ -41,6 +43,7 @@ func NewConfiguration() *Configuration {
 			PidFileName: "/var/run/vetkakb.pid",
 			LogFileName: "/var/log/vetkakb.log",
 			User:        "",
+			SiteURL:     "http://localhost:8080",
 		},
 	}
 }

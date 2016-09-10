@@ -54,6 +54,7 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
         <button className='leftStack' onClick={e => this.onNewClick()} >New Entry</button>
         <button className='leftStack' onClick={e => this.onRecentClick()} >Recent</button>
         <button className='leftStack' onClick={e => this.onSearchClick()} >Search</button>
+        <form action='api/auth'><button className='leftStack' name='provider' value='gplus'>Login with Google</button></form>
       </div>
       {body}
     </div>

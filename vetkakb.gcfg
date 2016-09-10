@@ -6,3 +6,5 @@ DataRoot = data    # relative to current working directory
 WebEndpoint = :8080
 PidFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.pid
 LogFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.log
+# Example:  http://www.gnezdovi.com:8080   NOTE: Make sure there is no slash at the end!
+SiteURL = http://www.gnezdovi.com:8080

@@ -16,6 +16,7 @@
 	- [Functional Approaches](#functional-approaches)
 	- [External vs Internal Blob](#external-vs-internal-blob)
 	- [HTML Tokenization](#html-tokenization)
+	- [Google OAuth](#google-oauth)
 - [Log](#log)
 	- [TypeScript: namespaces and modules](#typescript-namespaces-and-modules)
 	- [Fetch API Support](#fetch-api-support)
@@ -117,6 +118,11 @@ The simplest way to avoid writing custom HTML tokenizer is to convert HTML to te
 Source: <https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/msg82126.html>
 
 Other options are available.
+
+## Google OAuth
+
+https://console.developers.google.com/apis/credentials?project=vetka-142905
+
 
 # Log
 

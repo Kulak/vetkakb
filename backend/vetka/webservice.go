@@ -8,7 +8,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/gplus"
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
 )
 
@@ -24,6 +28,14 @@ type WebSvc struct {
 
 // NewWebSvc creates new WebSvc structure.
 func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.TypeService) *WebSvc {
+
+	gothic.Store = sessions.NewFilesystemStore("/tmp/vetka-sessions/", []byte("goth-example"))
+
+	gplusKey := "214159873843-v6p3kmhikm62uc3j2paut5rsvkivod8v.apps.googleusercontent.com"
+	gplusSecret := "0-eQESZIMdoKKn_2Xekl9e1b"
+	goth.UseProviders(
+		gplus.New(gplusKey, gplusSecret, fmt.Sprintf("%s/api/auth/callback?provider=gplus", conf.Main.SiteURL)),
+	)
 
 	ws := &WebSvc{
 		Router:  httprouter.New(),
@@ -50,6 +62,8 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.GET("/api/search/*query", ws.getSearch)
 	router.GET("/api/entry/:entryID", ws.getFullEntry)
 	router.GET("/api/rawtype/list", ws.getRawTypeList)
+	router.HandlerFunc("GET", "/api/auth", gothic.BeginAuthHandler)
+	router.GET("/api/auth/callback", ws.getGplusCallback)
 	// allows to load RawTypeName "Binary/Image" as a link.
 	router.GET("/re/:entryID", ws.getResourceEntry)
 	// Enable access to source code files from web browser debugger
@@ -72,6 +86,17 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 		// 	"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		handler.ServeHTTP(w, r)
 	}
+}
+
+func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	user, err := gothic.CompleteUserAuth(w, r)
+	if err != nil {
+		ws.writeError(w, err.Error())
+		return
+	}
+	log.Printf("Logged in user: %v", user)
+	fileName := ws.conf.Main.SiteURL + "/index.html"
+	http.Redirect(w, r, fileName, 307)
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
