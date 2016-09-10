@@ -24,12 +24,13 @@ type WebSvc struct {
 	conf    *core.Configuration
 	entryDB *core.EntryDB
 	typeSvc *core.TypeService
+	store   *sessions.CookieStore
 }
 
 // NewWebSvc creates new WebSvc structure.
 func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.TypeService) *WebSvc {
 
-	gothic.Store = sessions.NewFilesystemStore("/tmp/vetka-sessions/", []byte("goth-example"))
+	gothic.Store = sessions.NewCookieStore([]byte("something-very-secret-blah-123!.;"))
 
 	gplusKey := "214159873843-v6p3kmhikm62uc3j2paut5rsvkivod8v.apps.googleusercontent.com"
 	gplusSecret := "0-eQESZIMdoKKn_2Xekl9e1b"
@@ -42,6 +43,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 		conf:    conf,
 		entryDB: entryDB,
 		typeSvc: typeSvc,
+		store:   sessions.NewCookieStore([]byte("moi-ochen-bolshoy-secret-123-!-21-13.")),
 	}
 
 	// CRUD model in REST:
@@ -64,6 +66,8 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.GET("/api/rawtype/list", ws.getRawTypeList)
 	router.HandlerFunc("GET", "/api/auth", gothic.BeginAuthHandler)
 	router.GET("/api/auth/callback", ws.getGplusCallback)
+	router.GET("/api/session/gothic", ws.getGothicSession)
+	router.GET("/api/session/vetka", ws.getVetkaSession)
 	// allows to load RawTypeName "Binary/Image" as a link.
 	router.GET("/re/:entryID", ws.getResourceEntry)
 	// Enable access to source code files from web browser debugger
@@ -95,8 +99,58 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 	log.Printf("Logged in user: %v", user)
+
+	session, err := ws.store.Get(r, "vetka")
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get vetka session store: %v", err))
+		return
+	}
+	session.Values["userId"] = -1
+	session.Save(r, w)
+
 	fileName := ws.conf.Main.SiteURL + "/index.html"
 	http.Redirect(w, r, fileName, 307)
+}
+
+// getSession is a study call to figure out what's inside gothic session
+func (ws WebSvc) getGothicSession(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	providerName := "gplus"
+	provider, err := goth.GetProvider(providerName)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get provider: %v", err))
+		return
+	}
+
+	session, err := gothic.Store.Get(r, gothic.SessionName)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get session: %v", err))
+		return
+	}
+
+	if session.Values[gothic.SessionName] == nil {
+		ws.writeError(w, "could not find a matching session for this request")
+		return
+	}
+
+	sess, err := provider.UnmarshalSession(session.Values[gothic.SessionName].(string))
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot unmarshal session: %v", err))
+		return
+	}
+	ws.writeJSON(w, sess)
+	// Prints result like this:
+	/*
+		{"AuthURL":"https://accounts.google.com/o/oauth2/auth?access_type=offline\u0026client_id=214159873843-v6p3kmhikm62uc3j2paut5rsvkivod8v.apps.googleusercontent.com\u0026redirect_uri=http%3A%2F%2Fwww.gnezdovi.com%3A8080%2Fapi%2Fauth%2Fcallback%3Fprovider%3Dgplus\u0026response_type=code\u0026scope=profile+email+openid\u0026state=state","AccessToken":"","RefreshToken":"","ExpiresAt":"0001-01-01T00:00:00Z"}
+	*/
+}
+
+func (ws WebSvc) getVetkaSession(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	session, err := ws.store.Get(r, "vetka")
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get vetka session store: %v", err))
+		return
+	}
+	ws.writeError(w, fmt.Sprintf("Vetka session userId: %v", session.Values["userId"]))
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
