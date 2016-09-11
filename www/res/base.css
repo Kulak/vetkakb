@@ -53,3 +53,7 @@ div.toolbar > form {
 textarea.entryEdit {
 	height: 140px;
 }
+
+img.avatar {
+	max-height: 22px;
+}

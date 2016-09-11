@@ -5,6 +5,7 @@ import {Recent} from '../controls/recent';
 import {Search} from '../controls/search';
 import {WSFullEntry} from '../model/wsentry'
 import {EntryViewBox} from '../controls/EntryView'
+import {UserBox} from '../controls/UserBox'
 
 class LandingPageState {
   constructor(
@@ -54,7 +55,7 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
         <button className='leftStack' onClick={e => this.onNewClick()} >New Entry</button>
         <button className='leftStack' onClick={e => this.onRecentClick()} >Recent</button>
         <button className='leftStack' onClick={e => this.onSearchClick()} >Search</button>
-        <form action='api/auth'><button className='leftStack' name='provider' value='gplus'>Login with Google</button></form>
+        <UserBox />
       </div>
       {body}
     </div>
