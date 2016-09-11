@@ -9,6 +9,23 @@ import (
 This file collects data structures that support REST API calls.
 */
 
+// WSUserGet is a structure required by HTML app
+// to display basic user data.
+type WSUserGet struct {
+	Name       string
+	Clearances uint8
+	NickName   string
+	AvatarURL  string
+}
+
+// GuestWSUserGet represents default Guest user.
+var GuestWSUserGet = &WSUserGet{
+	Name:       "Anonymous Guest",
+	Clearances: Guest.Mask,
+	NickName:   "Guest",
+	AvatarURL:  "",
+}
+
 // WSEntryPut describes REST API payload for creating entry.
 type WSEntryPut struct {
 	Title          string

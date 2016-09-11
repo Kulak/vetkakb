@@ -15,6 +15,12 @@ type User struct {
 	Updated    time.Time
 }
 
+// GuestUser is a generic guest user.
+var GuestUser = &User{
+	UserID:     0,
+	Clearances: Guest.Mask,
+}
+
 // OAuthUser contains data returned by OAuth provider.
 // It points to vetka User.
 type OAuthUser struct {

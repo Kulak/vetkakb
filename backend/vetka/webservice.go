@@ -66,7 +66,11 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.GET("/api/rawtype/list", ws.getRawTypeList)
 	router.HandlerFunc("GET", "/api/auth", gothic.BeginAuthHandler)
 	router.GET("/api/auth/callback", ws.getGplusCallback)
+	// returns wsUserGet strucure usable for general web pages
+	router.GET("/api/session/user", ws.wsUserGet)
+	// for testing purpose of gothic cookie
 	router.GET("/api/session/gothic", ws.getGothicSession)
+	// for testing purpose of userId cookie
 	router.GET("/api/session/vetka", ws.getVetkaSession)
 	// allows to load RawTypeName "Binary/Image" as a link.
 	router.GET("/re/:entryID", ws.getResourceEntry)
@@ -120,6 +124,26 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 	http.Redirect(w, r, fileName, 307)
 }
 
+// sessionUser returns current session user or guest if there is a problem.
+// It always returns a valid user ID.
+func (ws WebSvc) sessionWSUser(r *http.Request) (u *core.WSUserGet) {
+	var err error
+	var session *sessions.Session
+	session, err = ws.store.Get(r, "vetka")
+	if err != nil {
+		fmt.Printf("Failed to get vetka session store: %v", err)
+		u = core.GuestWSUserGet
+		return
+	}
+	userID := session.Values["userId"].(int64)
+	u, err = ws.entryDB.GetUser(userID)
+	if err != nil {
+		fmt.Printf("Failed to get user from DB: %v", err)
+		u = core.GuestWSUserGet
+	}
+	return
+}
+
 // getSession is a study call to figure out what's inside gothic session
 func (ws WebSvc) getGothicSession(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	providerName := "gplus"
@@ -159,6 +183,11 @@ func (ws WebSvc) getVetkaSession(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 	ws.writeError(w, fmt.Sprintf("Vetka session userId: %v", session.Values["userId"]))
+}
+
+func (ws WebSvc) wsUserGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	u := ws.sessionWSUser(r)
+	ws.writeJSON(w, u)
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

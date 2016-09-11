@@ -241,3 +241,16 @@ DONE:
 	}
 	return user, err
 }
+
+// GetUser loads User by userID.
+func (edb *EntryDB) GetUser(userID int64) (u *WSUserGet, err error) {
+	if edb.db == nil {
+		return u, fmt.Errorf("Database connection is closed.")
+	}
+	query := `SELECT u.clearances, ou.name, ou.nickName, ou.avatarURL from user u
+	inner join OAuthUser ou on ou.UserFK = u.UserID
+	where u.userId = ?`
+	u = &WSUserGet{}
+	err = edb.db.QueryRow(query, userID).Scan(&u.Clearances, &u.Name, &u.NickName, &u.AvatarURL)
+	return
+}
