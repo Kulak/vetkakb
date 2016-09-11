@@ -4,7 +4,7 @@ userBox provides logon link or displays user name
 
 import * as React from 'react'
 import {WSUserGet} from '../model/wsuser'
-import {DataService} from '../common/dataService'
+import {User} from '../common/user'
 
 export interface UserBoxProps {
 }
@@ -19,7 +19,7 @@ export class UserBox extends React.Component<UserBoxProps, UserBoxState> {
 	public constructor(props: UserBoxProps, context) {
 		super(props, context)
 		this.state = new UserBoxState(null)
-		DataService.get("/api/session/user")
+		User.Current()
 		.then(function(json) {
 			let user = json as WSUserGet
 			this.setState(new UserBoxState(user))
@@ -31,7 +31,7 @@ export class UserBox extends React.Component<UserBoxProps, UserBoxState> {
 	render() {
 		let u = this.state.user
 		if (u != null) {
-			return <div><img src={u.AvatarURL} className="avatar" />{u.Name}</div>
+			return <div><img src={u.AvatarURL} className="avatar" />{u.NickName}</div>
 		} else {
 			return <form action='api/auth'>
 				<button className='leftStack' name='provider' value='gplus'>Login</button>
