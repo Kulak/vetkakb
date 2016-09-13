@@ -22,6 +22,7 @@ import (
 
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
 	"horse.lan.gnezdovi.com/vetkakb/backend/edb"
+	"horse.lan.gnezdovi.com/vetkakb/backend/sdb"
 	"horse.lan.gnezdovi.com/vetkakb/backend/vetka"
 
 	"github.com/sevlyar/go-daemon"
@@ -86,10 +87,28 @@ func main() {
 	ts := edb.NewTypeService()
 	ts.Initialize()
 
-	edb := edb.NewEntryDB(conf.EntryDBFileName(), ts)
-	edb.Open()
+	// edb := edb.NewEntryDB(conf.SQLDir("entrydb"), c.Main.DataRoot, ,  ts)
+	// edb.Open()
+
+	sdb := sdb.NewSiteDB(conf.SiteDBFileName(), conf.SQLDir("sitedb"))
+	sdb.Open()
 
 	log.Println("Startign web service")
-	ws := vetka.NewWebSvc(conf, edb, ts)
+	ws := vetka.NewWebSvc(conf, sdb, ts)
+
+	// initialized listed sites
+	sites, err := sdb.All()
+	if err != nil {
+		log.Fatalf("Failed to load sites. Error: %v", err)
+	}
+	for _, site := range sites {
+		db := ws.NewEntryDB(site)
+		err := db.Open()
+		if err != nil {
+			log.Fatalf("Failed to open DB. Error: %v", err)
+		}
+		db.Close()
+	}
+
 	log.Fatal(http.ListenAndServe(conf.Main.WebEndpoint, ws.Router))
 }

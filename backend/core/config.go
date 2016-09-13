@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"github.com/kulak/gcfg"
-	"github.com/kulak/sqlitemaint"
 )
 
 // MainSection of the configuration file.
@@ -60,9 +59,9 @@ func LoadConfig(cutomFileName string) (*Configuration, error) {
 	return cfg, err
 }
 
-// EntryDBFileName returns name of the entry DB file.
-func (c Configuration) EntryDBFileName() string {
-	return c.DataFile("entry.db")
+// SiteDBFileName returns name of the site database.
+func (c Configuration) SiteDBFileName() string {
+	return c.DataFile("site.db")
 }
 
 // DataFile retruns name of the file in Dataroot directory.
@@ -80,7 +79,7 @@ func (c Configuration) WebDir(dir string) http.Dir {
 
 // SQLDir returns name of the directory that contains
 // SQL scripts.
-func (c Configuration) sqlDir(dbDir string) string {
+func (c Configuration) SQLDir(dbDir string) string {
 	return filepath.Join(c.Main.SQLRoot, dbDir)
 }
 
@@ -93,9 +92,5 @@ func (c Configuration) InitializeFilesystem() (err error) {
 		return fmt.Errorf("Failed to create a data directory due to error: %v", err)
 	}
 
-	_, err = sqlitemaint.UpgradeSQLite(c.EntryDBFileName(), c.sqlDir("entrydb"))
-	if err != nil {
-		return fmt.Errorf("Failed to upgrade DB.  Error: %v", err)
-	}
 	return nil
 }

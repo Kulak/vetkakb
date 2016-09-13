@@ -30,7 +30,7 @@ export class UserBox extends React.Component<UserBoxProps, UserBoxState> {
 	}
 	render() {
 		let u = this.state.user
-		if (u != null) {
+		if (u != null && u.NickName != 'Guest') {
 			return <div><img src={u.AvatarURL} className="avatar" />{u.NickName}</div>
 		} else {
 			return <form action='api/auth'>

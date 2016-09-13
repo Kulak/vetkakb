@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/markbates/goth"
@@ -15,6 +16,7 @@ import (
 	"github.com/markbates/goth/providers/gplus"
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
 	"horse.lan.gnezdovi.com/vetkakb/backend/edb"
+	"horse.lan.gnezdovi.com/vetkakb/backend/sdb"
 )
 
 // Helper functions
@@ -23,13 +25,15 @@ import (
 type WebSvc struct {
 	Router  *httprouter.Router
 	conf    *core.Configuration
-	entryDB *edb.EntryDB
+	siteDB  *sdb.SiteDB
 	typeSvc *edb.TypeService
 	store   *sessions.CookieStore
+	// each key is a site's DBName.
+	edbCache map[string]*edb.EntryDB
 }
 
 // NewWebSvc creates new WebSvc structure.
-func NewWebSvc(conf *core.Configuration, entryDB *edb.EntryDB, typeSvc *edb.TypeService) *WebSvc {
+func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeService) *WebSvc {
 
 	gothic.Store = sessions.NewCookieStore([]byte("something-very-secret-blah-123!.;"))
 
@@ -40,11 +44,12 @@ func NewWebSvc(conf *core.Configuration, entryDB *edb.EntryDB, typeSvc *edb.Type
 	)
 
 	ws := &WebSvc{
-		Router:  httprouter.New(),
-		conf:    conf,
-		entryDB: entryDB,
-		typeSvc: typeSvc,
-		store:   sessions.NewCookieStore([]byte("moi-ochen-bolshoy-secret-123-!-21-13.")),
+		Router:   httprouter.New(),
+		conf:     conf,
+		siteDB:   siteDB,
+		typeSvc:  typeSvc,
+		store:    sessions.NewCookieStore([]byte("moi-ochen-bolshoy-secret-123-!-21-13.")),
+		edbCache: make(map[string]*edb.EntryDB),
 	}
 
 	// CRUD model in REST:
@@ -55,57 +60,32 @@ func NewWebSvc(conf *core.Configuration, entryDB *edb.EntryDB, typeSvc *edb.Type
 	//   delete - DELETE
 
 	router := ws.Router
+	// serve static files
 	router.GET("/index.html", ws.AddHeaders(http.FileServer(conf.WebDir("index.html"))))
 	router.Handler("GET", "/", http.FileServer(conf.WebDir("/")))
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
-	router.POST("/binaryentry/", ws.demandAdministrator(ws.postBinaryEntry))
-	router.GET("/api/recent", ws.getRecent)
-	router.GET("/api/recent/:limit", ws.getRecent)
-	router.GET("/api/search/*query", ws.getSearch)
-	router.GET("/api/entry/:entryID", ws.getFullEntry)
-	router.GET("/api/rawtype/list", ws.getRawTypeList)
-	router.HandlerFunc("GET", "/api/auth", gothic.BeginAuthHandler)
-	router.GET("/api/auth/callback", ws.getGplusCallback)
+	// serve dynamic (site specific) content
+	router.POST("/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
+	router.GET("/api/recent", ws.siteHandler(ws.getRecent))
+	router.GET("/api/recent/:limit", ws.siteHandler(ws.getRecent))
+	router.GET("/api/search/*query", ws.siteHandler(ws.getSearch))
+	router.GET("/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
+	router.GET("/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
+	router.HandlerFunc("GET", "/api/auth", ws.siteHandlerFunc(gothic.BeginAuthHandler))
+	router.GET("/api/auth/callback", ws.siteHandler(ws.getGplusCallback))
 	// returns wsUserGet strucure usable for general web pages
-	router.GET("/api/session/user", ws.wsUserGet)
+	router.GET("/api/session/user", ws.siteHandler(ws.wsUserGet))
 	// for testing purpose of gothic cookie
-	router.GET("/api/session/gothic", ws.demandAdministrator(ws.getGothicSession))
+	router.GET("/api/session/gothic", ws.siteHandler(ws.demandAdministrator(ws.getGothicSession)))
 	// for testing purpose of userId cookie
-	router.GET("/api/session/vetka", ws.demandAdministrator(ws.getVetkaSession))
+	router.GET("/api/session/vetka", ws.siteHandler(ws.demandAdministrator(ws.getVetkaSession)))
 	// allows to load RawTypeName "Binary/Image" as a link.
-	router.GET("/re/:entryID", ws.getResourceEntry)
+	router.GET("/re/:entryID", ws.siteHandler(ws.getResourceEntry))
 	// Enable access to source code files from web browser debugger
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
 
 	return ws
-}
-
-// Handler functions
-
-// AddHeaders adds custom HEADERs to index.html response using middleware style solution.
-func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		/* Custom headers are easy to control here: */
-		// fmt.Println("Adding header Access-Control-Allow-Credentials")
-		// w.Header().Set("Access-Control-Allow-Origin", "*")
-		// w.Header().Set("Access-Control-Allow-Credentials", "true")
-		// w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		// w.Header().Set("Access-Control-Allow-Headers",
-		// 	"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		handler.ServeHTTP(w, r)
-	}
-}
-
-func (ws WebSvc) demandAdministrator(handler httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		u := ws.sessionWSUser(r)
-		if edb.Administrator.HasAccess(u.Clearances) {
-			handler(w, r, p)
-		} else {
-			ws.writeError(w, http.StatusText(http.StatusUnauthorized))
-		}
-	}
 }
 
 // getGplusCallback is called by "Google Plus" OAuth2 API when user is authenticated.
@@ -117,8 +97,8 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 	//log.Printf("Logged in user: %v", user)
-
-	user, err := ws.entryDB.GetOrCreateUser(gUser)
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	user, err := entryDB.GetOrCreateUser(gUser)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
@@ -134,32 +114,6 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 
 	fileName := ws.conf.Main.SiteURL + "/index.html"
 	http.Redirect(w, r, fileName, 307)
-}
-
-func (ws WebSvc) sessionUserID(r *http.Request) (userID int64) {
-	var err error
-	var session *sessions.Session
-	session, err = ws.store.Get(r, "vetka")
-	if err != nil {
-		fmt.Printf("Failed to get vetka session store: %v", err)
-		return
-	}
-	userID = session.Values["userId"].(int64)
-	return
-}
-
-// sessionUser returns current session user or guest if there is a problem.
-// It always returns a valid user ID.
-func (ws WebSvc) sessionWSUser(r *http.Request) (u *edb.WSUserGet) {
-	var err error
-	var userID int64
-	userID = ws.sessionUserID(r)
-	u, err = ws.entryDB.GetUser(userID)
-	if err != nil {
-		fmt.Printf("Failed to get user from DB: %v", err)
-		u = edb.GuestWSUserGet
-	}
-	return
 }
 
 // getSession is a study call to figure out what's inside gothic session
@@ -214,7 +168,8 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 		ws.writeError(w, err.Error())
 		return
 	}
-	entries, err := ws.entryDB.RecentHTMLEntries(limit)
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	entries, err := entryDB.RecentHTMLEntries(limit)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Failed to load recent HTML entries. Error: %v", err))
 		return
@@ -235,7 +190,8 @@ func (ws WebSvc) getSearch(w http.ResponseWriter, r *http.Request, p httprouter.
 		return
 	}
 	query = query[1:]
-	entries, err := ws.entryDB.MatchEntries(query, limit)
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	entries, err := entryDB.MatchEntries(query, limit)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Failed to match HTML entries. Error: %v", err))
 		return
@@ -271,7 +227,8 @@ func (ws WebSvc) getWSFullEntry(w http.ResponseWriter, r *http.Request, p httpro
 		ws.writeError(w, fmt.Sprintf("Cannot parse entryID.  Error: %v", err))
 		return nil
 	}
-	entry, err := ws.entryDB.GetFullEntry(id)
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	entry, err := entryDB.GetFullEntry(id)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot get Entry with ID %v.  Error: %v", id, err))
 		return nil
@@ -387,11 +344,12 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 	en.HTML, err = tp.ToHTML(raw)
 	es := edb.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
 	es.Plain, err = tp.ToPlain(raw)
-	err = ws.entryDB.SaveEntry(en, es)
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	err = entryDB.SaveEntry(en, es)
 	if err != nil {
 		ws.writeError(w, err.Error())
 	} else {
-		wen, err := ws.entryDB.GetFullEntry(en.EntryID)
+		wen, err := entryDB.GetFullEntry(en.EntryID)
 		if err != nil {
 			ws.writeError(w, fmt.Sprintf("Cannot get Entry with ID %v.  Error: %v", en.EntryID, err))
 			return

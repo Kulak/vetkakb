@@ -2,24 +2,34 @@ package edb
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
+	"github.com/kulak/sqlitemaint"
 	"github.com/markbates/goth"
 )
 
 // EntryDB is a service to interact with EntryDB database.
 type EntryDB struct {
-	db         *sql.DB
-	dbFileName string
-	rawTypes   *TypeService
+	db       *sql.DB
+	sqlDir   string
+	dataDir  string
+	dbDir    string
+	dbName   string
+	rawTypes *TypeService
 }
 
 // NewEntryDB creates DB service, but does not open connection.
-func NewEntryDB(dbFileName string, rawTypes *TypeService) *EntryDB {
+func NewEntryDB(sqlDir, dataDir, dbName string, rawTypes *TypeService) *EntryDB {
 	return &EntryDB{
-		dbFileName: dbFileName,
-		rawTypes:   rawTypes,
+		sqlDir:   sqlDir,
+		dataDir:  dataDir,
+		dbDir:    filepath.Join(dataDir, dbName),
+		dbName:   dbName,
+		rawTypes: rawTypes,
 	}
 }
 
@@ -28,9 +38,18 @@ func (edb *EntryDB) Open() error {
 	if edb.db != nil {
 		return nil
 	}
-	db, err := sql.Open("sqlite3", edb.dbFileName)
+	err := os.MkdirAll(edb.dbDir, os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("Failed to open database %v. Error: %v", edb.dbFileName, err)
+		return fmt.Errorf("Failed to create a data directory %s due to error: %v", edb.dbDir, err)
+	}
+	dbFileName := filepath.Join(edb.dbDir, edb.dbName+".db")
+	_, err = sqlitemaint.UpgradeSQLite(dbFileName, edb.sqlDir)
+	if err != nil {
+		return fmt.Errorf("Failed to upgrade entry DB %s.  Error: %v", dbFileName, err)
+	}
+	db, err := sql.Open("sqlite3", dbFileName)
+	if err != nil {
+		return fmt.Errorf("Failed to open database %v. Error: %v", dbFileName, err)
 	}
 	edb.db = db
 	return nil
@@ -244,8 +263,10 @@ DONE:
 
 // GetUser loads User by userID.
 func (edb *EntryDB) GetUser(userID int64) (u *WSUserGet, err error) {
+	u = nil
 	if edb.db == nil {
-		return u, fmt.Errorf("Database connection is closed.")
+		err = errors.New("Database connection is closed.")
+		return
 	}
 	query := `SELECT u.clearances, ou.name, ou.nickName, ou.avatarURL from user u
 	inner join OAuthUser ou on ou.UserFK = u.UserID
