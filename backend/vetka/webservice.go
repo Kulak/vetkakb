@@ -58,7 +58,7 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	router.Handler("GET", "/", http.FileServer(conf.WebDir("/")))
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
-	router.POST("/binaryentry/", ws.postBinaryEntry)
+	router.POST("/binaryentry/", ws.demandAdministrator(ws.postBinaryEntry))
 	router.GET("/api/recent", ws.getRecent)
 	router.GET("/api/recent/:limit", ws.getRecent)
 	router.GET("/api/search/*query", ws.getSearch)
@@ -69,9 +69,9 @@ func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.Ty
 	// returns wsUserGet strucure usable for general web pages
 	router.GET("/api/session/user", ws.wsUserGet)
 	// for testing purpose of gothic cookie
-	router.GET("/api/session/gothic", ws.getGothicSession)
+	router.GET("/api/session/gothic", ws.demandAdministrator(ws.getGothicSession))
 	// for testing purpose of userId cookie
-	router.GET("/api/session/vetka", ws.getVetkaSession)
+	router.GET("/api/session/vetka", ws.demandAdministrator(ws.getVetkaSession))
 	// allows to load RawTypeName "Binary/Image" as a link.
 	router.GET("/re/:entryID", ws.getResourceEntry)
 	// Enable access to source code files from web browser debugger
@@ -93,6 +93,17 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 		// w.Header().Set("Access-Control-Allow-Headers",
 		// 	"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		handler.ServeHTTP(w, r)
+	}
+}
+
+func (ws WebSvc) demandAdministrator(handler httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		u := ws.sessionWSUser(r)
+		if core.Administrator.HasAccess(u.Clearances) {
+			handler(w, r, p)
+		} else {
+			ws.writeError(w, http.StatusText(http.StatusUnauthorized))
+		}
 	}
 }
 
@@ -124,18 +135,24 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 	http.Redirect(w, r, fileName, 307)
 }
 
-// sessionUser returns current session user or guest if there is a problem.
-// It always returns a valid user ID.
-func (ws WebSvc) sessionWSUser(r *http.Request) (u *core.WSUserGet) {
+func (ws WebSvc) sessionUserID(r *http.Request) (userID int64) {
 	var err error
 	var session *sessions.Session
 	session, err = ws.store.Get(r, "vetka")
 	if err != nil {
 		fmt.Printf("Failed to get vetka session store: %v", err)
-		u = core.GuestWSUserGet
 		return
 	}
-	userID := session.Values["userId"].(int64)
+	userID = session.Values["userId"].(int64)
+	return
+}
+
+// sessionUser returns current session user or guest if there is a problem.
+// It always returns a valid user ID.
+func (ws WebSvc) sessionWSUser(r *http.Request) (u *core.WSUserGet) {
+	var err error
+	var userID int64
+	userID = ws.sessionUserID(r)
 	u, err = ws.entryDB.GetUser(userID)
 	if err != nil {
 		fmt.Printf("Failed to get user from DB: %v", err)
@@ -363,7 +380,9 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 		ws.writeError(w, err.Error())
 		return
 	}
-	en := core.NewEntry(wse.EntryID, raw, tp.TypeNum, wse.RawContentType, wse.RawFileName)
+	userID := ws.sessionUserID(r)
+	en := core.NewEntry(wse.EntryID, raw, tp.TypeNum, wse.RawContentType,
+		wse.RawFileName, userID)
 	en.HTML, err = tp.ToHTML(raw)
 	es := core.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
 	es.Plain, err = tp.ToPlain(raw)

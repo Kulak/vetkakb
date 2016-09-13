@@ -84,7 +84,7 @@ DONE:
 		// rollback due to error
 		log.Printf("Failed to save. Error: %v", err)
 		err2 := tx.Rollback()
-		if err != nil {
+		if err2 != nil {
 			log.Printf("Failed to rollback. Error: %v", err2)
 		}
 		return err

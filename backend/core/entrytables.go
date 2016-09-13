@@ -8,14 +8,16 @@ import (
 
 // Entry represents content of Entry table in Entry databse.
 type Entry struct {
-	EntryID        int64
-	Raw            []byte
-	RawType        int
-	RawContentType string
-	RawFileName    string
-	HTML           string
-	Created        time.Time
-	Updated        time.Time
+	EntryID           int64
+	Raw               []byte
+	RawType           int
+	RawContentType    string
+	RawFileName       string
+	HTML              string
+	OwnerFK           int64
+	RequiredClearance uint8
+	Created           time.Time
+	Updated           time.Time
 }
 
 // EntrySearch represents content of EntrySearch in Entry databse.
@@ -46,13 +48,15 @@ func sqlRequireAffected(result sql.Result, expected int64) error {
 /* ========== Entry ========== */
 
 // NewEntry creates new entry to be inserted into DB.
-func NewEntry(entryID int64, raw []byte, rawType int, rawContentType, rawFileName string) *Entry {
+func NewEntry(entryID int64, raw []byte, rawType int, rawContentType,
+	rawFileName string, ownerFK int64) *Entry {
 	return &Entry{
 		EntryID:        entryID,
 		Raw:            raw,
 		RawType:        rawType,
 		RawContentType: rawContentType,
 		RawFileName:    rawFileName,
+		OwnerFK:        ownerFK,
 	}
 }
 
@@ -64,9 +68,12 @@ func (en *Entry) dbInsert(tx *sql.Tx) (err error) {
 	if en.EntryID != 0 {
 		return fmt.Errorf("Cannot insert record with existing EntryID %v.", en.EntryID)
 	}
-	sql = "insert into `entry` (raw, rawType, rawContentType, rawFileName, html) values($1, $2, $3, $4, $5)"
+	sql = `
+insert into entry (raw, rawType, rawContentType, rawFileName, html, ownerFK)
+values($1, $2, $3, $4, $5, $6)
+`
 	result, err = tx.Exec(sql,
-		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML)
+		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML, en.OwnerFK)
 	if err != nil {
 		return fmt.Errorf("Failed to insert `entry` record to DB. Error: %v", err)
 	}
