@@ -14,6 +14,7 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/gplus"
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
+	"horse.lan.gnezdovi.com/vetkakb/backend/edb"
 )
 
 // Helper functions
@@ -22,13 +23,13 @@ import (
 type WebSvc struct {
 	Router  *httprouter.Router
 	conf    *core.Configuration
-	entryDB *core.EntryDB
-	typeSvc *core.TypeService
+	entryDB *edb.EntryDB
+	typeSvc *edb.TypeService
 	store   *sessions.CookieStore
 }
 
 // NewWebSvc creates new WebSvc structure.
-func NewWebSvc(conf *core.Configuration, entryDB *core.EntryDB, typeSvc *core.TypeService) *WebSvc {
+func NewWebSvc(conf *core.Configuration, entryDB *edb.EntryDB, typeSvc *edb.TypeService) *WebSvc {
 
 	gothic.Store = sessions.NewCookieStore([]byte("something-very-secret-blah-123!.;"))
 
@@ -99,7 +100,7 @@ func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
 func (ws WebSvc) demandAdministrator(handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		u := ws.sessionWSUser(r)
-		if core.Administrator.HasAccess(u.Clearances) {
+		if edb.Administrator.HasAccess(u.Clearances) {
 			handler(w, r, p)
 		} else {
 			ws.writeError(w, http.StatusText(http.StatusUnauthorized))
@@ -149,14 +150,14 @@ func (ws WebSvc) sessionUserID(r *http.Request) (userID int64) {
 
 // sessionUser returns current session user or guest if there is a problem.
 // It always returns a valid user ID.
-func (ws WebSvc) sessionWSUser(r *http.Request) (u *core.WSUserGet) {
+func (ws WebSvc) sessionWSUser(r *http.Request) (u *edb.WSUserGet) {
 	var err error
 	var userID int64
 	userID = ws.sessionUserID(r)
 	u, err = ws.entryDB.GetUser(userID)
 	if err != nil {
 		fmt.Printf("Failed to get user from DB: %v", err)
-		u = core.GuestWSUserGet
+		u = edb.GuestWSUserGet
 	}
 	return
 }
@@ -263,7 +264,7 @@ func (ws WebSvc) getResourceEntry(w http.ResponseWriter, r *http.Request, p http
 	ws.writeError(w, "re/:entryId url path represents only binary resource")
 }
 
-func (ws WebSvc) getWSFullEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) *core.WSFullEntry {
+func (ws WebSvc) getWSFullEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) *edb.WSFullEntry {
 	idStr := p.ByName("entryID")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -308,7 +309,7 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 
 	// the goal of this loop is to populate wse variable
 	// with JSON and RAW data.
-	var wse core.WSEntryPost
+	var wse edb.WSEntryPost
 	var raw []byte
 	for {
 		p, err := mr.NextPart()
@@ -369,22 +370,22 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleWSEntryPost inserts or updates Entry using standard algorithm.
-func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *core.WSEntryPost, raw []byte) {
+func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *edb.WSEntryPost, raw []byte) {
 	var err error
 	// we cannot log everything, because Raw may contain very large data
 	fmt.Printf("Got request with entry id: %v, title: %v, rawTypeName: %v.\n", wse.EntryID, wse.Title, wse.RawTypeName)
 	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
-	var tp *core.TypeProvider
+	var tp *edb.TypeProvider
 	tp, err = ws.typeSvc.ProviderByName(wse.RawTypeName)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
 	userID := ws.sessionUserID(r)
-	en := core.NewEntry(wse.EntryID, raw, tp.TypeNum, wse.RawContentType,
+	en := edb.NewEntry(wse.EntryID, raw, tp.TypeNum, wse.RawContentType,
 		wse.RawFileName, userID)
 	en.HTML, err = tp.ToHTML(raw)
-	es := core.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
+	es := edb.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
 	es.Plain, err = tp.ToPlain(raw)
 	err = ws.entryDB.SaveEntry(en, es)
 	if err != nil {

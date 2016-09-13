@@ -1,4 +1,4 @@
-package core
+package edb
 
 import (
 	"database/sql"

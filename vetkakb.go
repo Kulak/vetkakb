@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
+	"horse.lan.gnezdovi.com/vetkakb/backend/edb"
 	"horse.lan.gnezdovi.com/vetkakb/backend/vetka"
 
 	"github.com/sevlyar/go-daemon"
@@ -82,10 +83,10 @@ func main() {
 		log.Fatalf("Failed to InitializeFilesystem.  Error: %v", err)
 	}
 
-	ts := core.NewTypeService()
+	ts := edb.NewTypeService()
 	ts.Initialize()
 
-	edb := core.NewEntryDB(conf.EntryDBFileName(), ts)
+	edb := edb.NewEntryDB(conf.EntryDBFileName(), ts)
 	edb.Open()
 
 	log.Println("Startign web service")

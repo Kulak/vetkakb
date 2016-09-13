@@ -1,4 +1,4 @@
-package core_test
+package edb_test
 
 import (
 	"testing"
