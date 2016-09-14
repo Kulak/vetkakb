@@ -78,8 +78,9 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
 		router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
 		router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
+		//router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(ws.beginAuthHandler(nil)))
 		router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(gothic.BeginAuthHandler))
-		router.GET(prefix+"/api/auth/callback", ws.siteHandler(ws.getGplusCallback))
+		router.GET(prefix+"/api/auth/callback", ws.getGplusCallback)
 		// returns wsUserGet strucure usable for general web pages
 		router.GET(prefix+"/api/session/user", ws.siteHandler(ws.wsUserGet))
 		// for testing purpose of gothic cookie
@@ -97,13 +98,21 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 // getGplusCallback is called by "Google Plus" OAuth2 API when user is authenticated.
 // It creates new user if user is absent and sets "vetka" cookie with user id.
 func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	log.Println("Processing google plus callback")
 	gUser, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
+	siteIDStr := gothic.GetState(r)
+	site, err := ws.siteDB.GetSiteByID(siteIDStr)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get site for SiteID %s.  Error: %s", siteIDStr, err))
+		return
+	}
+
 	//log.Printf("Logged in user: %v", user)
-	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	entryDB := ws.edbCache[site.DBName]
 	user, err := entryDB.GetOrCreateUser(gUser)
 	if err != nil {
 		ws.writeError(w, err.Error())
@@ -118,7 +127,11 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 	session.Values["userId"] = user.UserID
 	session.Save(r, w)
 
-	fileName := ws.conf.Main.SiteURL + "/index.html"
+	var fileName = fmt.Sprintf("http://%s/index.html", site.Host)
+	if len(site.Path) > 0 {
+		fileName = fmt.Sprintf("http://%s%s/%s/index.html", site.Host, ws.conf.Main.ClientPath, site.Path)
+	}
+	log.Printf("Redirect URL: %s", fileName)
 	http.Redirect(w, r, fileName, 307)
 }
 

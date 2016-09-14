@@ -67,6 +67,23 @@ func (sdb *SiteDB) GetSite(host, path string) (site *Site, err error) {
 	return
 }
 
+// GetSite loads site by hostname and path.
+func (sdb *SiteDB) GetSiteByID(siteIDStr string) (s *Site, err error) {
+	if sdb.db == nil {
+		return s, fmt.Errorf("Database connection is closed.")
+	}
+	query := `
+	SELECT siteID, host, path, dbname, theme, title from site
+	where siteID = ?;
+	`
+	s = &Site{}
+	err = sdb.db.QueryRow(query, siteIDStr).Scan(
+		&s.SiteID, &s.Host, &s.Path, &s.DBName, &s.Theme, &s.Title)
+	log.Printf("Loaded site id %v with dbName %s for host %s, path %s.  Err: %v",
+		s.SiteID, s.DBName, s.Host, s.Path, err)
+	return
+}
+
 // All loads all sites.
 func (sdb *SiteDB) All() (sites []*Site, err error) {
 	if sdb.db == nil {
