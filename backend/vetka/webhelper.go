@@ -3,6 +3,7 @@ package vetka
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
@@ -165,7 +166,19 @@ func (ws WebSvc) siteHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Site request URL: %v; URL Path: %s, URL Host: %s, Host: %s",
 		r.URL, r.URL.Path, r.URL.Host, r.Host)
-	path := strings.Split(r.URL.Path, "/")[1]
+	var path = ""
+	if strings.HasPrefix(r.URL.Path, ws.conf.Main.ClientPath) {
+		// if ws.conf.Main.ClientPath is set to /client, then valid URL would be
+		// 	/client/doha/api/recent
+		// In this case array split is:
+		// [0] is ""
+		// [1] is client
+		// [2] is client name that we need to path as path
+		paths := strings.Split(r.URL.Path, "/")
+		if len(paths) > 2 {
+			path = paths[2]
+		}
+	}
 	site, err := ws.siteDB.GetSite(r.Host, path)
 	if site.SiteID == 0 {
 		// try to load default site
@@ -183,10 +196,36 @@ func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) {
 		ws.edbCache[site.DBName] = db
 	}
 	context.Set(r, "edb", db)
+	context.Set(r, "site", site)
 }
 
 // NewEntryDB creates new EntryDB based on web service context.
 func (ws WebSvc) NewEntryDB(site *sdb.Site) *edb.EntryDB {
 	return edb.NewEntryDB(ws.conf.SQLDir("entrydb"), ws.conf.Main.DataRoot,
 		site.DBName, ws.typeSvc)
+}
+
+// SiteProps provides basic interafce to template file.
+type SiteProps struct {
+	PageTitle string
+	Theme     string
+	GD        interface{}
+}
+
+func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, siteProps *SiteProps, tFileName string) {
+	site := context.Get(r, "site").(*sdb.Site)
+	indexTFile := ws.conf.TemplateThemeFile(site.Theme, tFileName)
+	siteProps.Theme = site.Theme
+	// New takes name of template (can be anything)
+	// ParseFiles takes template file names to parse.  Abstract base template shall go 1st,
+	t, err := template.New(tFileName).ParseFiles(indexTFile)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot parse template.  Error: %s", err))
+		return
+	}
+	err = t.Execute(w, siteProps)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot execute template.  Error: %s", err))
+		return
+	}
 }

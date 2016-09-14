@@ -61,10 +61,10 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 
 	router := ws.Router
 	// serve static files
-	router.GET("/index.html", ws.AddHeaders(http.FileServer(conf.WebDir("index.html"))))
-	router.Handler("GET", "/", http.FileServer(conf.WebDir("/")))
+	router.GET("/index.html", ws.siteHandler(ws.getIndex))
+	router.GET("/", ws.siteHandler(ws.getIndex))
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
-	router.ServeFiles("/res/*filepath", conf.WebDir("res/"))
+	router.ServeFiles("/theme/*filepath", conf.WebDir("theme/"))
 	// serve dynamic (site specific) content
 	router.POST("/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
 	router.GET("/api/recent", ws.siteHandler(ws.getRecent))
@@ -175,6 +175,11 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 		return
 	}
 	ws.writeJSON(w, entries)
+}
+
+func (ws WebSvc) getIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	sp := &SiteProps{PageTitle: "Vetka KB"}
+	ws.processTemplate(w, r, sp, "index.html")
 }
 
 // getMatch searches for entries matching criteria.

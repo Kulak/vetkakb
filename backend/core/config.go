@@ -17,13 +17,18 @@ type MainSection struct {
 	// WebRoot must end with slash.
 	WebRoot string
 	// DataRoot is a database file parent.  It not accessible by web service or not in web server subtree.
-	DataRoot    string
-	WebEndpoint string
-	PidFileName string
-	LogFileName string
-	User        string
+	DataRoot string
+	// TemplateRoot contains HTML template and other template fles under Theme.
+	TemplateRoot string
+	WebEndpoint  string
+	PidFileName  string
+	LogFileName  string
+	User         string
 	// SiteURL is used to construct OAuth callback URL.
 	SiteURL string
+	// Client path is used in multihosted setup.
+	// Path comparison is done only request URL starts with client path
+	ClientPath string
 }
 
 // Configuration represents content of the configuration file.
@@ -35,14 +40,16 @@ type Configuration struct {
 func NewConfiguration() *Configuration {
 	return &Configuration{
 		Main: MainSection{
-			SQLRoot:     "sql",
-			WebRoot:     "www",
-			DataRoot:    "data",
-			WebEndpoint: "localhost:8080",
-			PidFileName: "/var/run/vetkakb.pid",
-			LogFileName: "/var/log/vetkakb.log",
-			User:        "",
-			SiteURL:     "http://localhost:8080",
+			SQLRoot:      "sql",
+			WebRoot:      "www",
+			DataRoot:     "data",
+			TemplateRoot: "template",
+			WebEndpoint:  "localhost:8080",
+			PidFileName:  "/var/run/vetkakb.pid",
+			LogFileName:  "/var/log/vetkakb.log",
+			User:         "",
+			SiteURL:      "http://localhost:8080",
+			ClientPath:   "/client",
 		},
 	}
 }
@@ -75,6 +82,11 @@ func (c Configuration) WebDir(dir string) http.Dir {
 	d := http.Dir(c.Main.WebRoot + dir)
 	log.Printf("WebDir for %s is: %s\n", dir, d)
 	return d
+}
+
+// TemplateThemeFile returns file name based on passed Theme name and only a file name.
+func (c Configuration) TemplateThemeFile(theme, fileName string) string {
+	return filepath.Join(c.Main.TemplateRoot, "theme", theme, fileName)
 }
 
 // SQLDir returns name of the directory that contains

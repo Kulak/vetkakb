@@ -17,6 +17,7 @@
 	- [External vs Internal Blob](#external-vs-internal-blob)
 	- [HTML Tokenization](#html-tokenization)
 	- [Google OAuth](#google-oauth)
+	- [Permalink, redirect, alternative URL, slug](#permalink-redirect-alternative-url-slug)
 - [Log](#log)
 	- [TypeScript: namespaces and modules](#typescript-namespaces-and-modules)
 	- [Fetch API Support](#fetch-api-support)
@@ -123,6 +124,9 @@ Other options are available.
 
 https://console.developers.google.com/apis/credentials?project=vetka-142905
 
+## Permalink, redirect, alternative URL, slug
+
+These are all terms for alternative URLs used to point to an entry.
 
 # Log
 

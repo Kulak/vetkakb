@@ -3,6 +3,8 @@ SqlRoot = backend/db-sql
 # WebRoot points to root dir of HTML, must end with slash
 WebRoot = www/
 DataRoot = data    # relative to current working directory
+# TemplateRoot must not end with slash as it is joined with other names
+TemplateRoot = backend/t-html/
 WebEndpoint = :8080
 PidFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.pid
 LogFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.log

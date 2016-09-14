@@ -41,15 +41,24 @@ create table if not exists entry(
 	rawType integer not null,
 	rawContentType text,
 	rawFileName text,
+	-- URL to titleIcon
+	titleIcon text not null default '',
 	html text,
+	-- intro is a teaser text or short description displayed in the list of entries.
+	-- It does not have to be set.  If it is set it will be used.
+	-- If it is not set, then Intro can be generated from plain text.
+	-- Intro must be plain text only and not markdown or any other format.
+	intro text not null default '',
 	-- owner has implicit access
 	ownerFK integer NOT NULL,
 	-- if BITWISE AND requiredClearance with user clearance is zero, then user has no access.
 	-- if not zero, then user has access
 	-- default access clearance access mask allows access to Administrator
-	requiredClearance integer default 0x8 NOT NULL,
-	created timestamp default (strftime('%s', 'now')) NOT NULL,
-	updated timestamp default (strftime('%s', 'now')) NOT NULL
+	requiredClearance integer NOT NULL default 0x8,
+	created timestamp NOT NULL default (strftime('%s', 'now')),
+	updated timestamp NOT NULL default (strftime('%s', 'now')),
+	-- Tracks when clearance of entry is set to 0x1 (Guest accessible)
+	published timestamp default NULL
 );
 
 create virtual table if not exists entrySearch using fts4 (
@@ -58,4 +67,13 @@ create virtual table if not exists entrySearch using fts4 (
 	plain,
 	tags,
 	tokenize=porter
+);
+
+-- redirect table represents alternative path that maps into entry
+-- It is especially useful for old path redirection
+create table if not exists redirect (
+	redirectID integer primary key,
+	path text not null,
+	entryFK integer not null,
+	statusCode integer not null
 );
