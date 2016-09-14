@@ -5,11 +5,9 @@
         "module": "system",
         "sourceMap": true,
         "jsx": "react",
-        "outDir": "../www/bower_components/app"//,
+        "outDir": "../www/bower_components/app",
         //"listFiles": true
         //"listEmittedFiles": true
-    },
-    "exclude": {
-
+	"moduleResolution": "node"
     }
 }

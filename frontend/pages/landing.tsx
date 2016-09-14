@@ -4,8 +4,8 @@ import * as ee from '../controls/entryCreate';
 import {Recent} from '../controls/recent';
 import {Search} from '../controls/search';
 import {WSFullEntry} from '../model/wsentry'
-import {EntryViewBox} from '../controls/EntryView'
-import {UserBox} from '../controls/UserBox'
+import {EntryViewBox} from '../controls/entryView'
+import {UserBox} from '../controls/userBox'
 
 declare var ThemeName: string;
 declare var ThemeURL: string;

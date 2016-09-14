@@ -4,7 +4,7 @@ Displays an array of entires passed as parameters.
 
 import * as React from 'react'
 import {WSEntryGetHTML} from '../model/wsentry'
-import {EntryViewBox} from './EntryView'
+import {EntryViewBox} from './entryView'
 
 export interface EntryListProps {
 	entries: Array<WSEntryGetHTML>

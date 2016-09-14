@@ -4,7 +4,7 @@ a list of entries like search results.
 */
 import * as React from 'react'
 import {WSEntryGetHTML, WSFullEntry} from '../model/wsentry'
-import {EntryEditor, EditorProps} from './EntryEditor'
+import {EntryEditor, EditorProps} from './entryEditor'
 import {Entry} from '../model/entry'
 import {DataService} from '../common/dataService'
 import {WSRawType} from '../common/rawtypes'
