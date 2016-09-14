@@ -127,46 +127,33 @@ func (ws WebSvc) getLimit(p httprouter.Params) (int64, error) {
 	return limit, nil
 }
 
-// func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
-// 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-// 		path := strings.Split(r.URL.Path, "/")[0]
-// 		site, err := ws.siteDB.GetSite(r.URL.Host, path)
-// 		if err != nil {
-// 			ws.writeError(w, fmt.Sprintf("Cannot locate site based on host %s and path %s.", r.URL.Host, path))
-// 			return
-// 		}
-// 		db, ok := ws.edbCache[site.DBName]
-// 		if !ok {
-// 			db := edb.NewEntryDB(ws.conf.SQLDir("entrydb"), ws.conf.Main.DataRoot, site.DBName, ws.typeSvc)
-// 			db.Open()
-// 			ws.edbCache[site.DBName] = db
-// 		}
-// 		context.Set(r, "edb", db)
-// 		handler(w, r, p)
-// 		context.Clear(r)
-// 	}
-// }
-
 func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ws.setEdbContext(w, r)
+		err := ws.setEdbContext(w, r)
 		defer context.Clear(r)
+		if err != nil {
+			return
+		}
 		handler(w, r, p)
 	}
 }
 
 func (ws WebSvc) siteHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ws.setEdbContext(w, r)
+		err := ws.setEdbContext(w, r)
 		defer context.Clear(r)
+		if err != nil {
+			return
+		}
 		handler.ServeHTTP(w, r)
 	})
 }
 
-func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) {
+func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) (err error) {
 	log.Printf("Site request URL: %v; URL Path: %s, URL Host: %s, Host: %s",
 		r.URL, r.URL.Path, r.URL.Host, r.Host)
 	var path = ""
+	var site *sdb.Site
 	if strings.HasPrefix(r.URL.Path, ws.conf.Main.ClientPath) {
 		// if ws.conf.Main.ClientPath is set to /client, then valid URL would be
 		// 	/client/doha/api/recent
@@ -178,11 +165,13 @@ func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) {
 		if len(paths) > 2 {
 			path = paths[2]
 		}
-	}
-	site, err := ws.siteDB.GetSite(r.Host, path)
-	if site.SiteID == 0 {
-		// try to load default site
-		site, err = ws.siteDB.GetSite("", "")
+		site, err = ws.siteDB.GetSite(r.Host, path)
+	} else {
+		site, err = ws.siteDB.GetSite(r.Host, path)
+		if site.SiteID == 0 {
+			// try to load default site
+			site, err = ws.siteDB.GetSite("", "")
+		}
 	}
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot locate site based on host %s and path %s.", r.URL.Host, path))
@@ -197,6 +186,7 @@ func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) {
 	}
 	context.Set(r, "edb", db)
 	context.Set(r, "site", site)
+	return
 }
 
 // NewEntryDB creates new EntryDB based on web service context.

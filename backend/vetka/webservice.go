@@ -60,31 +60,37 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 	//   delete - DELETE
 
 	router := ws.Router
-	// serve static files
-	router.GET("/index.html", ws.siteHandler(ws.getIndex))
-	router.GET("/", ws.siteHandler(ws.getIndex))
-	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
-	router.ServeFiles("/theme/*filepath", conf.WebDir("theme/"))
-	// serve dynamic (site specific) content
-	router.POST("/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
-	router.GET("/api/recent", ws.siteHandler(ws.getRecent))
-	router.GET("/api/recent/:limit", ws.siteHandler(ws.getRecent))
-	router.GET("/api/search/*query", ws.siteHandler(ws.getSearch))
-	router.GET("/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
-	router.GET("/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
-	router.HandlerFunc("GET", "/api/auth", ws.siteHandlerFunc(gothic.BeginAuthHandler))
-	router.GET("/api/auth/callback", ws.siteHandler(ws.getGplusCallback))
-	// returns wsUserGet strucure usable for general web pages
-	router.GET("/api/session/user", ws.siteHandler(ws.wsUserGet))
-	// for testing purpose of gothic cookie
-	router.GET("/api/session/gothic", ws.siteHandler(ws.demandAdministrator(ws.getGothicSession)))
-	// for testing purpose of userId cookie
-	router.GET("/api/session/vetka", ws.siteHandler(ws.demandAdministrator(ws.getVetkaSession)))
-	// allows to load RawTypeName "Binary/Image" as a link.
-	router.GET("/re/:entryID", ws.siteHandler(ws.getResourceEntry))
-	// Enable access to source code files from web browser debugger
-	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
 
+	prefixes := []string{""}
+	if len(ws.conf.Main.ClientPath) > 0 {
+		prefixes = append(prefixes, "/client/:clientName")
+	}
+	for _, prefix := range prefixes {
+		// serve static files
+		router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
+		router.GET(prefix+"/", ws.siteHandler(ws.getIndex))
+		router.ServeFiles(prefix+"/vendors/*filepath", conf.WebDir("bower_components/"))
+		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
+		// serve dynamic (site specific) content
+		router.POST(prefix+"/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
+		router.GET(prefix+"/api/recent", ws.siteHandler(ws.getRecent))
+		router.GET(prefix+"/api/recent/:limit", ws.siteHandler(ws.getRecent))
+		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
+		router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
+		router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
+		router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(gothic.BeginAuthHandler))
+		router.GET(prefix+"/api/auth/callback", ws.siteHandler(ws.getGplusCallback))
+		// returns wsUserGet strucure usable for general web pages
+		router.GET(prefix+"/api/session/user", ws.siteHandler(ws.wsUserGet))
+		// for testing purpose of gothic cookie
+		router.GET(prefix+"/api/session/gothic", ws.siteHandler(ws.demandAdministrator(ws.getGothicSession)))
+		// for testing purpose of userId cookie
+		router.GET(prefix+"/api/session/vetka", ws.siteHandler(ws.demandAdministrator(ws.getVetkaSession)))
+		// allows to load RawTypeName "Binary/Image" as a link.
+		router.GET(prefix+"/re/:entryID", ws.siteHandler(ws.getResourceEntry))
+		// Enable access to source code files from web browser debugger
+		router.ServeFiles(prefix+"/frontend/*filepath", http.Dir("frontend/"))
+	}
 	return ws
 }
 
