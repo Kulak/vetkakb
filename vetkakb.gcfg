@@ -10,3 +10,4 @@ PidFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/
 LogFileName = /Users/sergei/gw/personal/src/horse.lan.gnezdovi.com/vetkakb/data/vetkakb.log
 # Example:  http://www.gnezdovi.com:8080   NOTE: Make sure there is no slash at the end!
 SiteURL = http://www.gnezdovi.com:8080
+ClientPath = /client

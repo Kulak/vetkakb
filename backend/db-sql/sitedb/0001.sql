@@ -14,3 +14,4 @@ create table if not exists site(
 );
 
 insert into site (dbname) values('default');
+insert into site (host, path, dbname, title) values('localhost', 'test', 'test', 'Default Test Site');

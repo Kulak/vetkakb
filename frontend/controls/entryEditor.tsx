@@ -128,7 +128,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		// POST in thise case PUTs new entry and updates existing
 		let reqInit: RequestInit = DataService.newBareRequestInit("POST")
 		reqInit.body = fd
-		return DataService.handleFetch("/binaryentry/", reqInit)
+		return DataService.handleFetch("binaryentry/", reqInit)
 	}
 
 	onEntryTitleChange(event: React.FormEvent) {

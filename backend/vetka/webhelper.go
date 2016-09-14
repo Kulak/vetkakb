@@ -52,7 +52,11 @@ func (ws WebSvc) sessionUserID(r *http.Request) (userID int64) {
 		fmt.Printf("Failed to get vetka session store: %v", err)
 		return
 	}
-	userID = session.Values["userId"].(int64)
+	userIDStr := session.Values["userId"]
+	if userIDStr == nil {
+		return 0
+	}
+	userID = userIDStr.(int64)
 	return
 }
 
