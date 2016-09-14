@@ -7,6 +7,9 @@ import {WSFullEntry} from '../model/wsentry'
 import {EntryViewBox} from '../controls/EntryView'
 import {UserBox} from '../controls/UserBox'
 
+declare var ThemeName: string;
+declare var ThemeURL: string;
+
 class LandingPageState {
   constructor(
     public path: string,
@@ -48,9 +51,9 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
     } else if (this.state.path == 'viewone') {
       body = <EntryViewBox entry={this.state.createdEntry} />
     }
-
     return <div>
-      <h1>Vetka Information Management System</h1>
+      <h1>{document.title}</h1>
+      <p>Using theme {ThemeName}</p>
       <div className='toolbar'>
         <button className='leftStack' onClick={e => this.onNewClick()} >New Entry</button>
         <button className='leftStack' onClick={e => this.onRecentClick()} >Recent</button>

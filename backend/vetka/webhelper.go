@@ -202,10 +202,9 @@ type SiteProps struct {
 	GD        interface{}
 }
 
-func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, siteProps *SiteProps, tFileName string) {
+func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, tFileName string) {
 	site := context.Get(r, "site").(*sdb.Site)
 	indexTFile := ws.conf.TemplateThemeFile(site.Theme, tFileName)
-	siteProps.Theme = site.Theme
 	// New takes name of template (can be anything)
 	// ParseFiles takes template file names to parse.  Abstract base template shall go 1st,
 	t, err := template.New(tFileName).ParseFiles(indexTFile)
@@ -213,7 +212,7 @@ func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, sitePro
 		ws.writeError(w, fmt.Sprintf("Cannot parse template.  Error: %s", err))
 		return
 	}
-	err = t.Execute(w, siteProps)
+	err = t.Execute(w, site)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot execute template.  Error: %s", err))
 		return

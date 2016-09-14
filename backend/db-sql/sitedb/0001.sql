@@ -8,6 +8,7 @@ create table if not exists site(
 	path text default '' not null,
 	dbname text not null,
 	theme text default 'basic' not null,
+	title text default 'Default Site',
 	created timestamp default (strftime('%s', 'now')) NOT NULL,
 	updated timestamp default (strftime('%s', 'now')) NOT NULL
 );

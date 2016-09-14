@@ -56,12 +56,12 @@ func (sdb *SiteDB) GetSite(host, path string) (site *Site, err error) {
 		return site, fmt.Errorf("Database connection is closed.")
 	}
 	query := `
-	SELECT s.siteID, s.dbname, s.theme from site s
+	SELECT s.siteID, s.dbname, s.theme, s.title from site s
 	where s.host = ? and s.path = ?;
 	`
 	site = &Site{Host: host, Path: path}
 	err = sdb.db.QueryRow(query, host, path).Scan(
-		&site.SiteID, &site.DBName, &site.Theme)
+		&site.SiteID, &site.DBName, &site.Theme, &site.Title)
 	log.Printf("Loaded site id %v with dbName %s for host %s, path %s.  Err: %v",
 		site.SiteID, site.DBName, host, path, err)
 	return
@@ -72,7 +72,7 @@ func (sdb *SiteDB) All() (sites []*Site, err error) {
 	if sdb.db == nil {
 		return sites, fmt.Errorf("Database connection is closed.")
 	}
-	query := `SELECT siteID, host, path, dbname, theme from site`
+	query := `SELECT siteID, host, path, dbname, theme, title from site`
 	var rows *sql.Rows
 	rows, err = sdb.db.Query(query)
 	if err != nil {
@@ -80,7 +80,7 @@ func (sdb *SiteDB) All() (sites []*Site, err error) {
 	}
 	s := &Site{}
 	for rows.Next() {
-		err = rows.Scan(&s.SiteID, &s.Host, &s.Path, &s.DBName, &s.Theme)
+		err = rows.Scan(&s.SiteID, &s.Host, &s.Path, &s.DBName, &s.Theme, &s.Title)
 		if err != nil {
 			return
 		}

@@ -7,4 +7,5 @@ type Site struct {
 	Path   string
 	DBName string
 	Theme  string
+	Title  string
 }

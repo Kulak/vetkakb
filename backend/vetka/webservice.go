@@ -184,8 +184,7 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 }
 
 func (ws WebSvc) getIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	sp := &SiteProps{PageTitle: "Vetka KB"}
-	ws.processTemplate(w, r, sp, "index.html")
+	ws.processTemplate(w, r, "index.html")
 }
 
 // getMatch searches for entries matching criteria.

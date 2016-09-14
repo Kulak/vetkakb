@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>{{.PageTitle}}</title>
+		<title>{{.Title}}</title>
         <link rel="stylesheet" type="text/css" href="theme/{{.Theme}}/base.css">
 		<script src="vendors/system.js/dist/system.src.js"></script>
+		<script>
+			var ThemeName = "{{.Theme}}";
+			var ThemeURL = "theme/{{.Theme}}";
+		</script>
 	</head>
 	<body>
         <div id="app"></div>
