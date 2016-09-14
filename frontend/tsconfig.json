@@ -8,5 +8,8 @@
         "outDir": "../www/bower_components/app"//,
         //"listFiles": true
         //"listEmittedFiles": true
+    },
+    "exclude": {
+
     }
 }
