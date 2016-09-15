@@ -63,7 +63,8 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 
 	prefixes := []string{""}
 	if len(ws.conf.Main.ClientPath) > 0 {
-		prefixes = append(prefixes, "/client/:clientName")
+		// ClientPath form is "/cl" or "/client"
+		prefixes = append(prefixes, fmt.Sprintf("%s/:clientName", ws.conf.Main.ClientPath))
 	}
 	for _, prefix := range prefixes {
 		// serve static files
@@ -92,10 +93,11 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		// Enable access to source code files from web browser debugger
 		router.ServeFiles(prefix+"/frontend/*filepath", http.Dir("frontend/"))
 		router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			for k, v := range r.Header {
-				log.Println("Request HEADER key:", k, "value:", v)
-			}
-			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s\nRequestURI: %s\n\n%v", r.Host, r.URL, r.RequestURI, r)
+			// for k, v := range r.Header {
+			// 	log.Println("Request HEADER key:", k, "value:", v)
+			// }
+			// log.Println("RquestURI:", r.RequestURI)
+			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s", r.Host, r.URL)
 			ws.writeError(w, msg)
 		})
 	}
