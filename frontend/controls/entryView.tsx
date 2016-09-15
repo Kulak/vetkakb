@@ -34,7 +34,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	onEditClick(editAction: boolean) {
 		if (editAction) {
 			// load a full entry
-			DataService.get('/api/entry/' + this.props.entry.EntryID)
+			DataService.get('api/entry/' + this.props.entry.EntryID)
 			.then(function(jsonEntry) {
 				console.log("json text", jsonEntry)
 				let entry = jsonEntry as WSFullEntry

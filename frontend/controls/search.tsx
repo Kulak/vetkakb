@@ -35,7 +35,7 @@ export class Search extends React.Component<SearchProps, SearchState> {
 
 	sendQuery() {
 		let query = this.state.query
-		DataService.get('/api/search/' + query)
+		DataService.get('api/search/' + query)
 		.then(function(jsonEntries) {
 			console.log("search results", jsonEntries)
 			this.setState(new SearchState(query, jsonEntries as Array<WSEntryGetHTML>))
