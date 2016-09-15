@@ -92,6 +92,9 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		// Enable access to source code files from web browser debugger
 		router.ServeFiles(prefix+"/frontend/*filepath", http.Dir("frontend/"))
 		router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for k, v := range r.Header {
+				log.Println("Request HEADER key:", k, "value:", v)
+			}
 			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s", r.Host, r.URL)
 			ws.writeError(w, msg)
 		})
