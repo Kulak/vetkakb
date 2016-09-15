@@ -31,6 +31,28 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	onExpandClick(expandAction: boolean) {
 		this.setState(new EntryViewState(this.state.fullEntry, expandAction, false))
 	}
+
+	b64toBlob = (b64Data, contentType='', sliceSize=512) => {
+		const byteCharacters = atob(b64Data);
+		const byteArrays = [];
+
+		for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+			const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+			const byteNumbers = new Array(slice.length);
+			for (let i = 0; i < slice.length; i++) {
+				byteNumbers[i] = slice.charCodeAt(i);
+			}
+
+			const byteArray = new Uint8Array(byteNumbers);
+
+			byteArrays.push(byteArray);
+		}
+
+		const blob = new Blob(byteArrays, {type: contentType});
+		return blob;
+	}
+
 	onEditClick(editAction: boolean) {
 		if (editAction) {
 			// load a full entry
@@ -40,11 +62,20 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				let entry = jsonEntry as WSFullEntry
 				// don't convert null, because it atob(null) returns "ée"
 				if (entry.Raw != null) {
-					entry.Raw = atob(entry.Raw)
+					let blob = this.b64toBlob(entry.Raw)
+					let reader = new window.FileReader()
+					reader.addEventListener('loadend', function() {
+						// listener is called when readAsText is completed; promise could be used here
+						// For ISO-8859-1 there's no further conversion required
+						console.log("FIXED:", reader.result)
+						entry.Raw = reader.result
+						this.setState(new EntryViewState(entry, false, editAction))
+					}.bind(this))
+					reader.readAsText(blob)
 				} else {
 					entry.Raw = ""
+					this.setState(new EntryViewState(entry, false, editAction))
 				}
-				this.setState(new EntryViewState(jsonEntry as WSFullEntry, false, editAction))
 			}.bind(this))
 			.catch(function(err) {
 				console.log("err loading json: ", err)
@@ -59,7 +90,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
-		console.log("entryView: render entry", fe)
+		//console.log("entryView: render entry", fe)
 		if (this.state.editing) {
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {
