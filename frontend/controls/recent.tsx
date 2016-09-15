@@ -20,7 +20,7 @@ export class Recent extends React.Component<RecentProps, RecentState> {
 	public constructor(props: RecentProps, context: any) {
 		super(props, context)
 		this.state = new RecentState()
-		DataService.get('/api/recent/20')
+		DataService.get('api/recent/20')
 		.then(function(jsonEntries) {
 			console.log("json text", jsonEntries)
 			this.setState(new RecentState(jsonEntries as Array<WSEntryGetHTML>))
