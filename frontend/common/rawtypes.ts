@@ -17,7 +17,7 @@ export class WSRawType {
 	public static List(): Promise<Array<WSRawType>> {
 		return new Promise(function(fulfil, reject) {
 			if (WSRawType._list == null) {
-				DataService.get("/api/rawtype/list")
+				DataService.get("api/rawtype/list")
 					.then(function(json) {
 						WSRawType._list = json as Array<WSRawType>
 						WSRawType._list.sort((a,b) => { return a.TypeNum - b.TypeNum })
