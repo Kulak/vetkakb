@@ -66,6 +66,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		// ClientPath form is "/cl" or "/client"
 		prefixes = append(prefixes, fmt.Sprintf("%s/:clientName", ws.conf.Main.ClientPath))
 	}
+	log.Println("Registering URL prefixes: ", prefixes)
 	for _, prefix := range prefixes {
 		// serve static files
 		router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
