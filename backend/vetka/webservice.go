@@ -95,7 +95,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 			for k, v := range r.Header {
 				log.Println("Request HEADER key:", k, "value:", v)
 			}
-			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s", r.Host, r.URL)
+			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s\nRequestURI: %s\n\n%v", r.Host, r.URL, r.RequestURI, r)
 			ws.writeError(w, msg)
 		})
 	}
