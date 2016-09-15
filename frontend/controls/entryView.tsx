@@ -63,7 +63,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				// don't convert null, because it atob(null) returns "ée"
 				if (entry.Raw != null) {
 					let blob = this.b64toBlob(entry.Raw)
-					let reader = new window.FileReader()
+					let reader = new FileReader()
 					reader.addEventListener('loadend', function() {
 						// listener is called when readAsText is completed; promise could be used here
 						// For ISO-8859-1 there's no further conversion required
