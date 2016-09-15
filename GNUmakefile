@@ -5,11 +5,19 @@ pn=
 # set to sudo on FreeBSD:
 sudo=
 
+# targetDir is without / at the end!
+targetDir=/usr/local/vetkakb
+
+# --info=name1 lists only updated files
+rsync=rsync -a$(n) --info=name1
+
 .PHONY: default bower-install npm-install go-build one-time-install \
-	clean-data
+	clean-data build go-build tsc-build
 
 default:
 	@cat GNUmakefile
+
+build: go-build tsc-build
 
 # install new bower pcakge with command
 # 	make bower-install bpn=react
@@ -41,6 +49,17 @@ run:
 tsc-build:
 	cd frontend; tsc -p tsconfig.json
 
+$(targetDir):
+	sudo mkdir $(targetDir)
+	sudo chown sergei $(targetDir)
+
+# Update targetDir from dtree on build machine
+#	rsync -av $(n) dtree/ $(targetDir)/
+rsync: $(targetDir)
+	$(rsync) vetkakb www $(targetDir)/
+	cd backend; $(rsync) db-sql t-html \
+		$(targetDir)/backend/
+	
 # NOTE: -g option on FreeBSD requires sudo
 # NOTE: -g option on Mac OS X does not require (?) sudo
 one-time-install:
