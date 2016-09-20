@@ -181,16 +181,27 @@ func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) (err erro
 		ws.writeError(w, fmt.Sprintf("Cannot locate site based on host %s and path %s.", r.URL.Host, path))
 		return
 	}
+	db := ws.getEdb(site)
+	context.Set(r, "edb", db)
+	context.Set(r, "site", site)
+	return
+}
+
+// getEdb returns EntryDB for site.
+// It uses edbCache or populates it.
+func (ws WebSvc) getEdb(site *sdb.Site) *edb.EntryDB {
 	db, ok := ws.edbCache[site.DBName]
 	if !ok {
 		log.Printf("Caching EntityDB %s", site.DBName)
 		db = ws.NewEntryDB(site)
-		db.Open()
+		err := db.Open()
+		if err != nil {
+			log.Printf("Cannot load EntryDB for site: %v", err)
+			return nil
+		}
 		ws.edbCache[site.DBName] = db
 	}
-	context.Set(r, "edb", db)
-	context.Set(r, "site", site)
-	return
+	return db
 }
 
 // NewEntryDB creates new EntryDB based on web service context.

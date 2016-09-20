@@ -39,7 +39,7 @@ func NewTypeService() *TypeService {
 func (ts *TypeService) Initialize() {
 	ts.AddProvider(plainTextProvider())
 	ts.AddProvider(htmlProvider())
-	ts.AddProvider(markdownProvider())
+	ts.AddProvider(MarkdownProvider())
 	ts.AddProvider(imageProvider())
 	ts.AddProvider(binaryProvider())
 }
@@ -137,7 +137,8 @@ func htmlProvider() *TypeProvider {
 	}
 }
 
-func markdownProvider() *TypeProvider {
+// MarkdownProvider handles Markdown file format.
+func MarkdownProvider() *TypeProvider {
 	return &TypeProvider{
 		TypeNum: 3,
 		Name:    "Markdown",

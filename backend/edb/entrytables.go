@@ -13,11 +13,14 @@ type Entry struct {
 	RawType           int
 	RawContentType    string
 	RawFileName       string
+	TitleIcon         string
 	HTML              string
+	Intro             string
 	OwnerFK           int64
 	RequiredClearance uint8
 	Created           time.Time
 	Updated           time.Time
+	Published         *time.Time
 }
 
 // EntrySearch represents content of EntrySearch in Entry databse.
@@ -63,17 +66,26 @@ func NewEntry(entryID int64, raw []byte, rawType int, rawContentType,
 // savdbInserteToDB inserts record into DB.  EntryID must be zero.
 // If operation is successful EntryID is set to inserted record.
 func (en *Entry) dbInsert(tx *sql.Tx) (err error) {
+	if en.Created.IsZero() {
+		en.Created = time.Now().UTC()
+		en.Updated = en.Created
+	}
 	var result sql.Result
 	var sql string
 	if en.EntryID != 0 {
 		return fmt.Errorf("Cannot insert record with existing EntryID %v.", en.EntryID)
 	}
 	sql = `
-insert into entry (raw, rawType, rawContentType, rawFileName, html, ownerFK)
-values($1, $2, $3, $4, $5, $6)
+insert into entry (
+	raw, rawType, rawContentType, rawFileName, html,
+	titleIcon, intro, published, created, updated,
+	ownerFK)
+values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 `
 	result, err = tx.Exec(sql,
-		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML, en.OwnerFK)
+		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML,
+		en.TitleIcon, en.Intro, en.Published, en.Created, en.Updated,
+		en.OwnerFK)
 	if err != nil {
 		return fmt.Errorf("Failed to insert `entry` record to DB. Error: %v", err)
 	}

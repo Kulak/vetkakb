@@ -95,13 +95,16 @@ func (sdb *SiteDB) All() (sites []*Site, err error) {
 	if err != nil {
 		return
 	}
-	s := &Site{}
 	for rows.Next() {
+		// NOOTE: keep variable in the loop.
+		// If outside, then pointer in append points to the same memory location
+		// This way memory location is new for each loop iteration!
+		s := Site{}
 		err = rows.Scan(&s.SiteID, &s.Host, &s.Path, &s.DBName, &s.Theme, &s.Title)
 		if err != nil {
 			return
 		}
-		sites = append(sites, s)
+		sites = append(sites, &s)
 	}
 	return
 }

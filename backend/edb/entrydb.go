@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/kulak/sqlitemaint"
 	"github.com/markbates/goth"
@@ -43,6 +44,7 @@ func (edb *EntryDB) Open() error {
 		return fmt.Errorf("Failed to create a data directory %s due to error: %v", edb.dbDir, err)
 	}
 	dbFileName := filepath.Join(edb.dbDir, edb.dbName+".db")
+	log.Printf("Entry DB file name: %s", dbFileName)
 	_, err = sqlitemaint.UpgradeSQLite(dbFileName, edb.sqlDir)
 	if err != nil {
 		return fmt.Errorf("Failed to upgrade entry DB %s.  Error: %v", dbFileName, err)
@@ -68,7 +70,8 @@ func (edb *EntryDB) Close() {
 // If en.EntryID is not zero, then it is updated.
 // When new objects are inserted en.EntryID and es.EntryFK
 // are set to inserted ID value.
-func (edb *EntryDB) SaveEntry(en *Entry, es *EntrySearch) (err error) {
+func (edb *EntryDB) SaveEntry(en *Entry, es *EntrySearch, r *Redirect,
+) (err error) {
 	if edb.db == nil {
 		return fmt.Errorf("Database connection is closed.")
 	}
@@ -87,8 +90,20 @@ func (edb *EntryDB) SaveEntry(en *Entry, es *EntrySearch) (err error) {
 		if err != nil {
 			goto DONE
 		}
+
 		es.EntryFK = en.EntryID
 		err = es.dbInsert(tx)
+		if err != nil {
+			goto DONE
+		}
+
+		if r != nil {
+			r.EntryFK = en.EntryID
+			err = r.dbInsert(tx)
+			// if err != nil {
+			// 	goto DONE
+			// }
+		}
 	} else {
 		// update records
 		err = en.dbUpdate(tx)
@@ -273,5 +288,61 @@ func (edb *EntryDB) GetUser(userID int64) (u *WSUserGet, err error) {
 	where u.userId = ?`
 	u = &WSUserGet{}
 	err = edb.db.QueryRow(query, userID).Scan(&u.Clearances, &u.Name, &u.NickName, &u.AvatarURL)
+	return
+}
+
+// GetUniqueRedirectPaths returns all unique 1st hop paths.
+// For example, /hop1/hop2/hop2 results in just /hop1
+// If original path starts with slash, then result contains /
+// If original path does not start with slash, then result is void of it.
+func (edb *EntryDB) GetUniqueRedirectPaths() (result []string, err error) {
+	if edb.db == nil {
+		return result, fmt.Errorf("Database connection is closed.")
+	}
+	var rows *sql.Rows
+	sql := `SELECT path from redirect`
+	rows, err = edb.db.Query(sql)
+	if err != nil {
+		return nil, err
+	}
+	result = []string{}
+	unique := map[string]string{}
+	var path string
+	for rows.Next() {
+		err = rows.Scan(&path)
+		if err != nil {
+			return
+		}
+		idx := 0
+		if strings.HasPrefix(path, "/") {
+			idx = 1
+		}
+		// string "a/b" is split into "a", "b"
+		// string "/a/b" is split into "", "a", "b"
+		// thus if it starts with /, then 1st is ""
+		// we are looking for 1st meaningful prefix and that's a
+		hops := strings.Split(path, "/")
+		prefix := hops[idx]
+		if idx == 1 {
+			// add slash back, so it is in unique list
+			prefix = "/" + prefix
+		}
+		_, ok := unique[prefix]
+		if !ok {
+			unique[prefix] = ""
+			result = append(result, prefix)
+		}
+	}
+	return
+}
+
+// GetRedirectEntryID returns EntryID corresponding to redirect item.
+func (edb *EntryDB) GetRedirectEntryID(path string) (entryID int64, err error) {
+	if edb.db == nil {
+		err = fmt.Errorf("Database connection is closed.")
+		return
+	}
+	query := "select entryFK from redirect where Path=?"
+	err = edb.db.QueryRow(query, path).Scan(&entryID)
 	return
 }

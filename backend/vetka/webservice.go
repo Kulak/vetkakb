@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
@@ -101,6 +102,33 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s", r.Host, r.URL)
 			ws.writeError(w, msg)
 		})
+	}
+	// site specific URLs
+	sites, err := ws.siteDB.All()
+	if err != nil {
+		log.Fatalf("Failed to load sites: %v", err)
+	}
+	for _, site := range sites {
+		if site.Path != "" {
+			// redirect is only implemented for domain hosting, not zone level
+			log.Printf("Redirect configuration is skipping site with %s path, host: %v, siteID: %v",
+				site.Path, site.Host, site.SiteID)
+			continue
+		}
+		edb := ws.getEdb(site)
+		paths, err := edb.GetUniqueRedirectPaths()
+		if err != nil {
+			log.Fatalf("Failed to get unique redirect paths for site %v.  Error: %s", site.SiteID, err)
+		}
+		for _, path := range paths {
+			// we can only redirect absolute path at domain level
+			if strings.HasPrefix(path, "/") {
+				log.Printf("Redirect for %s path", path)
+				router.GET(path+"/*filepath", ws.siteHandler(ws.getRedirect))
+				continue
+			}
+			log.Printf("Domain redirect path %s does not start with /", path)
+		}
 	}
 	return ws
 }
@@ -378,7 +406,8 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 	es := edb.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
 	es.Plain, err = tp.ToPlain(raw)
 	entryDB := context.Get(r, "edb").(*edb.EntryDB)
-	err = entryDB.SaveEntry(en, es)
+	var redirect *edb.Redirect
+	err = entryDB.SaveEntry(en, es, redirect)
 	if err != nil {
 		ws.writeError(w, err.Error())
 	} else {
@@ -389,4 +418,18 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 		}
 		ws.writeJSON(w, wen)
 	}
+}
+
+func (ws WebSvc) getRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	site := context.Get(r, "site").(*sdb.Site)
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	path := r.URL.Path
+	entryID, err := entryDB.GetRedirectEntryID(path)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot find redirect ID for path %s", path))
+		return
+	}
+	to := fmt.Sprintf("http://%s/api/entry/%v", site.Host, entryID)
+	log.Printf("Redirecting requested %s to %s", path, to)
+	http.Redirect(w, r, to, 301)
 }
