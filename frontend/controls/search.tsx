@@ -7,6 +7,8 @@ import {DataService} from '../common/dataService'
 import {WSEntryGetHTML} from '../model/wsentry'
 import {EntryList} from './entryList'
 
+declare var ZonePath: string
+
 export class SearchProps {}
 
 class SearchState {
@@ -35,7 +37,7 @@ export class Search extends React.Component<SearchProps, SearchState> {
 
 	sendQuery() {
 		let query = this.state.query
-		DataService.get('api/search/' + query)
+		DataService.get(ZonePath + '/api/search/' + query)
 		.then(function(jsonEntries) {
 			console.log("search results", jsonEntries)
 			this.setState(new SearchState(query, jsonEntries as Array<WSEntryGetHTML>))

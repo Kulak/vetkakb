@@ -9,6 +9,8 @@ import {Entry} from '../model/entry'
 import {DataService} from '../common/dataService'
 import {WSRawType} from '../common/rawtypes'
 
+declare var ZonePath: string
+
 export interface EntryViewProps {
 		entry: WSEntryGetHTML
 }
@@ -56,7 +58,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	onEditClick(editAction: boolean) {
 		if (editAction) {
 			// load a full entry
-			DataService.get('api/entry/' + this.props.entry.EntryID)
+			DataService.get(ZonePath + '/api/entry/' + this.props.entry.EntryID)
 			.then(function(jsonEntry) {
 				console.log("json text", jsonEntry)
 				let entry = jsonEntry as WSFullEntry
@@ -90,7 +92,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
-		//console.log("entryView: render entry", fe)
+		console.log("entryView: render entry", fe)
 		if (this.state.editing) {
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {

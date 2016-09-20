@@ -8,4 +8,6 @@ type Site struct {
 	DBName string
 	Theme  string
 	Title  string
+	// ZonePath is a calculated property and it is not stored in DB.
+	ZonePath string
 }

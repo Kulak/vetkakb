@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<!-- <base href="http://{{.Host}}{{.ZonePath}}/"> -->
 		<title>{{.Title}}</title>
-        <link rel="stylesheet" type="text/css" href="theme/{{.Theme}}/base.css">
-		<script src="vendors/system.js/dist/system.src.js"></script>
+        <link rel="stylesheet" type="text/css" href="{{.ZonePath}}/theme/{{.Theme}}/base.css">
+		<script src="{{.ZonePath}}/vendors/system.js/dist/system.src.js"></script>
 		<script>
+			// Zone path starts with /, but ends without
+			var ZonePath = "{{.ZonePath}}";
 			var ThemeName = "{{.Theme}}";
 			var ThemeURL = "theme/{{.Theme}}";
 			var SiteID = {{.SiteID}};
@@ -28,11 +31,12 @@
 			//		import {ClassName} from './pages/landing.js'
 			// because .js does not map in TypeScript editor.
 			SystemJS.config({
-				baseURL: 'vendors',
+				baseURL: '{{.ZonePath}}/vendors',
 				defaultJSExtensions: true,
 				map: {
 					'react-dom': 'react/react-dom.js',
-					'react': 'react/react.js'//,
+					'react': 'react/react.js',
+					'react-router': 'https://unpkg.com/react-router/umd/ReactRouter.min.js'
 				}
 			});
 			// Import "window.fetch polyfill", because it is configured globally in typescript

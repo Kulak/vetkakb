@@ -9,6 +9,9 @@ import {DataService} from '../common/dataService'
 import {RawTypeDropdown} from './rawTypeDropdown'
 import {WSRawType} from '../common/rawtypes'
 
+declare var ZonePath: string
+
+
 // example:
 // declare type MyHandler = (myArgument: string) => void;
 // var handler: MyHandler;
@@ -128,7 +131,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		// POST in thise case PUTs new entry and updates existing
 		let reqInit: RequestInit = DataService.newBareRequestInit("POST")
 		reqInit.body = fd
-		return DataService.handleFetch("binaryentry/", reqInit)
+		return DataService.handleFetch(ZonePath + "/binaryentry/", reqInit)
 	}
 
 	onEntryTitleChange(event: React.FormEvent) {

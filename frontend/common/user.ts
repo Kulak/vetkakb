@@ -1,6 +1,8 @@
 import {DataService} from './dataService'
 import {WSUserGet} from '../model/wsuser'
 
+declare var ZonePath: string
+
 export class User {
 
 	private static _current: WSUserGet;
@@ -12,7 +14,7 @@ export class User {
 	public static Current(): Promise<WSUserGet> {
 		return new Promise(function(fulfil, reject) {
 			if (User._current == null) {
-				DataService.get("api/session/user")
+				DataService.get(ZonePath + "/api/session/user")
 					.then(function(json) {
 						User._current = json as WSUserGet
 						fulfil(User._current)

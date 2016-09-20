@@ -181,6 +181,9 @@ func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) (err erro
 		ws.writeError(w, fmt.Sprintf("Cannot locate site based on host %s and path %s.", r.URL.Host, path))
 		return
 	}
+	if site.Path != "" {
+		site.ZonePath = ws.conf.Main.ClientPath + "/" + site.Path
+	}
 	db := ws.getEdb(site)
 	context.Set(r, "edb", db)
 	context.Set(r, "site", site)

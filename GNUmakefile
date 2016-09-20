@@ -59,7 +59,7 @@ rsync: $(targetDir)
 	$(rsync) vetkakb www $(targetDir)/
 	cd backend; $(rsync) db-sql t-html \
 		$(targetDir)/backend/
-	
+
 # NOTE: -g option on FreeBSD requires sudo
 # NOTE: -g option on Mac OS X does not require (?) sudo
 one-time-install:
@@ -81,6 +81,10 @@ one-time-install:
 
 	cd frontend; typings install es6-promise
 	cd frontend; typings uninstall es6-promise
+
+	make bower-install pn=react-router
+
+	cd frontend; typings install react-router
 
 onetime:
 

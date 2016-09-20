@@ -7,6 +7,7 @@ import {WSUserGet} from '../model/wsuser'
 import {User} from '../common/user'
 
 declare var SiteID: number;
+declare var ZonePath: string
 
 export interface UserBoxProps {
 }
@@ -35,7 +36,7 @@ export class UserBox extends React.Component<UserBoxProps, UserBoxState> {
 		if (u != null && u.NickName != 'Guest') {
 			return <div><img src={u.AvatarURL} className="avatar" />{u.NickName}</div>
 		} else {
-			return <form action='api/auth'>
+			return <form action={ZonePath + '/api/auth'}>
 				<input type='hidden' name='state' value={SiteID} />
 				<button className='leftStack' name='provider' value='gplus'>Login</button>
 			</form>
