@@ -80,11 +80,19 @@ insert into entry (
 	raw, rawType, rawContentType, rawFileName, html,
 	titleIcon, intro, published, created, updated,
 	ownerFK)
-values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+values(
+	$1, $2, $3, $4, $5,
+	$6, $7, $8, $9, $10,
+	$11)
 `
+	var publishedSec *int64
+	if en.Published != nil {
+		published := en.Published.Unix()
+		publishedSec = &published
+	}
 	result, err = tx.Exec(sql,
 		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML,
-		en.TitleIcon, en.Intro, en.Published, en.Created, en.Updated,
+		en.TitleIcon, en.Intro, publishedSec, en.Created.Unix(), en.Updated.Unix(),
 		en.OwnerFK)
 	if err != nil {
 		return fmt.Errorf("Failed to insert `entry` record to DB. Error: %v", err)

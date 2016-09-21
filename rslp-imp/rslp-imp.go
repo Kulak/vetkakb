@@ -112,7 +112,7 @@ func insertRecord(r *RslpArticle) {
 	en.Raw = raw
 	en.RawContentType = ""   // not used in Markdown
 	en.RawFileName = ""      // not used in Markdown
-	en.RawType = 1           // 1 is markdown type
+	en.RawType = 3           // 3 is markdown type
 	en.RequiredClearance = 8 // 8 is administrator mask
 	en.Updated = r.Created
 	en.TitleIcon = r.IconURL
