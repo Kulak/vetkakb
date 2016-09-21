@@ -50,6 +50,7 @@ let newEntry = React.createClass({
 
 ReactDOM.render((
 	<Router history={browserHistory}>
+		<Route path={ZonePath + "/index.html"} component={mainLayout} />
 		<Route path={ZonePath + "/"} component={mainLayout} />
 		<Route path={ZonePath + "/app/l"} component={mainLayout}>
 			<Route path="recent" component={Recent} />

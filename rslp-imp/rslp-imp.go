@@ -33,10 +33,17 @@ var ed *edb.EntryDB
 
 // Example:
 // 	go run rslp-imp/rslp-imp.go -n default
+
 // Example for deployment:
 //  go run rslp-imp/rslp-imp.go -d /home/vetka/data
 // example assumes www.rebeccaslp.com site name and db name
 // rslp.sqlite is source database in "data" directory.
+//
+// Actual process was:
+// as sergei user:
+// 		cd rslp-imp; go build; mv rslp-imp /tmp/
+// as vetka user:
+//		/tmp/rslp-imp-d /home/vetka/data
 func main() {
 	log.Println("rslp-import into vetka")
 
