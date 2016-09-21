@@ -33,13 +33,17 @@ var ed *edb.EntryDB
 
 // Example:
 // 	go run rslp-imp/rslp-imp.go -n default
+// Example for deployment:
+//  go run rslp-imp/rslp-imp.go -d /home/vetka/data
+// example assumes www.rebeccaslp.com site name and db name
+// rslp.sqlite is source database in "data" directory.
 func main() {
 	log.Println("rslp-import into vetka")
 
 	var dataDir string
 	var dbName string
 	flag.StringVar(&dbName, "n", "www.rebeccaslp.com", "entry database file name and directory")
-	flag.StringVar(&dataDir, "d", "data", "data directory")
+	flag.StringVar(&dataDir, "d", "data", "data directory, no slash at the end")
 	flag.Parse()
 
 	// globals
@@ -51,7 +55,7 @@ func main() {
 	}
 	defer ed.Close()
 
-	rslp, err := sql.Open("sqlite3", "data/rslp.sqlite")
+	rslp, err := sql.Open("sqlite3", dataDir+"/rslp.sqlite")
 	if err != nil {
 		log.Fatalf("Failed to open 'data/rslp.sqlite' database. Error: %v", err)
 	}
