@@ -165,7 +165,11 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 	session.Values["userId"] = user.UserID
-	session.Save(r, w)
+	err = session.Save(r, w)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to set vetka session store: %v", err))
+		return
+	}
 
 	var fileName = fmt.Sprintf("http://%s/index.html", site.Host)
 	if len(site.Path) > 0 {
