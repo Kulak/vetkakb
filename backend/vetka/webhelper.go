@@ -12,12 +12,120 @@ import (
 	"strings"
 
 	"github.com/gorilla/context"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/gplus"
 	"horse.lan.gnezdovi.com/vetkakb/backend/edb"
 	"horse.lan.gnezdovi.com/vetkakb/backend/sdb"
 
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 )
+
+func (ws WebSvc) getAuthProvider(site *sdb.Site) *gplus.Provider {
+	// protocol could be inferred from request protocol
+	siteURL := fmt.Sprintf("http://%s", site.Host)
+	return gplus.New(gplusKey, gplusSecret, fmt.Sprintf("%s/api/auth/callback?provider=gplus", siteURL))
+}
+
+// Redirects client to authentication provider.
+// State is not used.
+func (ws WebSvc) beginAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Algorithm is based on :  gothic.BeginAuthHandler() call
+	site := context.Get(r, "site").(*sdb.Site)
+	provider := ws.getAuthProvider(site)
+	state := gothic.SetState(r)
+
+	sess, err := provider.BeginAuth(state)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to start authentication with provider: %s", err))
+		return
+	}
+
+	url, err := sess.GetAuthURL()
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get authentication url from provider: %s", err))
+		return
+	}
+
+	session, _ := ws.store.Get(r, authSessionName)
+	session.Values[authSessionName] = sess.Marshal()
+	err = session.Save(r, w)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to save session in cookie store: %s", err))
+		return
+	}
+
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
+// getGplusCallback is called by "Google Plus" OAuth2 API when user is authenticated.
+// It creates new user if user is absent and sets "vetka" cookie with user id.
+func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	siteIDStr := gothic.GetState(r)
+	site, err := ws.siteDB.GetSiteByID(siteIDStr)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get site for SiteID %s.  Error: %s", siteIDStr, err))
+		return
+	}
+
+	// Algorithm is based on:     gothic.CompleteUserAuth(w, r)
+
+	log.Println("Processing google plus callback")
+
+	session, _ := ws.store.Get(r, authSessionName)
+
+	if session.Values[authSessionName] == nil {
+		ws.writeError(w, "could not find a matching session for this request")
+		return
+	}
+
+	provider := ws.getAuthProvider(site)
+	sess, err := provider.UnmarshalSession(session.Values[authSessionName].(string))
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to unmrarshall auth session: %s", err))
+		return
+	}
+
+	_, err = sess.Authorize(provider, r.URL.Query())
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to authorize session url query: %s", err))
+		return
+	}
+
+	// last line of gothic.CompleteUserAuth(w, r) algorithm
+	gUser, err := provider.FetchUser(sess)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to fetch user from provider: %s", err))
+		return
+	}
+
+	//log.Printf("Logged in user: %v", user)
+	entryDB := ws.edbCache[site.DBName] // risky line; shall use context
+	user, err := entryDB.GetOrCreateUser(gUser)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get or create EntryDB user: %s", err))
+		return
+	}
+
+	session, err = ws.store.Get(r, "vetka")
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get vetka session store: %v", err))
+		return
+	}
+	session.Values["userId"] = user.UserID
+	err = session.Save(r, w)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to set vetka session store: %v", err))
+		return
+	}
+
+	var fileName = fmt.Sprintf("http://%s/", site.Host)
+	if len(site.Path) > 0 {
+		fileName = fmt.Sprintf("http://%s%s/%s/", site.Host, ws.conf.Main.ClientPath, site.Path)
+	}
+	log.Printf("Redirect URL: %s", fileName)
+	http.Redirect(w, r, fileName, 307)
+}
 
 // AddHeaders adds custom HEADERs to index.html response using middleware style solution.
 func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
