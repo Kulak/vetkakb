@@ -84,6 +84,11 @@ func (c Configuration) WebDir(dir string) http.Dir {
 	return d
 }
 
+// WebFile returns name of file in global www directory.
+func (c Configuration) WebFile(fileName string) string {
+	return filepath.Join(c.Main.WebRoot, fileName)
+}
+
 // TemplateThemeFile returns file name based on passed Theme name and only a file name.
 func (c Configuration) TemplateThemeFile(theme, fileName string) string {
 	return filepath.Join(c.Main.TemplateRoot, "theme", theme, fileName)

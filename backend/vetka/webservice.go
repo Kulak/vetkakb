@@ -59,6 +59,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 
 	router := ws.Router
 
+	router.GET("/robots.txt", ws.getRobots)
 	prefixes := []string{""}
 	if len(ws.conf.Main.ClientPath) > 0 {
 		// ClientPath form is "/cl" or "/client"
@@ -197,6 +198,10 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 func (ws WebSvc) getIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	fileName := ws.getWebTemplateFile(r, "index.html")
 	ws.processTemplate(w, r, fileName)
+}
+
+func (ws WebSvc) getRobots(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	http.ServeFile(w, r, ws.conf.WebFile("robots.txt"))
 }
 
 // getMatch searches for entries matching criteria.
