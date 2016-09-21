@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -328,12 +329,28 @@ type SiteProps struct {
 	GD        interface{}
 }
 
+// Looks up template file name 1st at site specific location
+// such as dataRoot/dbName/t-html-s/tFileName
+// and returns site spefic file if it exists.
+// Otherwise returns global file name that's derrived from site Theme name.
+func (ws WebSvc) getWebTemplateFile(r *http.Request, tFileName string) string {
+	site := context.Get(r, "site").(*sdb.Site)
+	siteFile, exists := site.WebTemplateFile(ws.conf.Main.DataRoot, tFileName)
+	if exists {
+		return siteFile
+	}
+	globalFile := ws.conf.TemplateThemeFile(site.Theme, tFileName)
+	return globalFile
+}
+
 func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, tFileName string) {
 	site := context.Get(r, "site").(*sdb.Site)
-	indexTFile := ws.conf.TemplateThemeFile(site.Theme, tFileName)
-	// New takes name of template (can be anything)
+	log.Printf("Template file name: %s", tFileName)
+	// extracts name of the file with extension from the path
+	baseName := path.Base(tFileName)
+	// New takes name of template (it needs to be name of parsed template base file name)
 	// ParseFiles takes template file names to parse.  Abstract base template shall go 1st,
-	t, err := template.New(tFileName).ParseFiles(indexTFile)
+	t, err := template.New(baseName).ParseFiles(tFileName)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot parse template.  Error: %s", err))
 		return

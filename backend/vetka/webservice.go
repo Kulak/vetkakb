@@ -195,7 +195,8 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 }
 
 func (ws WebSvc) getIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	ws.processTemplate(w, r, "index.html")
+	fileName := ws.getWebTemplateFile(r, "index.html")
+	ws.processTemplate(w, r, fileName)
 }
 
 // getMatch searches for entries matching criteria.
