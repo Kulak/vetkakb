@@ -33,16 +33,14 @@ type WebSvc struct {
 	edbCache map[string]*edb.EntryDB
 }
 
+var authSessionName = "vetka_auth"
+var gplusKey = "214159873843-v6p3kmhikm62uc3j2paut5rsvkivod8v.apps.googleusercontent.com"
+var gplusSecret = "0-eQESZIMdoKKn_2Xekl9e1b"
+
 // NewWebSvc creates new WebSvc structure.
 func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeService) *WebSvc {
 
 	gothic.Store = sessions.NewCookieStore([]byte("something-very-secret-blah-123!.;"))
-
-	gplusKey := "214159873843-v6p3kmhikm62uc3j2paut5rsvkivod8v.apps.googleusercontent.com"
-	gplusSecret := "0-eQESZIMdoKKn_2Xekl9e1b"
-	goth.UseProviders(
-		gplus.New(gplusKey, gplusSecret, fmt.Sprintf("%s/api/auth/callback?provider=gplus", conf.Main.SiteURL)),
-	)
 
 	ws := &WebSvc{
 		Router:   httprouter.New(),
@@ -83,8 +81,9 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
 		router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
 		router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
-		//router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(ws.beginAuthHandler(nil)))
-		router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(gothic.BeginAuthHandler))
+		// site can be extracted when starting authentication
+		router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(ws.beginAuthHandler))
+		// callback cannot maintian zones, so site has to be loaded from state
 		router.GET(prefix+"/api/auth/callback", ws.getGplusCallback)
 		// returns wsUserGet strucure usable for general web pages
 		router.GET(prefix+"/api/session/user", ws.siteHandler(ws.wsUserGet))
@@ -135,15 +134,46 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 	return ws
 }
 
+func (ws WebSvc) getAuthProvider(site *sdb.Site) *gplus.Provider {
+	// protocol could be inferred from request protocol
+	siteURL := fmt.Sprintf("http://%s", site.Host)
+	return gplus.New(gplusKey, gplusSecret, fmt.Sprintf("%s/api/auth/callback?provider=gplus", siteURL))
+}
+
+// Redirects client to authentication provider.
+// State is not used.
+func (ws WebSvc) beginAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Algorithm is based on :  gothic.BeginAuthHandler() call
+	site := context.Get(r, "site").(*sdb.Site)
+	provider := ws.getAuthProvider(site)
+	state := gothic.SetState(r)
+
+	sess, err := provider.BeginAuth(state)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to start authentication with provider: %s", err))
+		return
+	}
+
+	url, err := sess.GetAuthURL()
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get authentication url from provider: %s", err))
+		return
+	}
+
+	session, _ := ws.store.Get(r, authSessionName)
+	session.Values[authSessionName] = sess.Marshal()
+	err = session.Save(r, w)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to save session in cookie store: %s", err))
+		return
+	}
+
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
 // getGplusCallback is called by "Google Plus" OAuth2 API when user is authenticated.
 // It creates new user if user is absent and sets "vetka" cookie with user id.
 func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	log.Println("Processing google plus callback")
-	gUser, err := gothic.CompleteUserAuth(w, r)
-	if err != nil {
-		ws.writeError(w, err.Error())
-		return
-	}
 	siteIDStr := gothic.GetState(r)
 	site, err := ws.siteDB.GetSiteByID(siteIDStr)
 	if err != nil {
@@ -151,15 +181,46 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 
-	//log.Printf("Logged in user: %v", user)
-	entryDB := ws.edbCache[site.DBName]
-	user, err := entryDB.GetOrCreateUser(gUser)
-	if err != nil {
-		ws.writeError(w, err.Error())
+	// Algorithm is based on:     gothic.CompleteUserAuth(w, r)
+
+	log.Println("Processing google plus callback")
+
+	session, _ := ws.store.Get(r, authSessionName)
+
+	if session.Values[authSessionName] == nil {
+		ws.writeError(w, "could not find a matching session for this request")
 		return
 	}
 
-	session, err := ws.store.Get(r, "vetka")
+	provider := ws.getAuthProvider(site)
+	sess, err := provider.UnmarshalSession(session.Values[authSessionName].(string))
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to unmrarshall auth session: %s", err))
+		return
+	}
+
+	_, err = sess.Authorize(provider, r.URL.Query())
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to authorize session url query: %s", err))
+		return
+	}
+
+	// last line of gothic.CompleteUserAuth(w, r) algorithm
+	gUser, err := provider.FetchUser(sess)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to fetch user from provider: %s", err))
+		return
+	}
+
+	//log.Printf("Logged in user: %v", user)
+	entryDB := ws.edbCache[site.DBName] // risky line; shall use context
+	user, err := entryDB.GetOrCreateUser(gUser)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Failed to get or create EntryDB user: %s", err))
+		return
+	}
+
+	session, err = ws.store.Get(r, "vetka")
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Failed to get vetka session store: %v", err))
 		return
@@ -171,9 +232,9 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 
-	var fileName = fmt.Sprintf("http://%s/index.html", site.Host)
+	var fileName = fmt.Sprintf("http://%s/", site.Host)
 	if len(site.Path) > 0 {
-		fileName = fmt.Sprintf("http://%s%s/%s/index.html", site.Host, ws.conf.Main.ClientPath, site.Path)
+		fileName = fmt.Sprintf("http://%s%s/%s/", site.Host, ws.conf.Main.ClientPath, site.Path)
 	}
 	log.Printf("Redirect URL: %s", fileName)
 	http.Redirect(w, r, fileName, 307)
