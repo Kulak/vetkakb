@@ -70,8 +70,8 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		// serve static files
 		router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
 		router.GET(prefix+"/", ws.siteHandler(ws.getIndex))
-		router.GET(prefix+"/app/l/*ignoredPageName", ws.siteHandler(ws.getIndex))
-		router.GET(prefix+"/app/e/:entryID/*ignoredSlug", ws.siteHandler(ws.getIndex))
+		router.GET(prefix+"/app/*ignoredPageName", ws.siteHandler(ws.getIndex))
+		//router.GET(prefix+"/app/e/:entryID/*ignoredSlug", ws.siteHandler(ws.getIndex))
 		router.ServeFiles(prefix+"/vendors/*filepath", conf.WebDir("bower_components/"))
 		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
 		// serve dynamic (site specific) content

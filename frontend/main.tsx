@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {LandingPage} from './pages/landing'
 import {SingleEntryPage} from './pages/singleEntry'
-import { Router, Route, Link, browserHistory } from 'react-router'
+import { Router, Route, IndexRoute, Link, browserHistory, Redirect } from 'react-router'
 import {Recent} from './controls/recent'
 import {Search} from './controls/search'
 import {EntryCreateBox} from './controls/entryCreate'
@@ -48,11 +48,19 @@ let newEntry = React.createClass({
 	}
 })
 
+// that's the default route
+let dashboard = React.createClass({
+	render: function() {
+		return (<p>Home!</p>)
+	}
+})
+
 ReactDOM.render((
 	<Router history={browserHistory}>
-		<Route path={ZonePath + "/index.html"} component={mainLayout} />
-		<Route path={ZonePath + "/"} component={mainLayout} />
-		<Route path={ZonePath + "/app/l"} component={mainLayout}>
+		{/* Redirect from / to /app/ */}
+		<Redirect from={ZonePath + "/"} to={ZonePath + "/app"} />
+		<Route path={ZonePath + "/app"} component={mainLayout}>
+			<IndexRoute component={dashboard} />
 			<Route path="recent" component={Recent} />
 			<Route path="search" component={Search} />
 			<Route path='new' component={newEntry} />
