@@ -91,6 +91,8 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.GET(prefix+"/api/session/gothic", ws.siteHandler(ws.demandAdministrator(ws.getGothicSession)))
 		// for testing purpose of userId cookie
 		router.GET(prefix+"/api/session/vetka", ws.siteHandler(ws.demandAdministrator(ws.getVetkaSession)))
+		// to get a quick public list of currently registered users; not really for display
+		router.GET(prefix+"/api/users", ws.siteHandler(ws.demandAdministrator(ws.getUsers)))
 		// allows to load RawTypeName "Binary/Image" as a link.
 		router.GET(prefix+"/re/:entryID", ws.siteHandler(ws.getResourceEntry))
 		// Enable access to source code files from web browser debugger
@@ -398,4 +400,14 @@ func (ws WebSvc) getRedirect(w http.ResponseWriter, r *http.Request, _ httproute
 	to := fmt.Sprintf("http://%s/api/entry/%v", site.Host, entryID)
 	log.Printf("Redirecting requested %s to %s", path, to)
 	http.Redirect(w, r, to, 301)
+}
+
+func (ws WebSvc) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	users, err := entryDB.GetUsers()
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get users list: %s", err))
+		return
+	}
+	ws.writeJSON(w, users)
 }

@@ -291,6 +291,33 @@ func (edb *EntryDB) GetUser(userID int64) (u *WSUserGet, err error) {
 	return
 }
 
+// GetUsers returns web safe user list.
+func (edb *EntryDB) GetUsers() (users []*WSUserGet, err error) {
+	if edb.db == nil {
+		err = errors.New("Database connection is closed.")
+		return
+	}
+	query := `
+	SELECT u.clearances, ou.name, ou.nickName, ou.avatarURL from user u
+	inner join OAuthUser ou on ou.UserFK = u.UserID
+	order by u.Updated desc
+	`
+	var rows *sql.Rows
+	rows, err = edb.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		user := WSUserGet{}
+		err = rows.Scan(&user.Clearances, &user.Name, &user.NickName, &user.AvatarURL)
+		if err != nil {
+			return
+		}
+		users = append(users, &user)
+	}
+	return
+}
+
 // GetUniqueRedirectPaths returns all unique 1st hop paths.
 // For example, /hop1/hop2/hop2 results in just /hop1
 // If original path starts with slash, then result contains /
