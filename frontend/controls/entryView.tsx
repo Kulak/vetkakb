@@ -101,17 +101,20 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				if (fe.RawTypeName == WSRawType.BinaryImage) {
 					entryBody = <img className='' src={"re/" + fe.EntryID} />
 				} else {
-					entryBody = <div className='entryBody' dangerouslySetInnerHTML={{__html: fe.HTML}} />
+					entryBody = <div dangerouslySetInnerHTML={{__html: fe.HTML}} />
 				}
-				return <div>
-					<div className='toolbar entryHeader'>
-						<h2 className='leftStack' onClick={e => this.onExpandClick(false)}>{fe.Title}</h2>
-						<button className='leftStack' onClick={e => this.onEditClick(true)}>Edit</button>
-					</div>
+				return <article className="uk-article">
+					<nav className='uk-navbar'>
+						<ul className="uk-navbar-nav">
+							<li><h1 className="uk-article-title" onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
+							<li><button onClick={e => this.onEditClick(true)}>Edit</button></li>
+						</ul>
+					</nav>
 					{entryBody}
-				</div>
+					<hr className="uk-article-divider" />
+				</article>
 			} else {
-				return <div><h2 className='entryHeader' onClick={e => this.onExpandClick(true)}>{fe.Title}</h2></div>
+				return <h1><a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
 			}
 		}
 	} // end of render function

@@ -23,7 +23,7 @@ export class Dashboard extends React.Component<DashboardProps, DashboardState> {
 	public constructor(props: DashboardProps, context: any) {
 		super(props, context)
 		this.state = new DashboardState()
-		DataService.get(ZonePath + '/api/recent/5')
+		DataService.get(ZonePath + '/api/recent/10')
 		.then(function(jsonEntries) {
 			console.log("json text", jsonEntries)
 			this.setState(new DashboardState(jsonEntries as Array<WSEntryGetHTML>))

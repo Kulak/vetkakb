@@ -21,14 +21,16 @@ console.log("ZonePath:", ZonePath)
 
 let mainLayout = React.createClass({
 	render: function() {
-		return (<div>
+		return (<div className='uk-width-small-*'>
       <h1>{document.title}</h1>
-      <div className='toolbar'>
-        <Link to={ZonePath + '/app/recent'} className='leftStack'>Recent</Link>
-				<Link to={ZonePath + '/app/search'} className='leftStack'>Search</Link>
-				<Link to={ZonePath + '/app/new'} className='leftStack'>New Entry</Link>
-				<UserBox />
-      </div>
+			<UserBox />
+      <nav className='uk-navbar'>
+				<ul className="uk-navbar-nav">
+					<li><Link to={ZonePath + '/app/recent'} className=''>Recent</Link></li>
+					<li><Link to={ZonePath + '/app/search'} className=''>Search</Link></li>
+					<li><Link to={ZonePath + '/app/new'} className=''>New Entry</Link></li>
+				</ul>
+      </nav>
       {this.props.children}
     </div>)
 	}

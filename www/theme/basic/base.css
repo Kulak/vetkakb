@@ -4,9 +4,6 @@ h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover {
 }
 */
 
-h2 {
-	margin: 7px 0px 0px 2px;
-}
 
 div.toolbar {
 	display: flex;
@@ -23,16 +20,17 @@ a.leftStack {
   -moz-border-radius: 4px;
   border-radius: 4px;
   border: solid 1px #1A4575;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+/*  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
-  background: #3A68A1;
-  color: #fee1cc;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2); */
+/*  background: #3A68A1; */
+  /*color: #fee1cc;*/
   text-decoration: none;
   padding: 8px 12px;
   text-decoration: none;
   font-size: larger;
+	/*margin: 0 5px 5px 5px;*/
 	}
 
 .entryHeader {
