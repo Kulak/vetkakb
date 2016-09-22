@@ -23,9 +23,9 @@ let mainLayout = React.createClass({
 		return (<div>
       <h1>{document.title}</h1>
       <div className='toolbar'>
-        <Link to={ZonePath + '/app/l/recent'} className='leftStack'>Recent</Link>
-				<Link to={ZonePath + '/app/l/search'} className='leftStack'>Search</Link>
-				<Link to={ZonePath + '/app/l/new'} className='leftStack'>New Entry</Link>
+        <Link to={ZonePath + '/app/recent'} className='leftStack'>Recent</Link>
+				<Link to={ZonePath + '/app/search'} className='leftStack'>Search</Link>
+				<Link to={ZonePath + '/app/new'} className='leftStack'>New Entry</Link>
 				<UserBox />
       </div>
       {this.props.children}
@@ -37,7 +37,7 @@ let newEntry = React.createClass({
 
 	onNewClose: function(fe: WSFullEntry) {
 		if (fe.EntryID != 0) {
-			browserHistory.push(ZonePath + '/app/l/e/' + fe.EntryID)
+			browserHistory.push(ZonePath + '/app/e/' + fe.EntryID)
 		} else {
 			browserHistory.push(ZonePath + "/")
 		}
