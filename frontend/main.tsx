@@ -10,6 +10,7 @@ import {EntryCreateBox} from './controls/entryCreate'
 import {UserBox} from './controls/userBox'
 import {WSFullEntry} from './model/wsentry'
 import {EntryLoaderBox} from './controls/entryLoader'
+import {Dashboard} from './controls/dashboard'
 import {DataService} from './common/dataService'
 
 declare var ThemeName: string
@@ -48,19 +49,12 @@ let newEntry = React.createClass({
 	}
 })
 
-// that's the default route
-let dashboard = React.createClass({
-	render: function() {
-		return (<p>Home!</p>)
-	}
-})
-
 ReactDOM.render((
 	<Router history={browserHistory}>
 		{/* Redirect from / to /app/ */}
 		<Redirect from={ZonePath + "/"} to={ZonePath + "/app"} />
 		<Route path={ZonePath + "/app"} component={mainLayout}>
-			<IndexRoute component={dashboard} />
+			<IndexRoute component={Dashboard} />
 			<Route path="recent" component={Recent} />
 			<Route path="search" component={Search} />
 			<Route path='new' component={newEntry} />
