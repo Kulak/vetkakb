@@ -56,9 +56,7 @@ $(targetDir):
 # Update targetDir from dtree on build machine
 #	rsync -av $(n) dtree/ $(targetDir)/
 rsync: $(targetDir)
-	$(rsync) vetkakb www $(targetDir)/
-	cd backend; $(rsync) db-sql t-html \
-		$(targetDir)/backend/
+	$(rsync) vetkakb www db-sql t-html $(targetDir)/
 
 # NOTE: -g option on FreeBSD requires sudo
 # NOTE: -g option on Mac OS X does not require (?) sudo
