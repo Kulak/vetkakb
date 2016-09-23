@@ -27,7 +27,8 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	public constructor(props: EntryViewProps) {
 		super(props)
 		let pe = props.entry
-		let fe = new WSFullEntry(pe.EntryID, pe.Title, pe.TitleIcon, null, pe.RawTypeName, "", pe.HTML, pe.Updated)
+		let fe = new WSFullEntry(pe.EntryID, pe.Title, pe.TitleIcon, null, pe.RawTypeName, "",
+			pe.HTML, pe.Intro, pe.Updated)
 		this.state = new EntryViewState(fe, false, false);
 	}
 	onExpandClick(expandAction: boolean) {
@@ -93,15 +94,16 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
 		//console.log("entryView: render entry", fe)
-		let icon: JSX.Element = (null)
-		if (fe.TitleIcon.length > 0) {
-			console.log("icon is set")
-			icon = (<img src={fe.TitleIcon} />)
-		}
 		if (this.state.editing) {
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {
+			// viewing; not editing
 			if (this.state.expanded) {
+				// is expanded
+				let icon: JSX.Element = (null)
+				if (fe.TitleIcon.length > 0) {
+					icon = (<img className="uk-thumbnail uk-float-left" src={fe.TitleIcon} />)
+				}
 				let entryBody
 				if (fe.RawTypeName == WSRawType.BinaryImage) {
 					entryBody = <img className='' src={"re/" + fe.EntryID} />
@@ -120,10 +122,16 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 					<hr className="uk-article-divider" />
 				</article>
 			} else {
+				// not expanded
+				let icon: JSX.Element = (null)
+				if (fe.TitleIcon.length > 0) {
+					icon = (<img className="uk-thumbnail uk-float-left uk-thumbnail-mini" src={fe.TitleIcon} />)
+				}
 				return (
-					<div>
-						<h1><a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
+					<div className="uk-panel uk-clearfix">
+						<h1 class="uk-panel-title"> <a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
 						{icon}
+						<p className="">{fe.Intro}</p>
 					</div>)
 			}
 		}

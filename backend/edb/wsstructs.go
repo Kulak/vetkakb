@@ -49,6 +49,7 @@ type WSEntryGetHTML struct {
 	TitleIcon   string
 	RawTypeName string
 	HTML        string
+	Intro       string
 	Updated     time.Time
 }
 
@@ -60,6 +61,7 @@ type WSFullEntry struct {
 	RawTypeName string
 	Raw         []byte
 	HTML        string
+	Intro       string
 	Tags        string
 	Updated     time.Time
 }

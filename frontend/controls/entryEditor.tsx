@@ -52,7 +52,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		// make a copy of entry for easy cancellation
 		this.state = new EditorState(new WSFullEntry(
 			pen.EntryID, pen.Title, pen.TitleIcon, pen.Raw, pen.RawTypeName, pen.Tags,
-			pen.HTML, pen.Updated
+			pen.HTML, pen.Intro, pen.Updated
 		));
 	}
 	onEditCancelClick() {

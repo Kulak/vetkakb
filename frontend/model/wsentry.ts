@@ -31,6 +31,7 @@ export class WSEntryGetHTML {
 		public Title: string = "",
 		public TitleIcon: string = "",
 		public HTML: string = "",
+		public Intro: string = "",
 		public RawTypeName: string = "",
 		public Updated: string = ""
 	) {}
@@ -47,6 +48,7 @@ export class WSFullEntry {
 		public RawTypeName: string = "",
 		public Tags: string = "",
 		public HTML: string = "",
+		public Intro: string = "",
 		public Updated: string = ""
 	) {}
 }

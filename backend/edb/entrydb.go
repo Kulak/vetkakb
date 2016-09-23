@@ -139,7 +139,7 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 	}
 	var rows *sql.Rows
 	sql := `
-	SELECT e.entryID, es.title, e.titleIcon, e.html, e.rawType, e.updated
+	SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.updated
 	from entry e
 	inner join entrySearch es on es.EntryFK = e.EntryID
 	order by e.updated desc limit ?
@@ -155,7 +155,7 @@ func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGet
 	}
 	var rows *sql.Rows
 	sql := `
-SELECT e.entryID, es.title, e.titleIcon, e.html, e.rawType, e.updated from entry e
+SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.updated from entry e
 inner join entrySearch es on es.EntryFK = e.EntryID
 where entryID in (select entryFK from entrySearch where entrySearch match $1)
 order by updated desc limit $2
@@ -174,7 +174,7 @@ func (edb *EntryDB) rowsToWSEntryGetHTML(rows *sql.Rows, err error) ([]WSEntryGe
 	var r WSEntryGetHTML
 	for rows.Next() {
 		var rawType int
-		err = rows.Scan(&r.EntryID, &r.Title, &r.TitleIcon, &r.HTML, &rawType, &r.Updated)
+		err = rows.Scan(&r.EntryID, &r.Title, &r.TitleIcon, &r.HTML, &r.Intro, &rawType, &r.Updated)
 		if err != nil {
 			return result, err
 		}
@@ -192,14 +192,17 @@ func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 		return r, fmt.Errorf("Database connection is closed.")
 	}
 	sql := `
-	SELECT es.title, e.titleIcon, e.rawType, e.raw, e.html, e.updated, es.tags
+	SELECT
+		es.title, e.titleIcon, e.rawType, e.raw, e.html,
+		e.Intro, e.updated, es.tags
 	from entry e
 	inner join entrySearch es on e.entryID = es.entryFK
 	where e.entryID = ?
 	`
 	var rawType int
 	err = edb.db.QueryRow(sql, entryID).
-		Scan(&r.Title, &r.TitleIcon, &rawType, &r.Raw, &r.HTML, &r.Updated, &r.Tags)
+		Scan(&r.Title, &r.TitleIcon, &rawType, &r.Raw, &r.HTML,
+			&r.Intro, &r.Updated, &r.Tags)
 	if err != nil {
 		return r, err
 	}
