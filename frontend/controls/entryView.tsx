@@ -111,15 +111,20 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				return <article className="uk-article">
 					<nav className='uk-navbar'>
 						<ul className="uk-navbar-nav">
-							<li>{icon}<h1 className="uk-article-title" onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
+							<li><h1 className="uk-article-title" onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
 							<li><button onClick={e => this.onEditClick(true)}>Edit</button></li>
 						</ul>
 					</nav>
+					{icon}
 					{entryBody}
 					<hr className="uk-article-divider" />
 				</article>
 			} else {
-				return <h1>{icon}<a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
+				return (
+					<div>
+						<h1><a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
+						{icon}
+					</div>)
 			}
 		}
 	} // end of render function
