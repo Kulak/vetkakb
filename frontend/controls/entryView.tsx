@@ -113,7 +113,8 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				return <article className="uk-article">
 					<nav className='uk-navbar'>
 						<ul className="uk-navbar-nav">
-							<li><h1 className="uk-article-title" onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
+							<li><h1 className="uk-article-title"
+								onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
 							<li><button onClick={e => this.onEditClick(true)}>Edit</button></li>
 						</ul>
 					</nav>
@@ -129,7 +130,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				}
 				return (
 					<div className="uk-panel uk-clearfix">
-						<h1 class="uk-panel-title"> <a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
+						<h1 className="uk-panel-title"> <a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
 						{icon}
 						<p className="">{fe.Intro}</p>
 					</div>)

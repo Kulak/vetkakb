@@ -29,10 +29,12 @@ var GuestWSUserGet = &WSUserGet{
 // WSEntryPut describes REST API payload for creating entry.
 type WSEntryPut struct {
 	Title          string
+	TitleIcon      string
 	RawTypeName    string
 	RawContentType string
 	RawFileName    string
 	Tags           string
+	Intro          string
 }
 
 // WSEntryPost is used to udpate enries.

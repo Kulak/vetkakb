@@ -7,20 +7,17 @@ export class RawType {
 }
 
 // WSEntryPut mirrors backend structure with the same name.
-export class WSEntryPut {
-	constructor(
-		public title: string,
-		public rawTypeName: string,
-		public tags: string) {}
-}
-
-// WSEntryPut mirrors backend structure with the same name.
+// Post is used to both create new and update existing entries.
+// New entries have entryID set to zero.
+// Existing entries have entryID set to above zero.
 export class WSEntryPost {
 	constructor(
 		public entryID: number,
 		public title: string,
+		public titleIcon: string,
 		public rawTypeName: string,
-		public tags: string) {}
+		public tags: string,
+		public Intro: string) {}
 }
 
 // WSEntryGetHTML mirrows backend structure

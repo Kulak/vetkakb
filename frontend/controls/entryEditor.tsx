@@ -4,7 +4,7 @@ entryEditor focuses on changing content, saving it
 
 import * as React from 'react'
 import {WSFullEntry} from '../model/wsentry'
-import {WSEntryPut, WSEntryPost, RawType} from '../model/wsentry'
+import {WSEntryPost, RawType} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 import {RawTypeDropdown} from './rawTypeDropdown'
 import {WSRawType} from '../common/rawtypes'
@@ -83,10 +83,12 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 			// copy all fields
 			se.EntryID = fe.EntryID
 			se.HTML = fe.HTML
+			se.Intro = fe.Intro
 			se.Raw = fe.Raw
 			se.RawTypeName = fe.RawTypeName
 			se.Tags = fe.Tags
 			se.Title = fe.Title
+			se.TitleIcon = fe.TitleIcon
 			se.Updated = fe.Updated
 			console.log("editor's setState on success (se, fe)B", se, fe)
 			this.setState(state)
@@ -110,18 +112,12 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		let e: WSFullEntry = this.state.entry
 
 		var fd = new FormData();
-		// check if entry is new or update
-		if (e.EntryID == 0) {
-			// create new entry with PUT
-			let wsEntry = new WSEntryPut(e.Title, e.RawTypeName, e.Tags)
-			fd.append('entry', JSON.stringify(wsEntry))
-		} else {
-			// update existing entry with POST
-			let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.RawTypeName, e.Tags)
-			fd.append('entry', JSON.stringify(wsEntry))
-		}
+
+		let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.TitleIcon, e.RawTypeName, e.Tags, e.Intro)
+		fd.append('entry', JSON.stringify(wsEntry))
+
+		console.log("on save entry (state, wsEntry)", this.state.entry, wsEntry)
 		// check if raw is binary or some other text
-		console.log("on save entry", this.state.entry)
 		if (this.state.entry.RawTypeName.startsWith(WSRawType.Binary)) {
 			let fileBlob = this.ctrls.rawFile.files[0]
 			fd.append('rawFile', fileBlob);
@@ -138,6 +134,16 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	onEntryTitleChange(event: React.FormEvent) {
 		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
 		state.entry.Title = (event.target as any).value
+		this.setState(state)
+	}
+	onEntryTitleIconChange(event: React.FormEvent) {
+		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
+		state.entry.TitleIcon = (event.target as any).value
+		this.setState(state)
+	}
+	onEntryIntroChange(event: React.FormEvent) {
+		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
+		state.entry.Intro = (event.target as any).value
 		this.setState(state)
 	}
 	onEntryOrigBodyChange(event: React.FormEvent) {
@@ -189,12 +195,21 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 				<button className='leftStack' onClick={e => this.onEditSaveClick(true)}>OK</button>
 				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel</button>
 			</div>
-			<p>
-			</p>
 			{rawPayload}
 			<p>
 				<label>Tags:</label><br />
-				<input value={this.state.entry.Tags} onChange={e => this.onEntryTagsChange(e)} className='entryEdit' />
+				<input value={this.state.entry.Tags} onChange={e => this.onEntryTagsChange(e)}
+					className='entryEdit' />
+			</p>
+			<p>
+				<label>Title Icon URL:</label><br />
+				<input value={this.state.entry.TitleIcon} onChange={e => this.onEntryTitleIconChange(e)}
+					className='entryEdit' />
+			</p>
+			<p>
+				<label>Introduction:</label><br />
+				<textarea  value={this.state.entry.Intro} onChange={e => this.onEntryIntroChange(e)}
+					className='entryEdit entryEdit-short' />
 			</p>
 		</div>
 	} // end of render function

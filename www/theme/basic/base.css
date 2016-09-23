@@ -69,6 +69,10 @@ textarea.entryEdit {
 	height: 140px;
 }
 
+textarea.entryEdit-short {
+	height: 40px;
+}
+
 img.avatar {
 	max-height: 22px;
 }

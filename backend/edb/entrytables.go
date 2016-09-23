@@ -53,13 +53,15 @@ func sqlRequireAffected(result sql.Result, expected int64) error {
 
 // NewEntry creates new entry to be inserted into DB.
 func NewEntry(entryID int64, raw []byte, rawType int, rawContentType,
-	rawFileName string, ownerFK int64) *Entry {
+	rawFileName, titleIcon, intro string, ownerFK int64) *Entry {
 	return &Entry{
 		EntryID:        entryID,
 		Raw:            raw,
 		RawType:        rawType,
 		RawContentType: rawContentType,
 		RawFileName:    rawFileName,
+		TitleIcon:      titleIcon,
+		Intro:          intro,
 		OwnerFK:        ownerFK,
 	}
 }
@@ -118,11 +120,16 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 	if en.EntryID == 0 {
 		return fmt.Errorf("Cannot update record, because EntryID is set to zero.")
 	}
-	sql = "update `entry` set raw=$1, rawType=$2, rawContentType=$3, rawFileName=$4, html=$5, updated=$6 " +
-		"where entryID=$7"
+	sql = `
+	update entry set
+		raw=$1, rawType=$2, rawContentType=$3, rawFileName=$4, html=$5,
+		titleIcon=$6, intro=$7, updated=$8
+	where entryID=$9
+		`
 	en.Updated = time.Now()
 	result, err = tx.Exec(sql,
-		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML, en.Updated.Unix(),
+		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML,
+		en.TitleIcon, en.Intro, en.Updated.Unix(),
 		en.EntryID)
 	if err != nil {
 		return fmt.Errorf("Failed to update EntryID %v. Error: %v", en.EntryID, err)
