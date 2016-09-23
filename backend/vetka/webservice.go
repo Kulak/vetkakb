@@ -107,6 +107,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		})
 	}
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
+	router.GET("/res/*filepath", ws.siteHandler(ws.serveResFile))
 	// site specific URLs
 	sites, err := ws.siteDB.All()
 	if err != nil {
@@ -133,7 +134,6 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 			}
 			log.Printf("Domain redirect path %s does not start with /", path)
 		}
-		router.GET("/res/*filepath", ws.siteHandler(ws.serveResFile))
 	}
 	return ws
 }
