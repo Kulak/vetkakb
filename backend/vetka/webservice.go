@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -132,6 +133,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 			}
 			log.Printf("Domain redirect path %s does not start with /", path)
 		}
+		router.GET("/res/*filepath", ws.siteHandler(ws.serveResFile))
 	}
 	return ws
 }
@@ -410,4 +412,12 @@ func (ws WebSvc) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter.P
 		return
 	}
 	ws.writeJSON(w, users)
+}
+
+func (ws WebSvc) serveResFile(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	site := context.Get(r, "site").(*sdb.Site)
+	fp := p.ByName("filepath")
+	fn := filepath.Join("res", fp)
+	sfn := site.WebFile(ws.conf.Main.DataRoot, fn)
+	http.ServeFile(w, r, sfn)
 }

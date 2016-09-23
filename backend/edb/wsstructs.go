@@ -41,11 +41,12 @@ type WSEntryPost struct {
 	WSEntryPut
 }
 
-// WSEntryGetHTML is used to load entries to display text and HTML oriented content.
+// WSEntryGetHTML is used to load a list of entries to display text and HTML oriented content.
 // This structure is populated directly by DAL.
 type WSEntryGetHTML struct {
 	EntryID     int64
 	Title       string
+	TitleIcon   string
 	RawTypeName string
 	HTML        string
 	Updated     time.Time
@@ -55,6 +56,7 @@ type WSEntryGetHTML struct {
 type WSFullEntry struct {
 	EntryID     int64
 	Title       string
+	TitleIcon   string
 	RawTypeName string
 	Raw         []byte
 	HTML        string

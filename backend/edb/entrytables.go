@@ -8,11 +8,12 @@ import (
 
 // Entry represents content of Entry table in Entry databse.
 type Entry struct {
-	EntryID           int64
-	Raw               []byte
-	RawType           int
-	RawContentType    string
-	RawFileName       string
+	EntryID        int64
+	Raw            []byte
+	RawType        int
+	RawContentType string
+	RawFileName    string
+	// Is an absolute PATH of Icon URL.  Example:  /res/img/example.jpg
 	TitleIcon         string
 	HTML              string
 	Intro             string

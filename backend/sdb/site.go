@@ -38,3 +38,8 @@ func (s Site) WebTemplateFile(dataDir string, fileName string) (string, bool) {
 	}
 	return "", false
 }
+
+// WebFile returns site specific web file.
+func (s Site) WebFile(dataDir string, fileName string) string {
+	return filepath.Join(dataDir, s.DBName, "www", fileName)
+}

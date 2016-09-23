@@ -27,7 +27,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	public constructor(props: EntryViewProps) {
 		super(props)
 		let pe = props.entry
-		let fe = new WSFullEntry(pe.EntryID, pe.Title, null, pe.RawTypeName, "", pe.HTML, pe.Updated)
+		let fe = new WSFullEntry(pe.EntryID, pe.Title, pe.TitleIcon, null, pe.RawTypeName, "", pe.HTML, pe.Updated)
 		this.state = new EntryViewState(fe, false, false);
 	}
 	onExpandClick(expandAction: boolean) {
@@ -92,7 +92,12 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
-		console.log("entryView: render entry", fe)
+		//console.log("entryView: render entry", fe)
+		let icon: JSX.Element = (null)
+		if (fe.TitleIcon.length > 0) {
+			console.log("icon is set")
+			icon = (<img src={fe.TitleIcon} />)
+		}
 		if (this.state.editing) {
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {
@@ -106,7 +111,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				return <article className="uk-article">
 					<nav className='uk-navbar'>
 						<ul className="uk-navbar-nav">
-							<li><h1 className="uk-article-title" onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
+							<li>{icon}<h1 className="uk-article-title" onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
 							<li><button onClick={e => this.onEditClick(true)}>Edit</button></li>
 						</ul>
 					</nav>
@@ -114,7 +119,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 					<hr className="uk-article-divider" />
 				</article>
 			} else {
-				return <h1><a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
+				return <h1>{icon}<a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
 			}
 		}
 	} // end of render function

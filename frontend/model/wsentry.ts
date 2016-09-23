@@ -29,6 +29,7 @@ export class WSEntryGetHTML {
 	constructor(
 		public EntryID: number = 0,
 		public Title: string = "",
+		public TitleIcon: string = "",
 		public HTML: string = "",
 		public RawTypeName: string = "",
 		public Updated: string = ""
@@ -41,6 +42,7 @@ export class WSFullEntry {
 	constructor(
 		public EntryID: number = 0,
 		public Title: string = "",
+		public TitleIcon: string = "",
 		public Raw: string = "",
 		public RawTypeName: string = "",
 		public Tags: string = "",

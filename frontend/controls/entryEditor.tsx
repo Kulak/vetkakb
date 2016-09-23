@@ -51,7 +51,8 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		let pen: WSFullEntry = props.entry
 		// make a copy of entry for easy cancellation
 		this.state = new EditorState(new WSFullEntry(
-			pen.EntryID, pen.Title, pen.Raw, pen.RawTypeName, pen.Tags, pen.HTML, pen.Updated
+			pen.EntryID, pen.Title, pen.TitleIcon, pen.Raw, pen.RawTypeName, pen.Tags,
+			pen.HTML, pen.Updated
 		));
 	}
 	onEditCancelClick() {

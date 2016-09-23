@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -360,4 +361,11 @@ func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, tFileNa
 		ws.writeError(w, fmt.Sprintf("Cannot execute template.  Error: %s", err))
 		return
 	}
+}
+
+func fileExists(fileName string) bool {
+	if _, err := os.Stat(fileName); err == nil {
+		return true
+	}
+	return false
 }
