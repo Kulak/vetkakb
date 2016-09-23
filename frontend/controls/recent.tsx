@@ -9,7 +9,9 @@ import {EntryList} from './entryList'
 
 declare var ZonePath: string
 
-export class RecentProps {}
+export class RecentProps {
+		limit: number = 20
+}
 
 class RecentState {
 	constructor(
@@ -22,7 +24,15 @@ export class Recent extends React.Component<RecentProps, RecentState> {
 	public constructor(props: RecentProps, context: any) {
 		super(props, context)
 		this.state = new RecentState()
-		DataService.get(ZonePath + '/api/recent/20')
+		let limit = 20
+		if (props.limit) {
+			limit = props.limit
+		}
+		this.loadRecent(limit, "")
+	}
+
+	loadRecent(limit: number, endStr: string) {
+		DataService.get(ZonePath + '/api/recent/' + limit + "/" + endStr)
 		.then(function(jsonEntries) {
 			console.log("json text", jsonEntries)
 			this.setState(new RecentState(jsonEntries as Array<WSEntryGetHTML>))
@@ -32,7 +42,18 @@ export class Recent extends React.Component<RecentProps, RecentState> {
 		}.bind(this))
 	}
 
+	onLoadClick() {
+		console.log("state.entires", this.state)
+		let idx = this.state.entries.length - 1
+		let end = this.state.entries[idx]
+		this.loadRecent(10, end.Updated)
+	}
+
 	render() {
-		return <EntryList entries={this.state.entries} />
+		return (<div>
+				<EntryList entries={this.state.entries} />
+				<button onClick={e => this.onLoadClick()}>More</button>
+			</div>
+		)
 	}
 }  // end of class

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/kulak/sqlitemaint"
 	"github.com/markbates/goth"
@@ -133,7 +134,7 @@ DONE:
 
 // RecentHTMLEntries returns limit recent entries with HTML content
 // ordered in DESC order.  The data is suitable for viewing, but not editing.
-func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err error) {
+func (edb *EntryDB) RecentHTMLEntries(limit int64, end time.Time) (result []WSEntryGetHTML, err error) {
 	if edb.db == nil {
 		return result, fmt.Errorf("Database connection is closed.")
 	}
@@ -142,9 +143,11 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64) (result []WSEntryGetHTML, err
 	SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.updated
 	from entry e
 	inner join entrySearch es on es.EntryFK = e.EntryID
-	order by e.updated desc limit ?
+	where e.updated < $1
+	order by e.updated desc
+	limit $2
 	`
-	rows, err = edb.db.Query(sql, limit)
+	rows, err = edb.db.Query(sql, end.Unix(), limit)
 	return edb.rowsToWSEntryGetHTML(rows, err)
 }
 

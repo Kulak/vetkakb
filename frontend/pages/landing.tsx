@@ -45,7 +45,7 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
     if (this.state.path == 'new') {
       body = <ee.EntryCreateBox editorCloseReq={fe => this.onNewClose(fe) } />
     } else if (this.state.path == 'recent') {
-      body = <Recent />
+      body = <Recent limit={25} />
     } else if (this.state.path == 'search') {
       body = <Search />
     } else if (this.state.path == 'viewone') {

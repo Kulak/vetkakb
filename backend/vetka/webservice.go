@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
@@ -77,8 +78,8 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
 		// serve dynamic (site specific) content
 		router.POST(prefix+"/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
-		router.GET(prefix+"/api/recent", ws.siteHandler(ws.getRecent))
 		router.GET(prefix+"/api/recent/:limit", ws.siteHandler(ws.getRecent))
+		router.GET(prefix+"/api/recent/:limit/:end", ws.siteHandler(ws.getRecent))
 		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
 		router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
 		router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
@@ -185,13 +186,24 @@ func (ws WebSvc) wsUserGet(w http.ResponseWriter, r *http.Request, _ httprouter.
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	limit, err := ws.getLimit(p)
+	limitStr := p.ByName("limit")
+	limit, err := ws.getLimit(limitStr)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return
 	}
+	endStr := p.ByName("end")
+	end := time.Now().Add(24 * time.Hour)
+	if endStr != "" {
+		end, err = ws.getTime(endStr)
+		if err != nil {
+			ws.writeError(w, err.Error())
+			return
+		}
+	}
+
 	entryDB := context.Get(r, "edb").(*edb.EntryDB)
-	entries, err := entryDB.RecentHTMLEntries(limit)
+	entries, err := entryDB.RecentHTMLEntries(limit, end)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Failed to load recent HTML entries. Error: %v", err))
 		return
@@ -210,7 +222,8 @@ func (ws WebSvc) getRobots(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 // getMatch searches for entries matching criteria.
 func (ws WebSvc) getSearch(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	limit, err := ws.getLimit(p)
+	limitStr := p.ByName("limit")
+	limit, err := ws.getLimit(limitStr)
 	if err != nil {
 		ws.writeError(w, err.Error())
 		return

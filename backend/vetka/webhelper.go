@@ -12,6 +12,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/context"
 	"github.com/markbates/goth/gothic"
@@ -226,8 +227,7 @@ func (ws WebSvc) loadJSONBody(rBody io.ReadCloser, v interface{}) error {
 	return nil
 }
 
-func (ws WebSvc) getLimit(p httprouter.Params) (int64, error) {
-	limitStr := p.ByName("limit")
+func (ws WebSvc) getLimit(limitStr string) (int64, error) {
 	if limitStr == "" {
 		limitStr = "30"
 	}
@@ -239,6 +239,12 @@ func (ws WebSvc) getLimit(p httprouter.Params) (int64, error) {
 		limit = 200
 	}
 	return limit, nil
+}
+
+func (ws WebSvc) getTime(timeStr string) (t time.Time, err error) {
+	// Example of date in timeStr: "2016-09-22T15:05:22Z"
+	t, err = time.ParseInLocation("2006-01-02T15:04:05Z", timeStr, time.UTC)
+	return
 }
 
 func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
