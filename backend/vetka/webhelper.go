@@ -313,11 +313,6 @@ func (ws WebSvc) getEdb(site *sdb.Site) *edb.EntryDB {
 	if !ok {
 		log.Printf("Caching EntityDB %s", site.DBName)
 		db = ws.NewEntryDB(site)
-		err := db.Open()
-		if err != nil {
-			log.Printf("Cannot load EntryDB for site: %v", err)
-			return nil
-		}
 		ws.edbCache[site.DBName] = db
 	}
 	return db

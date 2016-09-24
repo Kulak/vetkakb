@@ -103,11 +103,14 @@ func main() {
 	}
 	for _, site := range sites {
 		db := ws.NewEntryDB(site)
-		err := db.Open()
+		dbc, err := db.Open()
 		if err != nil {
 			log.Fatalf("Failed to open DB. Error: %v", err)
 		}
-		db.Close()
+		err = dbc.Close()
+		if err != nil {
+			log.Fatalf("Failed to close DB. Error: %v", err)
+		}
 	}
 
 	log.Fatal(http.ListenAndServe(conf.Main.WebEndpoint, ws.Router))
