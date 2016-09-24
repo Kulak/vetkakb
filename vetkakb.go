@@ -180,5 +180,5 @@ func quitHandler(sig os.Signal) error {
 	log.Println("quitting gracefully...")
 	// stop <- struct{}{}
 	// <-done
-	return daemon.ErrStop
+	return nil // daemon.ErrStop
 }
