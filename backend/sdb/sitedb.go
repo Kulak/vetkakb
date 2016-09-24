@@ -57,7 +57,7 @@ func (sdb *SiteDB) GetSite(host, path string) (site *Site, err error) {
 	return
 }
 
-// GetSite loads site by hostname and path.
+// GetSiteByID loads site by hostname and path.
 func (sdb *SiteDB) GetSiteByID(siteIDStr string) (s *Site, err error) {
 	var db *sql.DB
 	db, err = sdb.Open()
