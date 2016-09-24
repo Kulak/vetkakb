@@ -43,7 +43,7 @@ func main() {
 	flag.StringVar(&signal, "s", "", `send signal to daemon
 			quit - graceful shutdown`)
 	flag.Parse()
-	log.Println("*** Starting rashodi ***")
+	log.Println("*** Starting vetkakb ***")
 	log.Printf("* Config file:  %s", configFile)
 	log.Printf("* Console mode: %v", consoleMode)
 
@@ -117,7 +117,7 @@ func deamonRun(conf *core.Configuration, signal string) {
 
 	child, err := context.Reborn()
 	if err != nil {
-		log.Fatalf("Failed to fork rashodi.  Error: %v", err)
+		log.Fatalf("Failed to fork vetkakb.  Error: %v", err)
 	}
 	if child != nil {
 		// parent does nothing with its child
@@ -128,7 +128,16 @@ func deamonRun(conf *core.Configuration, signal string) {
 	// child code beyond this point
 	log.Println("Child process continues.")
 	defer context.Release()
-	childRun(conf)
+
+	go func() {
+		childRun(conf)
+	}()
+
+	err = daemon.ServeSignals()
+	if err != nil {
+		log.Println("Signal handler failed:", err)
+	}
+	log.Println("- - - vetka quit - - -")
 }
 
 func childRun(conf *core.Configuration) {

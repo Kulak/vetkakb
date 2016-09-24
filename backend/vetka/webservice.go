@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/context"
@@ -59,83 +58,83 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 	//   update/modify - PATCH
 	//   delete - DELETE
 
-	router := ws.Router
+	// router := ws.Router
 
-	router.GET("/robots.txt", ws.getRobots)
-	prefixes := []string{""}
-	if len(ws.conf.Main.ClientPath) > 0 {
-		// ClientPath form is "/cl" or "/client"
-		prefixes = append(prefixes, fmt.Sprintf("%s/:clientName", ws.conf.Main.ClientPath))
-	}
-	log.Println("Registering URL prefixes: ", prefixes)
-	for _, prefix := range prefixes {
-		// serve static files
-		router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
-		router.GET(prefix+"/", ws.siteHandler(ws.getIndex))
-		router.GET(prefix+"/app/*ignoredPageName", ws.siteHandler(ws.getIndex))
-		//router.GET(prefix+"/app/e/:entryID/*ignoredSlug", ws.siteHandler(ws.getIndex))
-		router.ServeFiles(prefix+"/vendors/*filepath", conf.WebDir("bower_components/"))
-		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
-		// serve dynamic (site specific) content
-		router.POST(prefix+"/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
-		router.GET(prefix+"/api/recent/:limit", ws.siteHandler(ws.getRecent))
-		router.GET(prefix+"/api/recent/:limit/:end", ws.siteHandler(ws.getRecent))
-		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
-		router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
-		router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
-		// site can be extracted when starting authentication
-		router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(ws.beginAuthHandler))
-		// callback cannot maintian zones, so site has to be loaded from state
-		router.GET(prefix+"/api/auth/callback", ws.getGplusCallback)
-		// returns wsUserGet strucure usable for general web pages
-		router.GET(prefix+"/api/session/user", ws.siteHandler(ws.wsUserGet))
-		// for testing purpose of gothic cookie
-		router.GET(prefix+"/api/session/gothic", ws.siteHandler(ws.demandAdministrator(ws.getGothicSession)))
-		// for testing purpose of userId cookie
-		router.GET(prefix+"/api/session/vetka", ws.siteHandler(ws.demandAdministrator(ws.getVetkaSession)))
-		// to get a quick public list of currently registered users; not really for display
-		router.GET(prefix+"/api/users", ws.siteHandler(ws.demandAdministrator(ws.getUsers)))
-		// allows to load RawTypeName "Binary/Image" as a link.
-		router.GET(prefix+"/re/:entryID", ws.siteHandler(ws.getResourceEntry))
-		// Enable access to source code files from web browser debugger
-		router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// for k, v := range r.Header {
-			// 	log.Println("Request HEADER key:", k, "value:", v)
-			// }
-			// log.Println("RquestURI:", r.RequestURI)
-			msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s", r.Host, r.URL)
-			ws.writeError(w, msg)
-		})
-	}
-	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
-	router.GET("/res/*filepath", ws.siteHandler(ws.serveResFile))
-	// site specific URLs
-	sites, err := ws.siteDB.All()
-	if err != nil {
-		log.Fatalf("Failed to load sites: %v", err)
-	}
-	for _, site := range sites {
-		if site.Path != "" {
-			// redirect is only implemented for domain hosting, not zone level
-			log.Printf("Redirect configuration is skipping site with %s path, host: %v, siteID: %v",
-				site.Path, site.Host, site.SiteID)
-			continue
-		}
-		edb := ws.getEdb(site)
-		paths, err := edb.GetUniqueRedirectPaths()
-		if err != nil {
-			log.Fatalf("Failed to get unique redirect paths for site %v.  Error: %s", site.SiteID, err)
-		}
-		for _, path := range paths {
-			// we can only redirect absolute path at domain level
-			if strings.HasPrefix(path, "/") {
-				log.Printf("Redirect for %s path", path)
-				router.GET(path+"/*filepath", ws.siteHandler(ws.getRedirect))
-				continue
-			}
-			log.Printf("Domain redirect path %s does not start with /", path)
-		}
-	}
+	// router.GET("/robots.txt", ws.getRobots)
+	// prefixes := []string{""}
+	// if len(ws.conf.Main.ClientPath) > 0 {
+	// 	// ClientPath form is "/cl" or "/client"
+	// 	prefixes = append(prefixes, fmt.Sprintf("%s/:clientName", ws.conf.Main.ClientPath))
+	// }
+	// log.Println("Registering URL prefixes: ", prefixes)
+	// for _, prefix := range prefixes {
+	// 	// serve static files
+	// 	router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
+	// 	router.GET(prefix+"/", ws.siteHandler(ws.getIndex))
+	// 	router.GET(prefix+"/app/*ignoredPageName", ws.siteHandler(ws.getIndex))
+	// 	//router.GET(prefix+"/app/e/:entryID/*ignoredSlug", ws.siteHandler(ws.getIndex))
+	// 	router.ServeFiles(prefix+"/vendors/*filepath", conf.WebDir("bower_components/"))
+	// 	router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
+	// 	// serve dynamic (site specific) content
+	// 	router.POST(prefix+"/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
+	// 	router.GET(prefix+"/api/recent/:limit", ws.siteHandler(ws.getRecent))
+	// 	router.GET(prefix+"/api/recent/:limit/:end", ws.siteHandler(ws.getRecent))
+	// 	router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
+	// 	router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
+	// 	router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
+	// 	// site can be extracted when starting authentication
+	// 	router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(ws.beginAuthHandler))
+	// 	// callback cannot maintian zones, so site has to be loaded from state
+	// 	router.GET(prefix+"/api/auth/callback", ws.getGplusCallback)
+	// 	// returns wsUserGet strucure usable for general web pages
+	// 	router.GET(prefix+"/api/session/user", ws.siteHandler(ws.wsUserGet))
+	// 	// for testing purpose of gothic cookie
+	// 	router.GET(prefix+"/api/session/gothic", ws.siteHandler(ws.demandAdministrator(ws.getGothicSession)))
+	// 	// for testing purpose of userId cookie
+	// 	router.GET(prefix+"/api/session/vetka", ws.siteHandler(ws.demandAdministrator(ws.getVetkaSession)))
+	// 	// to get a quick public list of currently registered users; not really for display
+	// 	router.GET(prefix+"/api/users", ws.siteHandler(ws.demandAdministrator(ws.getUsers)))
+	// 	// allows to load RawTypeName "Binary/Image" as a link.
+	// 	router.GET(prefix+"/re/:entryID", ws.siteHandler(ws.getResourceEntry))
+	// 	// Enable access to source code files from web browser debugger
+	// 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 		// for k, v := range r.Header {
+	// 		// 	log.Println("Request HEADER key:", k, "value:", v)
+	// 		// }
+	// 		// log.Println("RquestURI:", r.RequestURI)
+	// 		msg := fmt.Sprintf("404 - File Not Found\n\nHost: %s\nURL: %s", r.Host, r.URL)
+	// 		ws.writeError(w, msg)
+	// 	})
+	// }
+	// router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
+	// router.GET("/res/*filepath", ws.siteHandler(ws.serveResFile))
+	// // site specific URLs
+	// sites, err := ws.siteDB.All()
+	// if err != nil {
+	// 	log.Fatalf("Failed to load sites: %v", err)
+	// }
+	// for _, site := range sites {
+	// 	if site.Path != "" {
+	// 		// redirect is only implemented for domain hosting, not zone level
+	// 		log.Printf("Redirect configuration is skipping site with %s path, host: %v, siteID: %v",
+	// 			site.Path, site.Host, site.SiteID)
+	// 		continue
+	// 	}
+	// 	edb := ws.getEdb(site)
+	// 	paths, err := edb.GetUniqueRedirectPaths()
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to get unique redirect paths for site %v.  Error: %s", site.SiteID, err)
+	// 	}
+	// 	for _, path := range paths {
+	// 		// we can only redirect absolute path at domain level
+	// 		if strings.HasPrefix(path, "/") {
+	// 			log.Printf("Redirect for %s path", path)
+	// 			router.GET(path+"/*filepath", ws.siteHandler(ws.getRedirect))
+	// 			continue
+	// 		}
+	// 		log.Printf("Domain redirect path %s does not start with /", path)
+	// 	}
+	// }
 	return ws
 }
 
