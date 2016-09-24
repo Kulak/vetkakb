@@ -49,20 +49,15 @@ func NewConfiguration() *Configuration {
 			LogFileName:  "/var/log/vetkakb.log",
 			User:         "",
 			SiteURL:      "http://localhost:8080",
-			ClientPath:   "/client",
+			ClientPath:   "/z",
 		},
 	}
 }
 
 // LoadConfig loads configuration from file.
-func LoadConfig(cutomFileName string) (*Configuration, error) {
-	fileName := "vetkakb.gcfg"
-	if cutomFileName != "" {
-		fileName = cutomFileName
-	}
-	log.Printf("Using configuration file %v", fileName)
+func LoadConfig(customFileName string) (*Configuration, error) {
 	cfg := NewConfiguration()
-	err := gcfg.ReadFileInto(cfg, fileName)
+	err := gcfg.ReadFileInto(cfg, customFileName)
 	return cfg, err
 }
 

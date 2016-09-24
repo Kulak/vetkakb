@@ -15,6 +15,7 @@ package main
 import (
 	"flag"
 	"log"
+	"log/syslog"
 	"net/http"
 	"os/user"
 	"strconv"
@@ -28,17 +29,42 @@ import (
 	"github.com/sevlyar/go-daemon"
 )
 
+// Example:
+//    vetkakb -d false
+//
 func main() {
 	var configFile string
-	flag.StringVar(&configFile, "cf", "", "Configuration file name")
+	var consoleMode bool
+	flag.StringVar(&configFile, "cf", "/usr/local/etc/vetkakb.ini", "Configuration file name")
+	flag.BoolVar(&consoleMode, "c", false, "Console mode (non-daemon)")
 	flag.Parse()
 	log.Println("*** Starting rashodi ***")
-	log.Printf("Flag -cf %v", configFile)
+	log.Printf("* Config file:  %s", configFile)
+	log.Printf("* Console mode: %v", consoleMode)
 
 	conf, err := core.LoadConfig(configFile)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	if consoleMode {
+		// blocks
+		childRun(conf)
+	} else {
+		// blocks
+		deamonRun(conf)
+	}
+}
+
+func deamonRun(conf *core.Configuration) {
+	var err error
+
+	logwriter, err := syslog.New(syslog.LOG_NOTICE, "vetkakb")
+	if err != nil {
+		log.Fatalf("Failed to start syslog: %s", err)
+	}
+	log.SetOutput(logwriter)
+	log.SetFlags(0)
 
 	context := &daemon.Context{
 		PidFileName: conf.Main.PidFileName,
@@ -65,20 +91,24 @@ func main() {
 		context.Credential.Uid = uint32(uid)
 	}
 
-	// child, err := context.Reborn()
-	// if err != nil {
-	// 	log.Fatalf("Failed to fork rashodi.  Error: %v", err)
-	// }
-	// if child != nil {
-	// 	// parent does nothing with its child
-	// 	log.Println("Master process ended.")
-	// 	return
-	// }
+	child, err := context.Reborn()
+	if err != nil {
+		log.Fatalf("Failed to fork rashodi.  Error: %v", err)
+	}
+	if child != nil {
+		// parent does nothing with its child
+		log.Println("Master process ended.")
+		return
+	}
 
 	// child code beyond this point
 	log.Println("Child process continues.")
 	defer context.Release()
+	childRun(conf)
+}
 
+func childRun(conf *core.Configuration) {
+	var err error
 	err = conf.InitializeFilesystem()
 	if err != nil {
 		log.Fatalf("Failed to InitializeFilesystem.  Error: %v", err)

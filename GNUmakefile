@@ -44,7 +44,7 @@ go-build:
 	go build
 
 run:
-	go run vetkakb.go
+	go run vetkakb.go -c -cf vetkakb.ini
 
 tsc-build:
 	cd frontend; tsc -p tsconfig.json
