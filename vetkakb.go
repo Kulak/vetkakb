@@ -14,9 +14,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"log/syslog"
 	"net/http"
+	"os"
 	"os/user"
 	"strconv"
 	"syscall"
@@ -35,8 +37,11 @@ import (
 func main() {
 	var configFile string
 	var consoleMode bool
+	var signal string
 	flag.StringVar(&configFile, "cf", "/usr/local/etc/vetkakb.ini", "Configuration file name")
 	flag.BoolVar(&consoleMode, "c", false, "Console mode (non-daemon)")
+	flag.StringVar(&signal, "s", "", `send signal to daemon
+			quit - graceful shutdown`)
 	flag.Parse()
 	log.Println("*** Starting rashodi ***")
 	log.Printf("* Config file:  %s", configFile)
@@ -52,12 +57,14 @@ func main() {
 		childRun(conf)
 	} else {
 		// blocks
-		deamonRun(conf)
+		deamonRun(conf, signal)
 	}
 }
 
-func deamonRun(conf *core.Configuration) {
+func deamonRun(conf *core.Configuration, signal string) {
 	var err error
+
+	daemon.AddCommand(daemon.StringFlag(&signal, "quit"), syscall.SIGQUIT, quitHandler)
 
 	logwriter, err := syslog.New(syslog.LOG_NOTICE, "vetkakb")
 	if err != nil {
@@ -75,6 +82,23 @@ func deamonRun(conf *core.Configuration) {
 		WorkDir:     conf.Main.WorkingDir,
 		//Umask:       027,
 	}
+
+	if len(daemon.ActiveFlags()) > 0 {
+		// process signals
+		d, err := context.Search()
+		if err != nil {
+			fmt.Println("Unable send signal to vetkakb: ", err)
+			return
+		}
+		err = daemon.SendCommands(d)
+		if err != nil {
+			fmt.Println("Failed to send command to vetkakb: ", err)
+		} else {
+			fmt.Println("Sent signal to hwpushd.")
+		}
+		return
+	}
+
 	if conf.Main.User != "" {
 		// lookup user
 		log.Printf("Looking up user %s", conf.Main.User)
@@ -144,4 +168,17 @@ func childRun(conf *core.Configuration) {
 	}
 
 	log.Fatal(http.ListenAndServe(conf.Main.WebEndpoint, ws.Router))
+}
+
+// var (
+// 	stop = make(chan struct{})
+// 	done = make(chan struct{})
+// )
+
+// Graceful shutdown
+func quitHandler(sig os.Signal) error {
+	log.Println("quitting gracefully...")
+	// stop <- struct{}{}
+	// <-done
+	return daemon.ErrStop
 }
