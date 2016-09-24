@@ -12,6 +12,8 @@ import (
 
 // MainSection of the configuration file.
 type MainSection struct {
+	// WorkingDir is used by daemon mode.
+	WorkingDir string
 	// SqlRoot is a parent directory of SQL scripts.
 	SQLRoot string
 	// WebRoot must end with slash.
@@ -40,6 +42,7 @@ type Configuration struct {
 func NewConfiguration() *Configuration {
 	return &Configuration{
 		Main: MainSection{
+			WorkingDir:   "./",
 			SQLRoot:      "sql",
 			WebRoot:      "www",
 			DataRoot:     "data",

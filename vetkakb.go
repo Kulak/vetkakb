@@ -72,7 +72,7 @@ func deamonRun(conf *core.Configuration) {
 		LogFileName: conf.Main.LogFileName,
 		LogFilePerm: 0640,
 		Credential:  &syscall.Credential{},
-		//WorkDir:     "/",
+		WorkDir:     conf.Main.WorkingDir,
 		//Umask:       027,
 	}
 	if conf.Main.User != "" {
