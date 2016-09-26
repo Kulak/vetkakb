@@ -33,18 +33,24 @@ func NewEntryDB(sqlDir, dataDir, dbName string, rawTypes *TypeService) *EntryDB 
 	}
 }
 
-// Open opens DB connection.
-func (edb *EntryDB) Open() (db *sql.DB, err error) {
+// Upgrade creates entry databse and upgrades it.
+func (edb *EntryDB) Upgrade() (err error) {
 	err = os.MkdirAll(edb.dbDir, os.ModePerm)
 	if err != nil {
-		return db, fmt.Errorf("Failed to create a data directory %s due to error: %v", edb.dbDir, err)
+		return fmt.Errorf("Failed to create a data directory %s due to error: %v", edb.dbDir, err)
 	}
 	dbFileName := filepath.Join(edb.dbDir, edb.dbName+".db")
 	log.Printf("Entry DB file name: %s", dbFileName)
 	_, err = sqlitemaint.UpgradeSQLite(dbFileName, edb.sqlDir)
 	if err != nil {
-		return db, fmt.Errorf("Failed to upgrade entry DB %s.  Error: %v", dbFileName, err)
+		return fmt.Errorf("Failed to upgrade entry DB %s.  Error: %v", dbFileName, err)
 	}
+	return
+}
+
+// Open opens DB connection.
+func (edb *EntryDB) Open() (db *sql.DB, err error) {
+	dbFileName := filepath.Join(edb.dbDir, edb.dbName+".db")
 	db, err = sql.Open("sqlite3", dbFileName)
 	if err != nil {
 		return db, fmt.Errorf("Failed to open database %v. Error: %v", dbFileName, err)

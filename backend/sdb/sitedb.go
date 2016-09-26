@@ -3,7 +3,6 @@ package sdb
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/kulak/sqlitemaint"
 )
@@ -22,13 +21,17 @@ func NewSiteDB(dbFileName, sqlDir string) *SiteDB {
 	}
 }
 
-// Open opens DB connection.
-func (sdb *SiteDB) Open() (db *sql.DB, err error) {
+// Upgrade creates and upgrades Site datbase.
+func (sdb *SiteDB) Upgrade() (err error) {
 	_, err = sqlitemaint.UpgradeSQLite(sdb.dbFileName, sdb.sqlDir)
 	if err != nil {
-		return db, fmt.Errorf("Failed to upgrade site DB %s.  Error: %v", sdb.dbFileName, err)
+		return fmt.Errorf("Failed to upgrade site DB %s.  Error: %v", sdb.dbFileName, err)
 	}
+	return
+}
 
+// Open opens DB connection.
+func (sdb *SiteDB) Open() (db *sql.DB, err error) {
 	db, err = sql.Open("sqlite3", sdb.dbFileName)
 	if err != nil {
 		return db, fmt.Errorf("Failed to open database %v. Error: %v", sdb.dbFileName, err)
@@ -52,8 +55,8 @@ func (sdb *SiteDB) GetSite(host, path string) (site *Site, err error) {
 	site = &Site{Host: host, Path: path}
 	err = db.QueryRow(query, host, path).Scan(
 		&site.SiteID, &site.DBName, &site.Theme, &site.Title)
-	log.Printf("Loaded site id %v with dbName %s for host %s, path %s.  Err: %v",
-		site.SiteID, site.DBName, host, path, err)
+	// log.Printf("Loaded site id %v with dbName %s for host %s, path %s.  Err: %v",
+	// 	site.SiteID, site.DBName, host, path, err)
 	return
 }
 
@@ -73,8 +76,8 @@ func (sdb *SiteDB) GetSiteByID(siteIDStr string) (s *Site, err error) {
 	s = &Site{}
 	err = db.QueryRow(query, siteIDStr).Scan(
 		&s.SiteID, &s.Host, &s.Path, &s.DBName, &s.Theme, &s.Title)
-	log.Printf("Loaded site id %v with dbName %s for host %s, path %s.  Err: %v",
-		s.SiteID, s.DBName, s.Host, s.Path, err)
+	// log.Printf("Loaded site id %v with dbName %s for host %s, path %s.  Err: %v",
+	// 	s.SiteID, s.DBName, s.Host, s.Path, err)
 	return
 }
 

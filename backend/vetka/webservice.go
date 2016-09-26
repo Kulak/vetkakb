@@ -212,8 +212,8 @@ func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.
 }
 
 func (ws WebSvc) getIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	fileName := ws.getWebTemplateFile(r, "index.html")
-	ws.processTemplate(w, r, fileName)
+	fileNames := ws.getWebTemplateFiles(r, "index.html")
+	ws.processTemplate(w, r, fileNames)
 }
 
 func (ws WebSvc) getRobots(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

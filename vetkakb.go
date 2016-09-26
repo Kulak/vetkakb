@@ -150,29 +150,25 @@ func childRun(conf *core.Configuration) {
 	ts := edb.NewTypeService()
 	ts.Initialize()
 
-	// edb := edb.NewEntryDB(conf.SQLDir("entrydb"), c.Main.DataRoot, ,  ts)
-	// edb.Open()
-
+	// initialize site db
 	sdb := sdb.NewSiteDB(conf.SiteDBFileName(), conf.SQLDir("sitedb"))
-	sdb.Open()
+	err = sdb.Upgrade()
+	if err != nil {
+		log.Fatalf("Failed to create or upgrade site db: %s", err)
+	}
 
-	log.Println("Startign web service")
 	ws := vetka.NewWebSvc(conf, sdb, ts)
 
-	// initialized listed sites
+	// initialized entry db for all listed sites
 	sites, err := sdb.All()
 	if err != nil {
 		log.Fatalf("Failed to load sites. Error: %v", err)
 	}
 	for _, site := range sites {
 		db := ws.NewEntryDB(site)
-		dbc, err := db.Open()
+		err := db.Upgrade()
 		if err != nil {
-			log.Fatalf("Failed to open DB. Error: %v", err)
-		}
-		err = dbc.Close()
-		if err != nil {
-			log.Fatalf("Failed to close DB. Error: %v", err)
+			log.Fatalf("Failed to create or upgrade DB. Error: %v", err)
 		}
 	}
 

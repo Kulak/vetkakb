@@ -270,8 +270,8 @@ func (ws WebSvc) siteHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 func (ws WebSvc) setEdbContext(w http.ResponseWriter, r *http.Request) (err error) {
-	log.Printf("Site request URL: %v; URL Path: %s, URL Host: %s, Host: %s",
-		r.URL, r.URL.Path, r.URL.Host, r.Host)
+	// log.Printf("Site request URL: %v; URL Path: %s, URL Host: %s, Host: %s",
+	// 	r.URL, r.URL.Path, r.URL.Host, r.Host)
 	var path = ""
 	var site *sdb.Site
 	if strings.HasPrefix(r.URL.Path, ws.conf.Main.ClientPath) {
@@ -331,28 +331,41 @@ type SiteProps struct {
 	GD        interface{}
 }
 
-// Looks up template file name 1st at site specific location
-// such as dataRoot/dbName/t-html-s/tFileName
-// and returns site spefic file if it exists.
-// Otherwise returns global file name that's derrived from site Theme name.
-func (ws WebSvc) getWebTemplateFile(r *http.Request, tFileName string) string {
+// Builds a set of template files to be used in template execution.
+// It uses theme as an entry point.
+// It then loads site customization template.
+//
+// Global location is rooted in t-html/ directory tree.
+// Site specific location rooted in dataDir/sitedb/t-html-s
+//
+// Global template must be present.  Site specific template might be optional.
+// Global template is the 1st in returned result as it is used by template rendering sytem.
+func (ws WebSvc) getWebTemplateFiles(r *http.Request, tFileName string) []string {
+	result := []string{}
+	// load theme specific global template file; template entry point
 	site := context.Get(r, "site").(*sdb.Site)
+	globalFile := ws.conf.TemplateThemeFile(site.Theme, tFileName)
+	result = append(result, globalFile)
+	// load site specifc customizations (file in t-html-s directory)
 	siteFile, exists := site.WebTemplateFile(ws.conf.Main.DataRoot, tFileName)
 	if exists {
-		return siteFile
+		result = append(result, siteFile)
+	} else {
+		// load default site template included with theme
+		defaultSiteFile := ws.conf.TemplateThemeFile(site.Theme, "default/"+tFileName)
+		result = append(result, defaultSiteFile)
 	}
-	globalFile := ws.conf.TemplateThemeFile(site.Theme, tFileName)
-	return globalFile
+	return result
 }
 
-func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, tFileName string) {
+func (ws WebSvc) processTemplate(w http.ResponseWriter, r *http.Request, tFileNames []string) {
 	site := context.Get(r, "site").(*sdb.Site)
-	log.Printf("Template file name: %s", tFileName)
+	log.Printf("Template file names: %s", tFileNames)
 	// extracts name of the file with extension from the path
-	baseName := path.Base(tFileName)
+	baseName := path.Base(tFileNames[0])
 	// New takes name of template (it needs to be name of parsed template base file name)
 	// ParseFiles takes template file names to parse.  Abstract base template shall go 1st,
-	t, err := template.New(baseName).ParseFiles(tFileName)
+	t, err := template.New(baseName).ParseFiles(tFileNames...)
 	if err != nil {
 		ws.writeError(w, fmt.Sprintf("Cannot parse template.  Error: %s", err))
 		return
