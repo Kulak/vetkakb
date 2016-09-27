@@ -111,16 +111,14 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 					entryBody = <div dangerouslySetInnerHTML={{__html: fe.HTML}} />
 				}
 				return <article className="uk-article">
-					<nav className='uk-navbar'>
-						<ul className="uk-navbar-nav">
-							<li><h1 className="uk-article-title"
-								onClick={e => this.onExpandClick(false)}>{fe.Title}</h1></li>
-							<li><button onClick={e => this.onEditClick(true)}>Edit</button></li>
-						</ul>
-					</nav>
+					<div className='uk-panel uk-panel-box uk-panel-box-primary'>
+						<h1 className="uk-article-title"
+								onClick={e => this.onExpandClick(false)}>{fe.Title}
+							<button onClick={e => this.onEditClick(true)}>Edit</button>
+						</h1>
 					{icon}
 					{entryBody}
-					<hr className="uk-article-divider" />
+					</div>
 				</article>
 			} else {
 				// not expanded
@@ -129,7 +127,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 					icon = (<img className="uk-thumbnail uk-float-left uk-thumbnail-mini" src={fe.TitleIcon} />)
 				}
 				return (
-					<div className="uk-panel uk-clearfix">
+					<div className="uk-panel uk-panel-box uk-panel-box-primary uk-panel-box-primary-hove">
 						<h1 className="uk-panel-title"> <a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
 						{icon}
 						<p className="">{fe.Intro}</p>
