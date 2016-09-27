@@ -76,3 +76,68 @@ textarea.entryEdit-short {
 img.avatar {
 	max-height: 22px;
 }
+
+
+/********/
+
+
+/* Color palette: http://www.colourlovers.com/palette/580974/Adrift_in_Dreams
+CFF09E A8DBA8 79BD9A 3B8686 0B486B
+*/
+
+@colorA: #CFF09E;
+@colorB: #A8DBA8;
+@colorC: #79BD9A;
+@colorD: #3B8686;
+@colorE: #0B486B;
+/* If @colorA is background, then @colorAF is a foreground color */
+@colorAF: @colorE;
+@color0: white;
+
+
+h1.uk-panel-title {
+	color: @colorA;
+}
+
+a,
+.uk-link {
+	color: @colorD;
+}
+
+.uk-navbar-nav > li:hover > a,
+a:hover {
+	background-color: @colorA;
+
+}
+
+.uk-navbar {
+	background-color: @colorC;
+}
+
+.uk-panel-box {
+	border: 1px solid #ddd;
+	margin-top: 15px;
+}
+
+.uk-panel-box-primary {
+	color: @colorAF;
+	background-color: @color0;
+}
+
+img.uk-thumbnail {
+	margin: 0 8px 0 0;
+}
+
+.uk-article-title {
+	color: @colorD;
+	font-size: 20px;
+}
+
+h1.uk-panel-title > a {
+	font-size:20px;
+	min-height: 20px;
+}
+
+.uk-panel-box {
+	padding: 8px;
+}
