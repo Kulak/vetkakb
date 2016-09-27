@@ -84,7 +84,10 @@ one-time-install:
 
 	cd frontend; typings install react-router
 
+	cd www; bower install less
+
 onetime:
+	cd www; bower install less
 
 clean-data:
 	rm data/*
