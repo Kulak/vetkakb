@@ -8,6 +8,8 @@ import {EntryEditor, EditorProps} from './entryEditor'
 import {Entry} from '../model/entry'
 import {DataService} from '../common/dataService'
 import {WSRawType} from '../common/rawtypes'
+import {User} from '../common/user'
+import {WSUserGet} from '../model/wsuser'
 
 declare var ZonePath: string
 
@@ -20,6 +22,7 @@ class EntryViewState {
 		public fullEntry: WSFullEntry,
 		public expanded: boolean,
 		public editing: boolean,
+		public canEdit: boolean,
 	) {}
 }
 
@@ -29,10 +32,19 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 		let pe = props.entry
 		let fe = new WSFullEntry(pe.EntryID, pe.Title, pe.TitleIcon, null, pe.RawTypeName, "",
 			pe.HTML, pe.Intro, pe.Updated)
-		this.state = new EntryViewState(fe, false, false);
+		this.state = new EntryViewState(fe, false, false, false)
+		User.Current()
+		.then(function(json) {
+			let user = json as WSUserGet
+			let canEdit = user.Clearances == 8
+			this.setState(new EntryViewState(fe, false, false, canEdit))
+		}.bind(this))
+		.catch(function(err) {
+			console.log("error getting session user: ", err)
+		}.bind(this))
 	}
 	onExpandClick(expandAction: boolean) {
-		this.setState(new EntryViewState(this.state.fullEntry, expandAction, false))
+		this.setState(new EntryViewState(this.state.fullEntry, expandAction, false, this.state.canEdit))
 	}
 
 	b64toBlob = (b64Data, contentType='', sliceSize=512) => {
@@ -72,29 +84,30 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 						// For ISO-8859-1 there's no further conversion required
 						console.log("FIXED:", reader.result)
 						entry.Raw = reader.result
-						this.setState(new EntryViewState(entry, false, editAction))
+						this.setState(new EntryViewState(entry, false, editAction, this.state.canEdit))
 					}.bind(this))
 					reader.readAsText(blob)
 				} else {
 					entry.Raw = ""
-					this.setState(new EntryViewState(entry, false, editAction))
+					this.setState(new EntryViewState(entry, false, editAction, this.state.canEdit))
 				}
 			}.bind(this))
 			.catch(function(err) {
 				console.log("err loading json: ", err)
 			}.bind(this))
 		} else {
-			this.setState(new EntryViewState(this.state.fullEntry, false, editAction))
+			this.setState(new EntryViewState(this.state.fullEntry, false, editAction, this.state.canEdit))
 		}
 	}
 	onEditorCloseRequested(fe: WSFullEntry) {
 		console.log("entryView: set new EntryViewState", fe)
-		this.setState(new EntryViewState(fe, true, false))
+		this.setState(new EntryViewState(fe, true, false, this.state.canEdit))
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
 		//console.log("entryView: render entry", fe)
 		if (this.state.editing) {
+			// in editing state
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />
 		} else {
 			// viewing; not editing
@@ -110,11 +123,15 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				} else {
 					entryBody = <div dangerouslySetInnerHTML={{__html: fe.HTML}} />
 				}
+				let editButton = null
+				if (this.state.canEdit) {
+					editButton = <button onClick={e => this.onEditClick(true)}>Edit</button>
+				}
 				return <article className="uk-article">
 					<div className='uk-panel uk-panel-box uk-panel-box-primary'>
 						<h1 className="uk-article-title"
 								onClick={e => this.onExpandClick(false)}>{fe.Title}
-							<button onClick={e => this.onEditClick(true)}>Edit</button>
+							{editButton}
 						</h1>
 					{icon}
 					{entryBody}
