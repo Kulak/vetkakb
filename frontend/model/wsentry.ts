@@ -1,4 +1,5 @@
 
+declare var ZonePath: string
 
 // RawTypes defines data types that can be stored.
 export class RawType {
@@ -48,4 +49,8 @@ export class WSFullEntry {
 		public Intro: string = "",
 		public Updated: string = ""
 	) {}
+
+	permalink(): string {
+		return ZonePath+'/app/e/'+this.EntryID
+	}
 }

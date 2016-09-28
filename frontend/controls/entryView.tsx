@@ -43,7 +43,8 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 			console.log("error getting session user: ", err)
 		}.bind(this))
 	}
-	onExpandClick(expandAction: boolean) {
+	onExpandClick(ev, expandAction: boolean) {
+		ev.preventDefault()
 		this.setState(new EntryViewState(this.state.fullEntry, expandAction, false, this.state.canEdit))
 	}
 
@@ -130,11 +131,12 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				return <article className="uk-article">
 					<div className='uk-panel uk-panel-box uk-panel-box-primary'>
 						<h1 className="uk-article-title"
-								onClick={e => this.onExpandClick(false)}>{fe.Title}
+								onClick={e => this.onExpandClick(e, false)}>{fe.Title}
 							{editButton}
 						</h1>
 					{icon}
 					{entryBody}
+					<a href={fe.permalink()}>Permalink</a>
 					</div>
 				</article>
 			} else {
@@ -145,7 +147,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				}
 				return (
 					<div className="uk-panel uk-panel-box uk-panel-box-primary uk-panel-box-primary-hove">
-						<h1 className="uk-panel-title"> <a onClick={e => this.onExpandClick(true)}>{fe.Title}</a></h1>
+						<h1 className="uk-panel-title"><a href={fe.permalink()} onClick={e => this.onExpandClick(e, true)}>{fe.Title}</a></h1>
 						{icon}
 						<p className="">{fe.Intro}</p>
 					</div>)
