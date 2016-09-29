@@ -48,54 +48,24 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 		this.setState(new EntryViewState(this.state.fullEntry, expandAction, false, this.state.canEdit))
 	}
 
-	b64toBlob = (b64Data, contentType='', sliceSize=512) => {
-		const byteCharacters = atob(b64Data);
-		const byteArrays = [];
-
-		for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-			const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-			const byteNumbers = new Array(slice.length);
-			for (let i = 0; i < slice.length; i++) {
-				byteNumbers[i] = slice.charCodeAt(i);
-			}
-
-			const byteArray = new Uint8Array(byteNumbers);
-
-			byteArrays.push(byteArray);
-		}
-
-		const blob = new Blob(byteArrays, {type: contentType});
-		return blob;
-	}
-
 	onEditClick(editAction: boolean) {
 		if (editAction) {
 			// load a full entry
 			DataService.get(ZonePath + '/api/entry/' + this.props.entry.EntryID)
-			.then(function(jsonEntry) {
-				console.log("json text", jsonEntry)
-				let entry = jsonEntry as WSFullEntry
-				// don't convert null, because it atob(null) returns "ée"
-				if (entry.Raw != null) {
-					let blob = this.b64toBlob(entry.Raw)
-					let reader = new FileReader()
-					reader.addEventListener('loadend', function() {
-						// listener is called when readAsText is completed; promise could be used here
-						// For ISO-8859-1 there's no further conversion required
-						console.log("FIXED:", reader.result)
-						entry.Raw = reader.result
-						this.setState(new EntryViewState(entry, false, editAction, this.state.canEdit))
-					}.bind(this))
-					reader.readAsText(blob)
-				} else {
-					entry.Raw = ""
+			.then((jsonEntry) => {
+				//console.log("json text", jsonEntry)
+				WSFullEntry.fromData(jsonEntry as WSFullEntry)
+				.then((entry: WSFullEntry) => {
 					this.setState(new EntryViewState(entry, false, editAction, this.state.canEdit))
-				}
-			}.bind(this))
-			.catch(function(err) {
+				})
+				.catch((err) => {
+					// fromData does not reject
+					console.error("Failed to obtain WSFullEntry from JSON response", err)
+				})
+			})
+			.catch((err) => {
 				console.log("err loading json: ", err)
-			}.bind(this))
+			})
 		} else {
 			this.setState(new EntryViewState(this.state.fullEntry, false, editAction, this.state.canEdit))
 		}
@@ -106,7 +76,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
-		//console.log("entryView: render entry", fe)
+		console.log("entryView: render entry", fe)
 		if (this.state.editing) {
 			// in editing state
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />

@@ -50,6 +50,52 @@ export class WSFullEntry {
 		public Updated: string = ""
 	) {}
 
+	// fromData is meant to load from REST API response.
+	// The incoming data type is not trully a WSFullEntry,
+	// because it has no functions associated with it.
+	static fromData(data:WSFullEntry): Promise<WSFullEntry> {
+		return new Promise((fulfil, reject) => {
+			let r = new this(data.EntryID, data.Title, data.TitleIcon,
+				data.Raw, data.RawTypeName, data.Tags, data.HTML, data.Intro, data.Updated)
+			// don't convert null, because it atob(null) returns "ée"
+			if (r.Raw != null) {
+				let blob = this.b64toBlob(r.Raw)
+				let reader = new FileReader()
+				reader.addEventListener('loadend', function() {
+					// listener is called when readAsText is completed; promise could be used here
+					// For ISO-8859-1 there's no further conversion required
+					r.Raw = reader.result
+					fulfil(r)
+				})
+				reader.readAsText(blob)
+			} else {
+				r.Raw = ""
+				fulfil(r)
+			}
+		})
+	}
+
+	static b64toBlob (b64Data, contentType='', sliceSize=512) {
+		const byteCharacters = atob(b64Data);
+		const byteArrays = [];
+
+		for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+			const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+			const byteNumbers = new Array(slice.length);
+			for (let i = 0; i < slice.length; i++) {
+				byteNumbers[i] = slice.charCodeAt(i);
+			}
+
+			const byteArray = new Uint8Array(byteNumbers);
+
+			byteArrays.push(byteArray);
+		}
+
+		const blob = new Blob(byteArrays, {type: contentType});
+		return blob;
+	}
+
 	permalink(): string {
 		return ZonePath+'/app/e/'+this.EntryID
 	}

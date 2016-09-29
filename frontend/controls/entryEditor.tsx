@@ -59,43 +59,36 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		this.sendCloseRequest(this.props.entry);
 	}
 	onEditSaveClick(close: boolean) {
-		let r: Promise<any> = this.onSaveBinary(close)
-		r.then((response) => {
-			let fe: WSFullEntry = response
-			// atob(null) returns "ée", which is not what we want
-			if (fe.Raw != null) {
-				// base64 to binary array
-				fe.Raw = atob(fe.Raw)
-			} else {
-				// assign to empty string, because of
-				// react.js:20541 Warning: `value` prop on `textarea` should not be null.
-				// Consider using the empty string to clear the component or `undefined` for uncontrolled components.
-				fe.Raw = ""
-			}
-			// the following line triggers React mesage:
-			// 		react.js:20541 Warning: EntryEditor is changing a controlled input of type undefined to be uncontrolled.
-			// 		Input elements should not switch from controlled to uncontrolled (or vice versa).
-			// The setState call triggers React to think that state is different for controlled element.
-			//    this.setState(new EditorState(fe, this.state.rawTypeName))
-			// So, we simply rely on original state and merge most important properties here
-			let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-			let se = state.entry
-			// copy all fields
-			se.EntryID = fe.EntryID
-			se.HTML = fe.HTML
-			se.Intro = fe.Intro
-			se.Raw = fe.Raw
-			se.RawTypeName = fe.RawTypeName
-			se.Tags = fe.Tags
-			se.Title = fe.Title
-			se.TitleIcon = fe.TitleIcon
-			se.Updated = fe.Updated
-			console.log("editor's setState on success (se, fe)B", se, fe)
-			this.setState(state)
+		this.onSaveBinary(close)
+		.then((response) => {
+			// get easy access to fields, but it is not a real WSFullEntry
+			WSFullEntry.fromData(response as WSFullEntry)
+			.then((fe) => {
+				// the following line triggers React mesage:
+				// 		react.js:20541 Warning: EntryEditor is changing a controlled input of type undefined to be uncontrolled.
+				// 		Input elements should not switch from controlled to uncontrolled (or vice versa).
+				// The setState call triggers React to think that state is different for controlled element.
+				//    this.setState(new EditorState(fe, this.state.rawTypeName))
+				// So, we simply rely on original state and merge most important properties here
+				let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
+				let se = state.entry
+				// copy all fields
+				se.EntryID = fe.EntryID
+				se.HTML = fe.HTML
+				se.Intro = fe.Intro
+				se.Raw = fe.Raw
+				se.RawTypeName = fe.RawTypeName
+				se.Tags = fe.Tags
+				se.Title = fe.Title
+				se.TitleIcon = fe.TitleIcon
+				se.Updated = fe.Updated
+				console.log("editor's setState on success (se, fe)B", se, fe)
+				this.setState(state)
 
-			if (close) {
-				this.sendCloseRequest(fe);
-			}
+				if (close) {
+					this.sendCloseRequest(fe);
+				}
+			})
 		})
 		.catch((err) => {
 			console.log("Failed to save", err)
@@ -103,7 +96,6 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 				this.sendCloseRequest(this.props.entry);
 			}
 		})
-
 	}
 	// saves binary file
 	// example: https://www.raymondcamden.com/2016/05/10/uploading-multiple-files-at-once-with-fetch/
