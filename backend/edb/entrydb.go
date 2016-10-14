@@ -41,7 +41,7 @@ func (edb *EntryDB) Upgrade() (err error) {
 	}
 	dbFileName := filepath.Join(edb.dbDir, edb.dbName+".db")
 	log.Printf("Entry DB file name: %s", dbFileName)
-	_, err = sqlitemaint.UpgradeSQLite(dbFileName, edb.sqlDir)
+	_, err = sqlitemaint.UpgradeSQLite(dbFileName, edb.sqlDir, true)
 	if err != nil {
 		return fmt.Errorf("Failed to upgrade entry DB %s.  Error: %v", dbFileName, err)
 	}
@@ -140,7 +140,7 @@ func (edb *EntryDB) RecentHTMLEntries(limit int64, end time.Time) (result []WSEn
 
 	var rows *sql.Rows
 	sql := `
-	SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.updated
+	SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.slug, e.updated
 	from entry e
 	inner join entrySearch es on es.EntryFK = e.EntryID
 	where e.updated < $1
@@ -162,7 +162,7 @@ func (edb *EntryDB) MatchEntries(query string, limit int64) (result []WSEntryGet
 
 	var rows *sql.Rows
 	sql := `
-SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.updated from entry e
+SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.slug, e.updated from entry e
 inner join entrySearch es on es.EntryFK = e.EntryID
 where entryID in (select entryFK from entrySearch where entrySearch match $1)
 order by updated desc limit $2
@@ -181,7 +181,7 @@ func (edb *EntryDB) rowsToWSEntryGetHTML(rows *sql.Rows, err error) ([]WSEntryGe
 	var r WSEntryGetHTML
 	for rows.Next() {
 		var rawType int
-		err = rows.Scan(&r.EntryID, &r.Title, &r.TitleIcon, &r.HTML, &r.Intro, &rawType, &r.Updated)
+		err = rows.Scan(&r.EntryID, &r.Title, &r.TitleIcon, &r.HTML, &r.Intro, &rawType, &r.Slug, &r.Updated)
 		if err != nil {
 			return result, err
 		}
@@ -206,7 +206,7 @@ func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 	sql := `
 	SELECT
 		es.title, e.titleIcon, e.rawType, e.raw, e.html,
-		e.Intro, e.updated, es.tags
+		e.Intro, e.slug, e.updated, es.tags
 	from entry e
 	inner join entrySearch es on e.entryID = es.entryFK
 	where e.entryID = ?
@@ -214,7 +214,7 @@ func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 	var rawType int
 	err = db.QueryRow(sql, entryID).
 		Scan(&r.Title, &r.TitleIcon, &rawType, &r.Raw, &r.HTML,
-			&r.Intro, &r.Updated, &r.Tags)
+			&r.Intro, &r.Slug, &r.Updated, &r.Tags)
 	if err != nil {
 		return r, err
 	}

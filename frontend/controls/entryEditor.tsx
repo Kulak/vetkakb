@@ -23,11 +23,8 @@ export interface EditorProps extends React.Props<any>{
 		editorCloseReq: EditorCloseReqFunc
 }
 
-class EditorState {
-	constructor(
-		public entry: WSFullEntry = new WSFullEntry()
-		//public rawTypeName: string = ""
-	) {}
+interface EditorState {
+		entry: WSFullEntry
 }
 
 /*
@@ -41,6 +38,10 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		rawFile? :HTMLInputElement
 	} = {}
 
+	copyState(): EditorState {
+		return Object.assign({}, this.state)
+	}
+
 	sendCloseRequest(fe: WSFullEntry) {
 		if (this.props.editorCloseReq != null) {
 			this.props.editorCloseReq(fe)
@@ -48,12 +49,9 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 	public constructor(props: EditorProps, context) {
 		super(props, context)
-		let pen: WSFullEntry = props.entry
 		// make a copy of entry for easy cancellation
-		this.state = new EditorState(new WSFullEntry(
-			pen.EntryID, pen.Title, pen.TitleIcon, pen.Raw, pen.RawTypeName, pen.Tags,
-			pen.HTML, pen.Intro, pen.Updated
-		));
+		this.state = {entry: props.entry.copy()}
+		//console.log("Edit is in state", this.state)
 	}
 	onEditCancelClick() {
 		this.sendCloseRequest(this.props.entry);
@@ -70,20 +68,10 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 				// The setState call triggers React to think that state is different for controlled element.
 				//    this.setState(new EditorState(fe, this.state.rawTypeName))
 				// So, we simply rely on original state and merge most important properties here
-				let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-				let se = state.entry
-				// copy all fields
-				se.EntryID = fe.EntryID
-				se.HTML = fe.HTML
-				se.Intro = fe.Intro
-				se.Raw = fe.Raw
-				se.RawTypeName = fe.RawTypeName
-				se.Tags = fe.Tags
-				se.Title = fe.Title
-				se.TitleIcon = fe.TitleIcon
-				se.Updated = fe.Updated
-				console.log("editor's setState on success (se, fe)B", se, fe)
-				this.setState(state)
+				let nState = this.copyState()
+				nState.entry.initializeFromWSFullEntry(fe)
+				console.log("editor's setState on success (nState.entry, fe)", nState.entry, fe)
+				this.setState(nState)
 
 				if (close) {
 					this.sendCloseRequest(fe);
@@ -105,7 +93,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 
 		var fd = new FormData();
 
-		let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.TitleIcon, e.RawTypeName, e.Tags, e.Intro)
+		let wsEntry = new WSEntryPost(e.EntryID, e.Title, e.TitleIcon, e.RawTypeName, e.Tags, e.Intro, e.Slug)
 		fd.append('entry', JSON.stringify(wsEntry))
 
 		console.log("on save entry (state, wsEntry)", this.state.entry, wsEntry)
@@ -124,35 +112,41 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 	}
 
 	onEntryTitleChange(event: React.FormEvent) {
-		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.Title = (event.target as any).value
-		this.setState(state)
+		let nState = this.copyState()
+		nState.entry.Title = (event.target as any).value
+		this.setState(nState)
 	}
 	onEntryTitleIconChange(event: React.FormEvent) {
-		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.TitleIcon = (event.target as any).value
-		this.setState(state)
+		let nState = this.copyState()
+		nState.entry.TitleIcon = (event.target as any).value
+		this.setState(nState)
 	}
 	onEntryIntroChange(event: React.FormEvent) {
-		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.Intro = (event.target as any).value
-		this.setState(state)
+		let nState = this.copyState()
+		nState.entry.Intro = (event.target as any).value
+		this.setState(nState)
 	}
-	onEntryOrigBodyChange(event: React.FormEvent) {
-		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.Raw = (event.target as any).value
-		this.setState(state)
+	public onEntryOrigBodyChange: (event: React.FormEvent) => void = (event) => {
+		let nState = this.copyState()
+		nState.entry.Raw = (event.target as any).value
+		this.setState(nState)
+	}
+	onEntrySlugChange(event: React.FormEvent) {
+		let nState = this.copyState()
+		nState.entry.Slug = (event.target as any).value
+		this.setState(nState)
 	}
 	onEntryTagsChange(event: React.FormEvent) {
-		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.Tags = (event.target as any).value
-		this.setState(state)
+		let nState = this.copyState()
+		nState.entry.Tags = (event.target as any).value
+		this.setState(nState)
 	}
 	onRawTypeChange(rawTypeName: string) {
-		let state = (Object as any).assign(new EditorState(), this.state) as EditorState;
-		state.entry.RawTypeName = rawTypeName
-		this.setState(state)
+		let nState = this.copyState()
+		nState.entry.RawTypeName = rawTypeName
+		this.setState(nState)
 	}
+
 	render() {
 		let rawPayload = <p>Data type name is not loaded yet.</p>
 		if (this.state.entry.RawTypeName == "") {
@@ -171,7 +165,7 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 		} else {
 			rawPayload = <p>
 				<label>Raw Text:</label><br />
-				<textarea  value={this.state.entry.Raw} onChange={e => this.onEntryOrigBodyChange(e)} className='entryEdit' />
+				<textarea  value={this.state.entry.Raw} onChange={this.onEntryOrigBodyChange} className='entryEdit' />
 			</p>
 		}
 		return <div>
@@ -188,6 +182,11 @@ export class EntryEditor extends React.Component<EditorProps, EditorState> {
 				<button className='leftStack' onClick={e => this.onEditCancelClick()}>Cancel</button>
 			</div>
 			{rawPayload}
+			<p>
+				<label>Slug:</label><br />
+				<input value={this.state.entry.Slug} onChange={e => this.onEntrySlugChange(e)}
+					className='entryEdit' />
+			</p>
 			<p>
 				<label>Tags:</label><br />
 				<input value={this.state.entry.Tags} onChange={e => this.onEntryTagsChange(e)}

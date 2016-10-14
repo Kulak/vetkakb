@@ -35,6 +35,7 @@ type WSEntryPut struct {
 	RawFileName    string
 	Tags           string
 	Intro          string
+	Slug           string
 }
 
 // WSEntryPost is used to udpate enries.
@@ -52,6 +53,7 @@ type WSEntryGetHTML struct {
 	RawTypeName string
 	HTML        string
 	Intro       string
+	Slug        string
 	Updated     time.Time
 }
 
@@ -65,6 +67,7 @@ type WSFullEntry struct {
 	HTML        string
 	Intro       string
 	Tags        string
+	Slug        string
 	Updated     time.Time
 }
 

@@ -23,7 +23,7 @@ func NewSiteDB(dbFileName, sqlDir string) *SiteDB {
 
 // Upgrade creates and upgrades Site datbase.
 func (sdb *SiteDB) Upgrade() (err error) {
-	_, err = sqlitemaint.UpgradeSQLite(sdb.dbFileName, sdb.sqlDir)
+	_, err = sqlitemaint.UpgradeSQLite(sdb.dbFileName, sdb.sqlDir, true)
 	if err != nil {
 		return fmt.Errorf("Failed to upgrade site DB %s.  Error: %v", sdb.dbFileName, err)
 	}

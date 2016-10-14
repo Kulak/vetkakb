@@ -29,9 +29,8 @@ class EntryViewState {
 export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState> {
 	public constructor(props: EntryViewProps) {
 		super(props)
-		let pe = props.entry
-		let fe = new WSFullEntry(pe.EntryID, pe.Title, pe.TitleIcon, null, pe.RawTypeName, "",
-			pe.HTML, pe.Intro, pe.Updated)
+		let fe = new WSFullEntry().initializeFromWSEntryGetHTML(props.entry)
+		//console.log("EntryViewBox constructor, init state", fe)
 		this.state = new EntryViewState(fe, false, false, false)
 		User.Current()
 		.then(function(json) {
@@ -53,9 +52,9 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 			// load a full entry
 			DataService.get(ZonePath + '/api/entry/' + this.props.entry.EntryID)
 			.then((jsonEntry) => {
-				//console.log("json text", jsonEntry)
 				WSFullEntry.fromData(jsonEntry as WSFullEntry)
 				.then((entry: WSFullEntry) => {
+					console.log("entryView jsonEntry", jsonEntry)
 					this.setState(new EntryViewState(entry, false, editAction, this.state.canEdit))
 				})
 				.catch((err) => {
@@ -76,7 +75,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 	}
 	render() {
 		let fe: WSFullEntry = this.state.fullEntry
-		console.log("entryView: render entry", fe)
+		//console.log("entryView: render entry", fe)
 		if (this.state.editing) {
 			// in editing state
 			return <EntryEditor entry={fe} editorCloseReq={fe => this.onEditorCloseRequested(fe)} />

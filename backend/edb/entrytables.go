@@ -17,6 +17,7 @@ type Entry struct {
 	TitleIcon         string
 	HTML              string
 	Intro             string
+	Slug              string
 	OwnerFK           int64
 	RequiredClearance uint8
 	Created           time.Time
@@ -53,7 +54,7 @@ func sqlRequireAffected(result sql.Result, expected int64) error {
 
 // NewEntry creates new entry to be inserted into DB.
 func NewEntry(entryID int64, raw []byte, rawType int, rawContentType,
-	rawFileName, titleIcon, intro string, ownerFK int64) *Entry {
+	rawFileName, titleIcon, intro, slug string, ownerFK int64) *Entry {
 	return &Entry{
 		EntryID:        entryID,
 		Raw:            raw,
@@ -62,6 +63,7 @@ func NewEntry(entryID int64, raw []byte, rawType int, rawContentType,
 		RawFileName:    rawFileName,
 		TitleIcon:      titleIcon,
 		Intro:          intro,
+		Slug:           slug,
 		OwnerFK:        ownerFK,
 	}
 }
@@ -81,12 +83,12 @@ func (en *Entry) dbInsert(tx *sql.Tx) (err error) {
 	sql = `
 insert into entry (
 	raw, rawType, rawContentType, rawFileName, html,
-	titleIcon, intro, published, created, updated,
-	ownerFK)
+	titleIcon, intro, slug, published, created,
+	updated, ownerFK)
 values(
 	$1, $2, $3, $4, $5,
 	$6, $7, $8, $9, $10,
-	$11)
+	$11, $12)
 `
 	var publishedSec *int64
 	if en.Published != nil {
@@ -95,8 +97,8 @@ values(
 	}
 	result, err = tx.Exec(sql,
 		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML,
-		en.TitleIcon, en.Intro, publishedSec, en.Created.Unix(), en.Updated.Unix(),
-		en.OwnerFK)
+		en.TitleIcon, en.Intro, en.Slug, publishedSec, en.Created.Unix(),
+		en.Updated.Unix(), en.OwnerFK)
 	if err != nil {
 		return fmt.Errorf("Failed to insert `entry` record to DB. Error: %v", err)
 	}
@@ -123,13 +125,13 @@ func (en *Entry) dbUpdate(tx *sql.Tx) (err error) {
 	sql = `
 	update entry set
 		raw=$1, rawType=$2, rawContentType=$3, rawFileName=$4, html=$5,
-		titleIcon=$6, intro=$7, updated=$8
-	where entryID=$9
+		titleIcon=$6, intro=$7, slug=$8, updated=$9
+	where entryID=$10
 		`
 	en.Updated = time.Now()
 	result, err = tx.Exec(sql,
 		en.Raw, en.RawType, en.RawContentType, en.RawFileName, en.HTML,
-		en.TitleIcon, en.Intro, en.Updated.Unix(),
+		en.TitleIcon, en.Intro, en.Slug, en.Updated.Unix(),
 		en.EntryID)
 	if err != nil {
 		return fmt.Errorf("Failed to update EntryID %v. Error: %v", en.EntryID, err)

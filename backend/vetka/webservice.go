@@ -374,8 +374,8 @@ func (ws WebSvc) handleAnyWSEntryPost(w http.ResponseWriter, r *http.Request) {
 func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *edb.WSEntryPost, raw []byte) {
 	var err error
 	// we cannot log everything, because Raw may contain very large data
-	fmt.Printf("Got request with entry id: %v, title: %v, rawTypeName: %v, titleIcon: %s.\n",
-		wse.EntryID, wse.Title, wse.RawTypeName, wse.TitleIcon)
+	fmt.Printf("Got request with entry id: %v, title: %v, rawTypeName: %v, titleIcon: %s, slug: %s.\n",
+		wse.EntryID, wse.Title, wse.RawTypeName, wse.TitleIcon, wse.Slug)
 	//fmt.Printf("Request raw as string: %s\n", string(wse.Raw))
 	var tp *edb.TypeProvider
 	tp, err = ws.typeSvc.ProviderByName(wse.RawTypeName)
@@ -385,7 +385,7 @@ func (ws WebSvc) handleWSEntryPost(w http.ResponseWriter, r *http.Request, wse *
 	}
 	userID := ws.sessionUserID(r)
 	en := edb.NewEntry(wse.EntryID, raw, tp.TypeNum, wse.RawContentType,
-		wse.RawFileName, wse.TitleIcon, wse.Intro, userID)
+		wse.RawFileName, wse.TitleIcon, wse.Intro, wse.Slug, userID)
 	en.HTML, err = tp.ToHTML(raw)
 	es := edb.NewEntrySearch(wse.EntryID, wse.Title, wse.Tags)
 	es.Plain, err = tp.ToPlain(raw)

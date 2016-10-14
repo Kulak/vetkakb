@@ -18,7 +18,9 @@ export class WSEntryPost {
 		public titleIcon: string,
 		public rawTypeName: string,
 		public tags: string,
-		public Intro: string) {}
+		public Intro: string,
+		public Slug: string,
+	) {}
 }
 
 // WSEntryGetHTML mirrows backend structure
@@ -31,7 +33,8 @@ export class WSEntryGetHTML {
 		public HTML: string = "",
 		public Intro: string = "",
 		public RawTypeName: string = "",
-		public Updated: string = ""
+		public Slug: string = "",
+		public Updated: string = "",
 	) {}
 }
 
@@ -47,16 +50,48 @@ export class WSFullEntry {
 		public Tags: string = "",
 		public HTML: string = "",
 		public Intro: string = "",
-		public Updated: string = ""
+		public Slug: string = "",
+		public Updated: string = "",
 	) {}
+
+	initializeFromWSFullEntry(src: WSFullEntry): WSFullEntry {
+		this.EntryID = src.EntryID
+		this.HTML = src.HTML
+		this.Intro = src.Intro
+		this.Raw = src.Raw
+		this.RawTypeName = src.RawTypeName
+		this.Tags = src.Tags
+		this.Title = src.Title
+		this.TitleIcon = src.TitleIcon
+		this.Slug = src.Slug
+		this.Updated = src.Updated
+		return this
+	}
+
+	initializeFromWSEntryGetHTML(src: WSEntryGetHTML): WSFullEntry {
+		this.EntryID = src.EntryID
+		this.HTML = src.HTML
+		this.Intro = src.Intro
+		this.Raw = null
+		this.RawTypeName = src.RawTypeName
+		this.Tags = ""
+		this.Title = src.Title
+		this.TitleIcon = src.TitleIcon
+		this.Slug = src.Slug
+		this.Updated = src.Updated
+		return this
+	}
+
+	copy(): WSFullEntry {
+		return new WSFullEntry().initializeFromWSFullEntry(this)
+	}
 
 	// fromData is meant to load from REST API response.
 	// The incoming data type is not trully a WSFullEntry,
 	// because it has no functions associated with it.
 	static fromData(data:WSFullEntry): Promise<WSFullEntry> {
 		return new Promise((fulfil, reject) => {
-			let r = new this(data.EntryID, data.Title, data.TitleIcon,
-				data.Raw, data.RawTypeName, data.Tags, data.HTML, data.Intro, data.Updated)
+			let r = new WSFullEntry().initializeFromWSFullEntry(data)
 			// don't convert null, because it atob(null) returns "ée"
 			if (r.Raw != null) {
 				let blob = this.b64toBlob(r.Raw)

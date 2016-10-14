@@ -34,7 +34,7 @@ export class Recent extends React.Component<RecentProps, RecentState> {
 	loadRecent(limit: number, endStr: string) {
 		DataService.get(ZonePath + '/api/recent/' + limit + "/" + endStr)
 		.then(function(jsonEntries) {
-			console.log("json text", jsonEntries)
+			console.log("loaded jsonEntries in Recent", jsonEntries)
 			this.setState(new RecentState(jsonEntries as Array<WSEntryGetHTML>))
 		}.bind(this))
 		.catch(function(err) {
@@ -50,6 +50,7 @@ export class Recent extends React.Component<RecentProps, RecentState> {
 	}
 
 	render() {
+		//console.log("recent entries in render", this.state.entries)
 		return (<div>
 				<EntryList entries={this.state.entries} />
 				<button onClick={e => this.onLoadClick()}>More</button>
