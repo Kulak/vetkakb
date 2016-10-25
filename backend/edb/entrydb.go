@@ -225,6 +225,39 @@ func (edb *EntryDB) GetFullEntry(entryID int64) (r *WSFullEntry, err error) {
 	return r, nil
 }
 
+// GetFullEntryBySlug loads all Entry data for editing by slug.
+func (edb *EntryDB) GetFullEntryBySlug(slug string) (r *WSFullEntry, err error) {
+	r = &WSFullEntry{Slug: slug}
+
+	var db *sql.DB
+	db, err = edb.Open()
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	sql := `
+	SELECT
+		e.entryID, es.title, e.titleIcon, e.rawType, e.raw,
+		e.html, e.Intro, e.updated, es.tags
+	from entry e
+	inner join entrySearch es on e.entryID = es.entryFK
+	where e.slug = ?
+	`
+	var rawType int
+	err = db.QueryRow(sql, slug).
+		Scan(&r.EntryID, &r.Title, &r.TitleIcon, &rawType, &r.Raw,
+			&r.HTML, &r.Intro, &r.Updated, &r.Tags)
+	if err != nil {
+		return r, err
+	}
+	r.RawTypeName = edb.rawTypes.NameByNum(rawType)
+	if r.RawTypeName == "" {
+		return r, fmt.Errorf("Error loading RawTypeName for number %v", rawType)
+	}
+	return r, nil
+}
+
 // GetOrCreateUser gets existing user or creates new one with basic (Guest) clearance.
 func (edb *EntryDB) GetOrCreateUser(gUser goth.User) (user *User, err error) {
 	var db *sql.DB

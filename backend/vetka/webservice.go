@@ -73,6 +73,8 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
 		router.GET(prefix+"/", ws.siteHandler(ws.getIndex))
 		router.GET(prefix+"/app/*ignoredPageName", ws.siteHandler(ws.getIndex))
+		// load by slug
+		router.GET(prefix+"/s/*ignoredPageName", ws.siteHandler(ws.getIndex))
 		//router.GET(prefix+"/app/e/:entryID/*ignoredSlug", ws.siteHandler(ws.getIndex))
 		router.ServeFiles(prefix+"/vendors/*filepath", conf.WebDir("bower_components/"))
 		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
@@ -82,6 +84,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.GET(prefix+"/api/recent/:limit/:end", ws.siteHandler(ws.getRecent))
 		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
 		router.GET(prefix+"/api/entry/:entryID", ws.siteHandler(ws.getFullEntry))
+		router.GET(prefix+"/api/s/:slug", ws.siteHandler(ws.getFullEntryBySlug))
 		router.GET(prefix+"/api/rawtype/list", ws.siteHandler(ws.getRawTypeList))
 		// site can be extracted when starting authentication
 		router.HandlerFunc("GET", prefix+"/api/auth", ws.siteHandlerFunc(ws.beginAuthHandler))
@@ -246,6 +249,17 @@ func (ws WebSvc) getSearch(w http.ResponseWriter, r *http.Request, p httprouter.
 func (ws WebSvc) getFullEntry(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	entry := ws.getWSFullEntry(w, r, p)
 	if entry == nil {
+		return
+	}
+	ws.writeJSON(w, entry)
+}
+
+func (ws WebSvc) getFullEntryBySlug(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	slug := p.ByName("slug")
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	entry, err := entryDB.GetFullEntryBySlug(slug)
+	if err != nil {
+		ws.writeError(w, fmt.Sprintf("Cannot get Entry with slug %v.  Error: %v", slug, err))
 		return
 	}
 	ws.writeJSON(w, entry)

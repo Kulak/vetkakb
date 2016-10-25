@@ -132,6 +132,6 @@ export class WSFullEntry {
 	}
 
 	permalink(): string {
-		return ZonePath+'/app/e/'+this.EntryID
+		return ZonePath+'/s/'+this.Slug
 	}
 }

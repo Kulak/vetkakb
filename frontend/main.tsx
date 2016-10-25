@@ -10,6 +10,7 @@ import {EntryCreateBox} from './controls/entryCreate'
 import {UserBox} from './controls/userBox'
 import {WSFullEntry} from './model/wsentry'
 import {EntryLoaderBox} from './controls/entryLoader'
+import {SlugLoaderBox} from './controls/slugLoader'
 import {Dashboard} from './controls/dashboard'
 import {DataService} from './common/dataService'
 
@@ -51,10 +52,15 @@ let newEntry = React.createClass({
 	}
 })
 
+//
 ReactDOM.render((
 	<Router history={browserHistory}>
 		{/* Redirect from / to /app/ */}
-		<Redirect from={ZonePath + "/"} to={ZonePath + "/app"} />
+		{/* <Redirect from={ZonePath + "/"} to={ZonePath + "/app"} /> */}
+		<Route path={ZonePath + "/"} component={mainLayout} >
+			<IndexRoute component={Dashboard} />
+			<Route path={"s/:slug"} component={SlugLoaderBox} />
+		</Route>
 		<Route path={ZonePath + "/app"} component={mainLayout}>
 			<IndexRoute component={Dashboard} />
 			<Route path="recent" component={Recent} />
