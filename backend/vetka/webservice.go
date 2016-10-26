@@ -76,7 +76,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		// load by slug
 		router.GET(prefix+"/s/*ignoredPageName", ws.siteHandler(ws.getIndex))
 		//router.GET(prefix+"/app/e/:entryID/*ignoredSlug", ws.siteHandler(ws.getIndex))
-		router.ServeFiles(prefix+"/vendors/*filepath", conf.WebDir("bower_components/"))
+		router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
 		// serve dynamic (site specific) content
 		router.POST(prefix+"/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
