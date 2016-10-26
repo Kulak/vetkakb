@@ -60,6 +60,10 @@ rsync: $(targetDir)
 
 # NOTE: -g option on FreeBSD requires sudo
 # NOTE: -g option on Mac OS X does not require (?) sudo
+# NOTE: I am not convinced beta is necessary to install.
+onetime-build:
+	$(sudo) npm install -g typescript@beta
+
 one-time-install:
 	$(sudo) npm install -g typescript@beta
 	$(sudo) npm install typings --global
