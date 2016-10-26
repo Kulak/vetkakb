@@ -49,7 +49,7 @@ export class LandingPage extends React.Component<Object, LandingPageState> {
     } else if (this.state.path == 'search') {
       body = <Search />
     } else if (this.state.path == 'viewone') {
-      body = <EntryViewBox entry={this.state.createdEntry} />
+      body = <EntryViewBox entry={this.state.createdEntry} expandInitially={true} />
     }
     return <div>
       <h1>{document.title}</h1>

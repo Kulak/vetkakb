@@ -40,7 +40,7 @@ export class SlugLoaderBox extends React.Component<SlugLoaderProps, SlugLoaderSt
 		if (this.state.entry == null) {
 			return (<p>Loading entry...</p>)
 		} else {
-			return (<EntryViewBox entry={this.state.entry} />)
+			return (<EntryViewBox entry={this.state.entry} expandInitially={true} />)
 		}
 	} // end of render function
 } // end of class

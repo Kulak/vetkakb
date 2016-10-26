@@ -15,6 +15,7 @@ declare var ZonePath: string
 
 export interface EntryViewProps {
 		entry: WSEntryGetHTML
+		expandInitially: boolean
 }
 
 class EntryViewState {
@@ -31,12 +32,12 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 		super(props)
 		let fe = new WSFullEntry().initializeFromWSEntryGetHTML(props.entry)
 		//console.log("EntryViewBox constructor, init state", fe)
-		this.state = new EntryViewState(fe, false, false, false)
+		this.state = new EntryViewState(fe, props.expandInitially, false, false)
 		User.Current()
 		.then(function(json) {
 			let user = json as WSUserGet
 			let canEdit = user.Clearances == 8
-			this.setState(new EntryViewState(fe, false, false, canEdit))
+			this.setState(new EntryViewState(fe, this.state.expanded, this.state.editing, canEdit))
 		}.bind(this))
 		.catch(function(err) {
 			console.log("error getting session user: ", err)

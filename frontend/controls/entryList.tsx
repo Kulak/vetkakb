@@ -22,7 +22,7 @@ export class EntryList extends React.Component<EntryListProps, EntryListState> {
 
 	render() {
 		let entries = this.props.entries.map(function(entry: WSEntryGetHTML) {
-			return <EntryViewBox entry={entry} key={entry.EntryID}  />
+			return <EntryViewBox entry={entry} expandInitially={false} key={entry.EntryID}  />
 		})
 		return <div>
 			{entries}

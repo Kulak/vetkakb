@@ -45,7 +45,7 @@ export class EntryLoaderBox extends React.Component<EntryLoaderProps, EntryLoade
 		if (this.state.entry == null) {
 			return (<p>Loading entry...</p>)
 		} else {
-			return (<EntryViewBox entry={this.state.entry} />)
+			return (<EntryViewBox entry={this.state.entry} expandInitially={false} />)
 		}
 	} // end of render function
 } // end of class
