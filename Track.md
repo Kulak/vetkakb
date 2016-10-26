@@ -5,12 +5,18 @@
 - [Design](#design)
 	- [Data Model](#data-model)
 		- [Entry](#entry)
+		- [Product Subsystem Design](#product-subsystem-design)
+			- [Entry Properties mapped to Product Description:](#entry-properties-mapped-to-product-description)
+			- [EntrySearch Properties mapped to Product Description:](#entrysearch-properties-mapped-to-product-description)
+			- [Product Properties](#product-properties)
+			- [Digital Download Properties](#digital-download-properties)
 	- [Datastore Design](#datastore-design)
 		- [FTS Search Conditions](#fts-search-conditions)
 		- [SQL Column Affinity](#sql-column-affinity)
 		- [SQLite3 Version](#sqlite3-version)
 		- [SQLite3 'if not exists'](#sqlite3-if-not-exists)
-		- [SQLite Length](#sqlite-length)
+		- [SQLite3 Length](#sqlite3-length)
+		- [SQLite3 Copy Record into History Table](#sqlite3-copy-record-into-history-table)
 	- [UI Design](#ui-design)
 	- [UUID](#uuid)
 	- [Functional Approaches](#functional-approaches)
@@ -18,6 +24,9 @@
 	- [HTML Tokenization](#html-tokenization)
 	- [Google OAuth](#google-oauth)
 	- [Permalink, redirect, alternative URL, slug](#permalink-redirect-alternative-url-slug)
+- [Alternatives: Custom Entry Type](#alternatives-custom-entry-type)
+	- [Custom Data is only in Raw blob](#custom-data-is-only-in-raw-blob)
+	- [Custom data is stored in custom table](#custom-data-is-stored-in-custom-table)
 - [Log](#log)
 	- [TypeScript: namespaces and modules](#typescript-namespaces-and-modules)
 	- [Fetch API Support](#fetch-api-support)
@@ -43,6 +52,80 @@
 * Plain as text for indexing or NULL if N/A
 * Html as text for display or NULL if N/A
 * Tags as text for indexing by tag keyword
+
+### Product Subsystem Design
+
+To be able to reuse existing Entry UI controls, we choose to use
+Entry with it current capabilities mapped to Product parameters.
+The mapping from Product to Entry is natural.
+
+Entry is the center of the star design.  Product and Digital downloads
+are edges of the star.
+
+Shall Product and Digital Download be its own microservices?
+If edges are microservices, then additional server join or
+REST client call are necessary.
+
+In a star design it is impossible to know what extensions are in
+use in which entry.  Thus a separate call to load each extension
+is desirable.  This separate call can be made on the server side
+or on the client side.  That justifies Service oriented approach to
+edges of the star.
+
+To simplify deployment service is going to be built-into the
+main application process.  At the same time UI depends on product...
+
+#### Entry Properties mapped to Product Description:
+
+* `entryID` is product ID
+* `raw` is contains primary product description.
+* `rawType` indicates raw format (markdown, plain, HTML, etc.)
+* `rawConentType` is a pass-through parameter for files.
+  Content-Type is recorded as is in `rawConentType` and then
+	served back when binary file is served.
+* `rawFileName` is not in use
+* `titleIcon` is path to title image
+* `html` rendered HTML text for `raw` content.
+* `intro` is a one paragraph of plain text introduction
+* `ownerFK` is the owner of the product description entry
+* `requiredClearance` reflects who can access (read or write) to the entry (?)
+* `slug` is used as usual
+
+#### EntrySearch Properties mapped to Product Description:
+
+* `title` is a product title or name
+* `plain` is an aggregated search field
+* `tas` is used as usual
+
+#### Product Properties
+
+Product is a standalone data table that contains product specific parameters
+unrelated to digital downloads and not covered in Entry or EntrySearch tables.
+
+Product can be associated with any entry.
+
+* `imagePaths` is an array of strings, each string is URL paths to product image
+* `price`
+* `SKU`
+* `VendorID`
+* `paypalID`
+* `etc`
+
+#### Digital Download Properties
+
+Each product may have more than one digital download associated with it.
+Digital downloads are controlled by per user security access policy.
+
+* `ID` unique ID of the download file.
+* `entryID` points to a product this download belongs to.
+* `fileContent` is a download file content.
+* `fileName` is a name of the download file.
+* `revision` is a sequencial revision number which goes up with each updated
+* `updated` is a date of when download file was updated
+* `created`
+
+Digital Download is not specific to the Product.  It can be associated with
+any Entry.
 
 ## Datastore Design
 
@@ -73,11 +156,22 @@ use rowid or docid to manipulate unique id
 
 "if not exists" added in SQLite version 3.7.11,
 
-### SQLite Length
+### SQLite3 Length
 
 If the declared type of the column contains any of the strings "CHAR", "CLOB", or "TEXT" then that column has TEXT affinity. Notice that the type VARCHAR contains the string "CHAR" and is thus assigned TEXT affinity.
 
 Note that numeric arguments in parentheses that following the type name (ex: "VARCHAR(255)") are ignored by SQLite - SQLite does not impose any length restrictions (other than the large global SQLITE_MAX_LENGTH limit) on the length of strings, BLOBs or numeric values.
+
+### SQLite3 Copy Record into History Table
+
+From /Users/sergei/SWDev/py-projs/a-rebeccaslp.com/extsw/alitkaPy/alitka/model/product.py file:
+
+	insert or fail into productInfoHistory (path, productInfoId, productId, name, iconUrl, price, downloadUrl, buyHtml,
+	intro, description, type, fileRev, fileNameBase, fileNameExt, created, updated, published, productType)
+	select path, productInfoId, productId, name, iconUrl, price, downloadUrl, buyHtml,
+	intro, description, type, fileRev, fileNameBase, fileNameExt, created, updated, published, productType
+	from productInfo where productInfoId = ?;
+
 
 ## UI Design
 
@@ -127,6 +221,34 @@ https://console.developers.google.com/apis/credentials?project=vetka-142905
 ## Permalink, redirect, alternative URL, slug
 
 These are all terms for alternative URLs used to point to an entry.
+
+# Alternatives: Custom Entry Type
+
+The following were my initial thoughts.  However, designing
+product and digital downloads exposed the need to create star based
+design to extend softly the original Entry concept.
+
+Star design keeps original UI controls unmodified and pushes
+extension effort into new composite elements such as Product and Digital Download.
+
+## Custom Data is only in Raw blob
+
+Ideally raw blob stores all original custom data.
+
+Cons: SQL queries cannot be used to implement custom search condition
+on blob data.
+
+Pros: standard search mechanism can be used as usual.  There is less
+confusion about the model.
+
+## Custom data is stored in custom table
+
+This solution negaes cons of the RAW only extension.
+
+However, custom query code has to be written to support lookup.
+
+In a way this route can be taken later as search optimization solution and not as
+a core data storage solution.
 
 # Log
 
