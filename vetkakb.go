@@ -26,7 +26,7 @@ import (
 	"horse.lan.gnezdovi.com/vetkakb/backend/core"
 	"horse.lan.gnezdovi.com/vetkakb/backend/edb"
 	"horse.lan.gnezdovi.com/vetkakb/backend/sdb"
-	"horse.lan.gnezdovi.com/vetkakb/backend/vetka"
+	"horse.lan.gnezdovi.com/vetkakb/backend/webep"
 
 	"github.com/sevlyar/go-daemon"
 )
@@ -157,7 +157,7 @@ func childRun(conf *core.Configuration) {
 		log.Fatalf("Failed to create or upgrade site db: %s", err)
 	}
 
-	ws := vetka.NewWebSvc(conf, sdb, ts)
+	ws := webep.NewWebSvc(conf, sdb, ts)
 
 	// initialized entry db for all listed sites
 	sites, err := sdb.All()

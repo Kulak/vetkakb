@@ -1,4 +1,4 @@
-package vetka
+package webep
 
 import (
 	"fmt"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
+	"github.com/ikeikeikeike/go-sitemap-generator/stm"
 	"github.com/julienschmidt/httprouter"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -79,6 +80,8 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.ServeFiles(prefix+"/theme/*filepath", conf.WebDir("theme/"))
 		// serve dynamic (site specific) content
 		router.POST(prefix+"/binaryentry/", ws.siteHandler(ws.demandAdministrator(ws.postBinaryEntry)))
+		// generates sitemap XML
+		router.GET(prefix+"/api/sitemap", ws.siteHandler(ws.generateSitemap))
 		router.GET(prefix+"/api/recent/:limit", ws.siteHandler(ws.getRecent))
 		router.GET(prefix+"/api/recent/:limit/:end", ws.siteHandler(ws.getRecent))
 		router.GET(prefix+"/api/search/*query", ws.siteHandler(ws.getSearch))
@@ -99,6 +102,10 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 		router.GET(prefix+"/api/users", ws.siteHandler(ws.demandAdministrator(ws.getUsers)))
 		// allows to load RawTypeName "Binary/Image" as a link.
 		router.GET(prefix+"/re/:entryID", ws.siteHandler(ws.getResourceEntry))
+		// serve files under site's www/res directory
+		router.GET(prefix+"/res/*filepath", ws.siteHandler(ws.serveResFile))
+		// serve site files
+		router.GET(prefix+"/sitemaps/*filepath", ws.siteHandler(ws.serveSitemapsFile))
 		// Enable access to source code files from web browser debugger
 		router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// for k, v := range r.Header {
@@ -111,7 +118,6 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 	}
 	router.ServeFiles("/vendors/*filepath", conf.WebDir("bower_components/"))
 	router.ServeFiles("/frontend/*filepath", http.Dir("frontend/"))
-	router.GET("/res/*filepath", ws.siteHandler(ws.serveResFile))
 	// site specific URLs
 	sites, err := ws.siteDB.All()
 	if err != nil {
@@ -186,6 +192,38 @@ func (ws WebSvc) getVetkaSession(w http.ResponseWriter, r *http.Request, _ httpr
 func (ws WebSvc) wsUserGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	u := ws.sessionWSUser(r)
 	ws.writeJSON(w, u)
+}
+
+func (ws WebSvc) generateSitemap(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	entryDB := context.Get(r, "edb").(*edb.EntryDB)
+	entries, err := entryDB.AllHTMLEntries()
+	if err != nil {
+		ws.writeError(w, err.Error())
+		return
+	}
+
+	site := context.Get(r, "site").(*sdb.Site)
+
+	sm := stm.NewSitemap()
+	sm.SetDefaultHost(fmt.Sprintf("http://%s", site.Host))
+	sm.SetPublicPath(site.WebFile(ws.conf.Main.DataRoot, ""))
+	sm.SetCompress(false)
+	sm.Create()
+	m := make(map[string]string)
+	for _, entry := range entries {
+		path := fmt.Sprintf("%s/s/%s", site.ZonePath, entry.Slug)
+		if entry.Slug == "" {
+			m[strconv.Itoa(int(entry.EntryID))] = fmt.Sprintf("Entry has empty slug.  Title: %s", entry.Title)
+			continue
+		}
+		sm.Add(stm.URL{"loc": path, "changefreq": "monthly", "mobile": true, "priority": 0.5})
+	}
+	sm.Finalize().PingSearchEngines()
+
+	m["site.Host"] = site.Host
+	// m["path"] = site.Path
+	// m["file"] =
+	ws.writeJSON(w, m)
 }
 
 func (ws WebSvc) getRecent(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -443,9 +481,17 @@ func (ws WebSvc) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter.P
 }
 
 func (ws WebSvc) serveResFile(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ws.serveSiteWebSubDirFile(w, r, p, "res")
+}
+
+func (ws WebSvc) serveSitemapsFile(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ws.serveSiteWebSubDirFile(w, r, p, "sitemaps")
+}
+
+func (ws WebSvc) serveSiteWebSubDirFile(w http.ResponseWriter, r *http.Request, p httprouter.Params, subdir string) {
 	site := context.Get(r, "site").(*sdb.Site)
 	fp := p.ByName("filepath")
-	fn := filepath.Join("res", fp)
+	fn := filepath.Join(subdir, fp)
 	sfn := site.WebFile(ws.conf.Main.DataRoot, fn)
 	http.ServeFile(w, r, sfn)
 }

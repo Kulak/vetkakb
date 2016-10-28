@@ -1,4 +1,4 @@
-package vetka
+package webep
 
 import (
 	"encoding/json"
@@ -180,7 +180,7 @@ func (ws WebSvc) sessionWSUser(r *http.Request) (u *edb.WSUserGet) {
 	entryDB := context.Get(r, "edb").(*edb.EntryDB)
 	u, err = entryDB.GetUser(userID)
 	if err != nil {
-		fmt.Printf("Failed to get user from DB: %v", err)
+		fmt.Printf("Failed to get user for userID %v from DB: %v", userID, err)
 		u = edb.GuestWSUserGet
 	}
 	return

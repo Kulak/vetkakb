@@ -128,6 +128,27 @@ DONE:
 	return err
 }
 
+// AllHTMLEntries returns all entries with HTML content ordered in DESC order.
+// The data is meant for sitemap.
+func (edb *EntryDB) AllHTMLEntries() (result []WSEntryGetHTML, err error) {
+	var db *sql.DB
+	db, err = edb.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var rows *sql.Rows
+	sql := `
+	SELECT e.entryID, es.title, e.titleIcon, e.html, e.intro, e.rawType, e.slug, e.updated
+	from entry e
+	inner join entrySearch es on es.EntryFK = e.EntryID
+	order by e.updated desc
+	`
+	rows, err = db.Query(sql)
+	return edb.rowsToWSEntryGetHTML(rows, err)
+}
+
 // RecentHTMLEntries returns limit recent entries with HTML content
 // ordered in DESC order.  The data is suitable for viewing, but not editing.
 func (edb *EntryDB) RecentHTMLEntries(limit int64, end time.Time) (result []WSEntryGetHTML, err error) {
