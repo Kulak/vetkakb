@@ -205,7 +205,10 @@ func (ws WebSvc) generateSitemap(w http.ResponseWriter, r *http.Request, _ httpr
 	site := context.Get(r, "site").(*sdb.Site)
 
 	sm := stm.NewSitemap()
+	// controls URL generated in sitemap file
 	sm.SetDefaultHost(fmt.Sprintf("http://%s", site.Host))
+	// controls file system root location of the generated sitemap
+	// it appends "sitemaps/sitemap.xml" and "sitemaps/sitemap1.xml"
 	sm.SetPublicPath(site.WebFile(ws.conf.Main.DataRoot, ""))
 	sm.SetCompress(false)
 	sm.Create()
@@ -221,8 +224,6 @@ func (ws WebSvc) generateSitemap(w http.ResponseWriter, r *http.Request, _ httpr
 	sm.Finalize().PingSearchEngines()
 
 	m["site.Host"] = site.Host
-	// m["path"] = site.Path
-	// m["file"] =
 	ws.writeJSON(w, m)
 }
 
