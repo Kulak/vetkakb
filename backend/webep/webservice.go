@@ -219,7 +219,7 @@ func (ws WebSvc) generateSitemap(w http.ResponseWriter, r *http.Request, _ httpr
 			m[strconv.Itoa(int(entry.EntryID))] = fmt.Sprintf("Entry has empty slug.  Title: %s", entry.Title)
 			continue
 		}
-		sm.Add(stm.URL{"loc": path, "changefreq": "monthly", "mobile": true, "priority": 0.5})
+		sm.Add(stm.URL{"loc": path, "changefreq": "daily", "mobile": true, "priority": 0.5})
 	}
 	sm.Finalize().PingSearchEngines()
 
