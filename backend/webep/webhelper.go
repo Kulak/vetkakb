@@ -320,8 +320,12 @@ func (ws WebSvc) getEdb(site *sdb.Site) *edb.EntryDB {
 
 // NewEntryDB creates new EntryDB based on web service context.
 func (ws WebSvc) NewEntryDB(site *sdb.Site) *edb.EntryDB {
-	return edb.NewEntryDB(ws.conf.SQLDir("entrydb"), ws.conf.Main.DataRoot,
-		site.DBName, ws.typeSvc)
+	db := edb.NewEntryDB(ws.conf.SQLDir("entrydb"), ws.conf.Main.DataRoot, site.DBName, ws.typeSvc)
+	err := db.Upgrade()
+	if err != nil {
+		log.Fatalf("Failed to create or upgrade DB. Error: %v", err)
+	}
+	return db
 }
 
 // SiteProps provides basic interafce to template file.
