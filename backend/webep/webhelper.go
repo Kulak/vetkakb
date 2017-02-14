@@ -130,20 +130,6 @@ func (ws WebSvc) getGplusCallback(w http.ResponseWriter, r *http.Request, _ http
 	http.Redirect(w, r, fileName, 307)
 }
 
-// AddHeaders adds custom HEADERs to index.html response using middleware style solution.
-func (ws WebSvc) AddHeaders(handler http.Handler) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		/* Custom headers are easy to control here: */
-		// fmt.Println("Adding header Access-Control-Allow-Credentials")
-		// w.Header().Set("Access-Control-Allow-Origin", "*")
-		// w.Header().Set("Access-Control-Allow-Credentials", "true")
-		// w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		// w.Header().Set("Access-Control-Allow-Headers",
-		// 	"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		handler.ServeHTTP(w, r)
-	}
-}
-
 func (ws WebSvc) demandAdministrator(handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		u := ws.sessionWSUser(r)
@@ -247,6 +233,21 @@ func (ws WebSvc) getTime(timeStr string) (t time.Time, err error) {
 	return
 }
 
+// AddHeaders adds custom HEADERs to index.html response using middleware style solution.
+func (ws WebSvc) addHeaders(handler http.Handler) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		/* Custom headers are easy to control here: */
+		// fmt.Println("Adding header Access-Control-Allow-Credentials")
+		// w.Header().Add("Access-Control-Allow-Origin", "http://webcache.googleusercontent.com")
+		// w.Header().Set("Access-Control-Allow-Origin", "*")
+		// w.Header().Set("Access-Control-Allow-Credentials", "true")
+		// w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		// w.Header().Set("Access-Control-Allow-Headers",
+		// 	"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		handler.ServeHTTP(w, r)
+	}
+}
+
 func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		err := ws.setEdbContext(w, r)
@@ -254,6 +255,7 @@ func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
 		if err != nil {
 			return
 		}
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		handler(w, r, p)
 	}
 }
@@ -265,6 +267,7 @@ func (ws WebSvc) siteHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			return
 		}
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		handler.ServeHTTP(w, r)
 	})
 }

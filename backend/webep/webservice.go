@@ -70,6 +70,7 @@ func NewWebSvc(conf *core.Configuration, siteDB *sdb.SiteDB, typeSvc *edb.TypeSe
 	}
 	log.Println("Registering URL prefixes: ", prefixes)
 	for _, prefix := range prefixes {
+		log.Printf("Registering '%s' prefix", prefix)
 		// serve static files
 		router.GET(prefix+"/index.html", ws.siteHandler(ws.getIndex))
 		router.GET(prefix+"/", ws.siteHandler(ws.getIndex))
