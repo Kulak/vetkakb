@@ -248,6 +248,10 @@ func (ws WebSvc) addHeaders(handler http.Handler) httprouter.Handle {
 	}
 }
 
+func (ws WebSvc) allowOrigin(w http.ResponseWriter) {
+	//w.Header().Set("Access-Control-Allow-Origin", "http://unpkg.com")
+}
+
 func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		err := ws.setEdbContext(w, r)
@@ -255,7 +259,7 @@ func (ws WebSvc) siteHandler(handler httprouter.Handle) httprouter.Handle {
 		if err != nil {
 			return
 		}
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		ws.allowOrigin(w)
 		handler(w, r, p)
 	}
 }
@@ -267,7 +271,7 @@ func (ws WebSvc) siteHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		ws.allowOrigin(w)
 		handler.ServeHTTP(w, r)
 	})
 }

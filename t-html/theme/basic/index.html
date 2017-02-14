@@ -38,13 +38,19 @@
 			// format instead of
 			//		import {ClassName} from './pages/landing.js'
 			// because .js does not map in TypeScript editor.
+			//
+			// react-router https scheme is used to work around Safari error message
+			// Cross-origin redirection denied by Cross-Origin Resource Sharing policy in Safari
+			// http://stackoverflow.com/questions/40711452/cross-origin-redirection-denied-by-cross-origin-resource-sharing-policy-in-safar
+			// Other solutions such as enabling cross-origin on the server for index.html did not work.
+			//     Changed URL to point to a specific version of react-router, because it is no longer a current version and is quite behind.
 			SystemJS.config({
 				baseURL: '/vendors',
 				defaultJSExtensions: true,
 				map: {
 					'react-dom': 'react/react-dom.js',
 					'react': 'react/react.js',
-					'react-router': 'https://unpkg.com/react-router/umd/ReactRouter.min.js'
+					'react-router': 'https://unpkg.com/react-router@2.8.1/umd/ReactRouter.min.js'
 				}
 			});
 			// Import "window.fetch polyfill", because it is configured globally in typescript
