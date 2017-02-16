@@ -37,6 +37,7 @@ let mainLayout = React.createClass({
 
 	render: function() {
 		return (<div className='uk-container uk-width-2-3'>
+			<img src={ZonePath + '/res/logo.png'}/>
       <nav className='uk-navbar-container'>
 				<div className='uk-navbar-left'>
 					<ul className="uk-navbar-nav">
