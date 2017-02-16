@@ -86,7 +86,7 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				// is expanded
 				let icon: JSX.Element = (null)
 				if (fe.TitleIcon.length > 0) {
-					icon = (<img className="uk-thumbnail uk-float-left" src={fe.TitleIcon} />)
+					icon = (<img className="uk-card uk-card-default uk-float-left" src={fe.TitleIcon} />)
 				}
 				let entryBody
 				if (fe.RawTypeName == WSRawType.BinaryImage) {
@@ -98,9 +98,9 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 				if (this.state.canEdit) {
 					editButton = <button onClick={e => this.onEditClick(true)}>Edit</button>
 				}
-				return <article className="uk-article">
-					<div className='uk-panel uk-panel-box uk-panel-box-primary'>
-						<h1 className="uk-article-title"
+				return (<article className="uk-article">
+					<div className='uk-card uk-card-default'>
+						<h1 className="uk-card-title uk-card-title-hover"
 								onClick={e => this.onExpandClick(e, false)}>{fe.Title}
 							{editButton}
 						</h1>
@@ -108,18 +108,20 @@ export class EntryViewBox extends React.Component<EntryViewProps, EntryViewState
 					{entryBody}
 					<a href={fe.permalink()}>Permalink</a>
 					</div>
-				</article>
+				</article>)
 			} else {
 				// not expanded
 				let icon: JSX.Element = (null)
 				if (fe.TitleIcon.length > 0) {
-					icon = (<img className="uk-thumbnail uk-float-left uk-thumbnail-mini" src={fe.TitleIcon} />)
+					icon = (<img className="uk-card uk-float-left uk-card-small" src={fe.TitleIcon} />)
 				}
 				return (
-					<div className="uk-panel uk-panel-box uk-panel-box-primary uk-panel-box-primary-hove">
-						<h1 className="uk-panel-title"><a href={fe.permalink()} onClick={e => this.onExpandClick(e, true)}>{fe.Title}</a></h1>
-						{icon}
-						<p className="">{fe.Intro}</p>
+					<div className="uk-card uk-card-default">
+						<h1 className="uk-card-title uk-card-title-hover" onClick={e => this.onExpandClick(e, true)}><a href={fe.permalink()}>{fe.Title}</a></h1>
+						<div className='uk-card-body'>
+							{icon}
+							<p className="">{fe.Intro}</p>
+						</div>
 					</div>)
 			}
 		}

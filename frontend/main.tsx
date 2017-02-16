@@ -21,15 +21,31 @@ declare var ZonePath: string
 console.log("ZonePath:", ZonePath)
 
 let mainLayout = React.createClass({
+	componentDidMount: function() {
+		/* this is a workaround for custom attributes in React
+			https://jsfiddle.net/peterjmag/kysymow0/
+			The following line changes
+			<nav ref='navbarContainer' className='uk-navbar-container'>
+			to
+			<nav ref='navbarContainer' className='uk-navbar-container' uk-navbar >
+
+			this.refs.navbarContainer.getDOMNode().setAttribute('uk-navbar', 'true')
+
+			it does not seem to work
+		*/
+	},
+
 	render: function() {
-		return (<div className='uk-width-small-*'>
-      <nav className='uk-navbar'>
-				<ul className="uk-navbar-nav">
-					<li><Link to={ZonePath + '/app/recent'} className=''>Recent</Link></li>
-					<li><Link to={ZonePath + '/app/search'} className=''>Search</Link></li>
-					<li><Link to={ZonePath + '/app/new'} className=''>New Entry</Link></li>
-				</ul>
-			<UserBox />
+		return (<div className='uk-container uk-width-2-3'>
+      <nav className='uk-navbar-container'>
+				<div className='uk-navbar-left'>
+					<ul className="uk-navbar-nav">
+						<li><Link to={ZonePath + '/app/recent'} className=''>Recent</Link></li>
+						<li><Link to={ZonePath + '/app/search'} className=''>Search</Link></li>
+						<li><Link to={ZonePath + '/app/new'} className=''>New Entry</Link></li>
+					</ul>
+					<UserBox />
+				</div>
       </nav>
       {this.props.children}
     </div>)

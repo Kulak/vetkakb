@@ -34,7 +34,7 @@ export class UserBox extends React.Component<UserBoxProps, UserBoxState> {
 	render() {
 		let u = this.state.user
 		if (u != null && u.NickName != 'Guest') {
-			return <div><img src={u.AvatarURL} className="avatar" />{u.NickName}</div>
+			return <div className='uk-navbar-right'><img src={u.AvatarURL} className="avatar" />{u.NickName}</div>
 		} else {
 			return <form action={ZonePath + '/api/auth'}>
 				<input type='hidden' name='state' value={SiteID} />
