@@ -38,7 +38,7 @@ let mainLayout = React.createClass({
 	render: function() {
 		return (<div className='uk-container uk-width-2-3'>
 			{/* center logo image; width is set to the size of the image */}
-			<div style="position: relative;margin-left: auto;margin-right: auto;width: 300px;">
+			<div id='logo'>
 				<img src={ZonePath + '/res/logo.png'}/>
 			</div>
       <nav className='uk-navbar-container'>
