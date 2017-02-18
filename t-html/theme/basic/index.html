@@ -3,7 +3,7 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>{{.Title}}</title>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.9/system-production.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.9/system.js"></script>
 		<script>
 			// Zone path starts with /, but ends without
 			var ZonePath = "{{.ZonePath}}";
@@ -48,7 +48,7 @@
 			//     Changed URL to point to a specific version of react-router, because it is no longer a current version and is quite behind.
 			SystemJS.config({
 				baseURL: '/vendors',
-				//defaultJSExtensions: true,
+				defaultJSExtensions: true,
 				map: {
 					'react-dom': 'react/react-dom.js',
 					'react': 'react/react.js',
