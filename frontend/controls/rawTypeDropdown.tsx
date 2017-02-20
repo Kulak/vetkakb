@@ -1,9 +1,9 @@
+import * as React from 'react'
+import {WSRawType} from '../common/rawtypes'
+
 /*
 A dropdown control to select entry type.
 */
-
-import * as React from 'react'
-import {WSRawType} from '../common/rawtypes'
 
 export type RawTypeSelectedFunc = (rawTypeName: string) => void;
 

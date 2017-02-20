@@ -48,7 +48,13 @@
 			//     Changed URL to point to a specific version of react-router, because it is no longer a current version and is quite behind.
 			SystemJS.config({
 				baseURL: '/vendors',
-				defaultJSExtensions: true,
+				packages: {
+					'app': {
+						format: 'system',
+						defaultExtension: 'js',
+						//main: 'main.js'
+					}
+				},
 				map: {
 					'react-dom': 'react/react-dom.js',
 					'react': 'react/react.js',
@@ -61,7 +67,10 @@
 			System.import('fetch/fetch.js');
 
 			// load application entry point last
-			SystemJS.import('app/main.js');
+			SystemJS.import('app/main.js')
+			// .then(function(m) {
+			// 	m.AppStart();
+			// });
 		</script>
 	</body>
 </html>

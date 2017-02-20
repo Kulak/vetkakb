@@ -71,22 +71,23 @@ let newEntry = React.createClass({
 	}
 })
 
-//
-ReactDOM.render((
-	<Router history={browserHistory}>
-		{/* Redirect from / to /app/ */}
-		{/* <Redirect from={ZonePath + "/"} to={ZonePath + "/app"} /> */}
-		<Route path={ZonePath + "/"} component={mainLayout} >
-			<IndexRoute component={Dashboard} />
-			<Route path={"s/:slug"} component={SlugLoaderBox} />
-		</Route>
-		<Route path={ZonePath + "/app"} component={mainLayout}>
-			<IndexRoute component={Dashboard} />
-			<Route path="recent" component={Recent} />
-			<Route path="search" component={Search} />
-			<Route path='new' component={newEntry} />
-			<Route path="e/:entryID" component={EntryLoaderBox} />
-			<Route path="e/:entryID/*" component={EntryLoaderBox} />
-		</Route>
-	</Router>
-), document.getElementById('app'))
+//export function AppStart() {
+	ReactDOM.render((
+		<Router history={browserHistory}>
+			{/* Redirect from / to /app/ */}
+			{/* <Redirect from={ZonePath + "/"} to={ZonePath + "/app"} /> */}
+			<Route path={ZonePath + "/"} component={mainLayout} >
+				<IndexRoute component={Dashboard} />
+				<Route path={"s/:slug"} component={SlugLoaderBox} />
+			</Route>
+			<Route path={ZonePath + "/app"} component={mainLayout}>
+				<IndexRoute component={Dashboard} />
+				<Route path="recent" component={Recent} />
+				<Route path="search" component={Search} />
+				<Route path='new' component={newEntry} />
+				<Route path="e/:entryID" component={EntryLoaderBox} />
+				<Route path="e/:entryID/*" component={EntryLoaderBox} />
+			</Route>
+		</Router>
+	), document.getElementById('app'))
+//}
