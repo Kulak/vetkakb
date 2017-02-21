@@ -104,9 +104,12 @@ one-time-upgrade:
 
 one-time-uninstall:
 	cd www; bower uninstall system.js -S
-
-onetime:
 	cd www; bower uninstall react -S
 	cd www; bower uninstall react-router -S
+	cd www; bower uninstall less -S
+	cd www; bower uninstall fetch -S
+
+onetime:
+
 clean-data:
 	rm data/*

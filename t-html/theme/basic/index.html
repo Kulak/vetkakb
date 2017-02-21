@@ -19,7 +19,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.11/js/uikit.min.js"></script>
 
 		{{template "head"}}
-		<script src="/vendors/less/dist/less.js" type="text/javascript"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/less.js/2.7.2/less.min.js" type="text/javascript"></script>
 	</head>
 	<body>
 		{{template "header"}}
@@ -58,13 +58,14 @@
 				map: {
 					'react-dom': 		'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js',
 					'react': 				'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js',
-					'react-router': 'https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js'
+					'react-router': 'https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js',
 				}
 			});
+
 			// Import "window.fetch polyfill", because it is configured globally in typescript
 			// and thus it is not imported into source code.
 			// Path is not mapped, because of explicit import.
-			// System.import('fetch/fetch.js');
+			System.import('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.2/fetch.min.js');
 
 			// load application entry point last
 			SystemJS.import('app/main.js')
