@@ -16,8 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "react": "^15.3.0",
-    "fetch": "^1.0.0",
-    "react-router": "^2.8.1"
+    "fetch": "^1.0.0"
   }
 }
