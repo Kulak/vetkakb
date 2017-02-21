@@ -33,7 +33,7 @@ export class DataService {
 		}
 	}
 	// handleFetch executes fetch and treats 404 response code as an error.
-	public static handleFetch<T>(url: string, reqInit: RequestInit): Promise<T> {
+	public static handleFetch(url: string, reqInit: RequestInit): Promise<any> {
 		return fetch(url, reqInit)
   	.then(function(response) {
 			// 404 code is a good response, so we need to check

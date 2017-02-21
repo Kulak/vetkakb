@@ -12,7 +12,7 @@ targetDir=/usr/local/vetkakb
 rsync=rsync -a$(n) --info=name1
 
 .PHONY: default bower-install npm-install go-build one-time-install \
-	clean-data build go-build tsc-build
+	clean-data build go-build tsc-build web
 
 default:
 	@cat GNUmakefile
@@ -45,6 +45,8 @@ go-build:
 
 run:
 	go run vetkakb.go -c -cf vetkakb.ini
+
+web: tsc-build
 
 tsc-build:
 	cd frontend; tsc -p tsconfig.json
@@ -90,8 +92,21 @@ one-time-install:
 
 	cd www; bower install less
 
-onetime:
-	cd www; bower install less
+one-time-upgrade:
+	cd frontend; typings un dt~react -S
+	cd frontend; typings i dt~whatwg-fetch -GS
+	cd frontend; typings i dt~whatwg-streams -GS
+	typings un -S react react-dom react-router
+	typings i -S react react-dom react-router
 
+	cd frontend; typings un -S react react-dom react-router
+	cd frontend; typings i -S react react-dom react-router
+
+one-time-uninstall:
+	cd www; bower uninstall system.js -S
+
+onetime:
+	cd www; bower uninstall react -S
+	cd www; bower uninstall react-router -S
 clean-data:
 	rm data/*

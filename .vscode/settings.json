@@ -5,9 +5,9 @@
 		"**/.git": true,
 		"**/.svn": true,
 		"**/.hg": true,
-		"**/.DS_Store": true,
-		"**/*.js": { "when": "$(basename).ts"},
-		"**/*.js.map": { "when": "$(basename).ts"}
-	},
-	"typescript.tsdk": "/usr/local/lib/node_modules/typescript/lib"
+		"**/.DS_Store": true
+		//"**/*.js": { "when": "$(basename).ts"},
+		//"**/*.js.map": { "when": "$(basename).ts"}
+	}
+	//"typescript.tsdk": "/usr/local/lib/node_modules/typescript/lib"
 }

@@ -3,7 +3,7 @@ Loads most recent entries and displays in a list.
 Based on Recent control.
 */
 
-import * as React from 'react'
+import React from 'react'
 import {DataService} from '../common/dataService'
 import {WSEntryGetHTML} from '../model/wsentry'
 import {Recent} from './recent'

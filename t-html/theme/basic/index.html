@@ -48,23 +48,23 @@
 			//     Changed URL to point to a specific version of react-router, because it is no longer a current version and is quite behind.
 			SystemJS.config({
 				baseURL: '/vendors',
+				//globalEvaluationScope: true,
 				packages: {
 					'app': {
 						format: 'system',
 						defaultExtension: 'js',
-						//main: 'main.js'
 					}
 				},
 				map: {
-					'react-dom': 'react/react-dom.js',
-					'react': 'react/react.js',
-					'react-router': 'https://unpkg.com/react-router@2.8.1/umd/ReactRouter.min.js'
+					'react-dom': 		'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js',
+					'react': 				'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js',
+					'react-router': 'https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js'
 				}
 			});
 			// Import "window.fetch polyfill", because it is configured globally in typescript
 			// and thus it is not imported into source code.
 			// Path is not mapped, because of explicit import.
-			System.import('fetch/fetch.js');
+			// System.import('fetch/fetch.js');
 
 			// load application entry point last
 			SystemJS.import('app/main.js')

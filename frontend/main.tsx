@@ -1,6 +1,6 @@
 
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+import React from 'react'
+import ReactDOM from 'react-dom'
 import {LandingPage} from './pages/landing'
 import {SingleEntryPage} from './pages/singleEntry'
 import { Router, Route, IndexRoute, Link, browserHistory, Redirect } from 'react-router'
