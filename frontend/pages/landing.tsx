@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import * as ee from '../controls/entryCreate';
 import {Recent} from '../controls/recent';
 import {Search} from '../controls/search';

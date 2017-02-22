@@ -111,5 +111,8 @@ one-time-uninstall:
 
 onetime:
 
+bundle:
+	cd frontend; ../node_modules/.bin/webpack
+
 clean-data:
 	rm data/*

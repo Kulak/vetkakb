@@ -2,7 +2,7 @@
 entryEditor focuses on changing content, saving it
 */
 
-import React from 'react'
+import * as React from 'react'
 import {WSFullEntry} from '../model/wsentry'
 import {WSEntryPost, RawType} from '../model/wsentry'
 import {DataService} from '../common/dataService'

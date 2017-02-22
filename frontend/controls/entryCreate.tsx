@@ -3,7 +3,7 @@ entryEdit provides a way to create new and update existing
 entries.
 */
 
-import React from 'react'
+import * as React from 'react'
 //import {Entry} from '../model/entry'
 import {WSFullEntry, RawType} from '../model/wsentry'
 import {EntryEditor, EditorProps, EditorCloseReqFunc} from './entryEditor'

@@ -2,7 +2,7 @@
 userBox provides logon link or displays user name
 */
 
-import React from 'react'
+import * as React from 'react'
 import {WSUserGet} from '../model/wsuser'
 import {User} from '../common/user'
 

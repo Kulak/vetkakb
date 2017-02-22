@@ -2,7 +2,7 @@
 Runs search query and displays results in the list.
 */
 
-import React from 'react'
+import * as React from 'react'
 import {DataService} from '../common/dataService'
 import {WSEntryGetHTML} from '../model/wsentry'
 import {EntryList} from './entryList'

@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "lib": ["es6", "dom"],
-        "module": "system",
+        //"module": "system",
         "sourceMap": true,
         "jsx": "react",
         "outDir": "../www/bower_components/app",

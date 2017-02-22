@@ -2,7 +2,7 @@
 Loads most recent entries and displays in a list.
 */
 
-import React from 'react'
+import * as React from 'react'
 import {DataService} from '../common/dataService'
 import {WSEntryGetHTML} from '../model/wsentry'
 import {EntryList} from './entryList'

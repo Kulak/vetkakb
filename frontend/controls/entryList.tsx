@@ -2,7 +2,7 @@
 Displays an array of entires passed as parameters.
 */
 
-import React from 'react'
+import * as React from 'react'
 import {WSEntryGetHTML} from '../model/wsentry'
 import {EntryViewBox} from './entryView'
 

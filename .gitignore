@@ -1,4 +1,6 @@
 /www/bower_components/app/
+/www/bower_components/bundle.js
+/node_modules/
 /vetkakb
 /data
 *.jpg

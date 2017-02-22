@@ -2,7 +2,7 @@
 entryView provides standard view of the entry from
 a list of entries like search results.
 */
-import React from 'react'
+import * as React from 'react'
 import {WSEntryGetHTML} from '../model/wsentry'
 import {DataService} from '../common/dataService'
 import {EntryViewBox} from '../controls/entryView'

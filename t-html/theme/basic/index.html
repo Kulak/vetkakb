@@ -3,7 +3,7 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>{{.Title}}</title>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.9/system.js"></script>
+		<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.9/system.js"></script>-->
 		<script>
 			// Zone path starts with /, but ends without
 			var ZonePath = "{{.ZonePath}}";
@@ -14,6 +14,9 @@
     <link rel="stylesheet" type="text/css" href="{{.ZonePath}}/theme/{{.Theme}}/uikit.css">
 		<link rel="stylesheet/less" type="text/css" href="{{.ZonePath}}/theme/{{.Theme}}/base.less" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js'></script>
 
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.11/css/uikit.min.css" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.11/js/uikit.min.js"></script>
@@ -46,32 +49,33 @@
 			// http://stackoverflow.com/questions/40711452/cross-origin-redirection-denied-by-cross-origin-resource-sharing-policy-in-safar
 			// Other solutions such as enabling cross-origin on the server for index.html did not work.
 			//     Changed URL to point to a specific version of react-router, because it is no longer a current version and is quite behind.
-			SystemJS.config({
-				baseURL: '/vendors',
-				//globalEvaluationScope: true,
-				packages: {
-					'app': {
-						format: 'system',
-						defaultExtension: 'js',
-					}
-				},
-				map: {
-					'react-dom': 		'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js',
-					'react': 				'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js',
-					'react-router': 'https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js',
-				}
-			});
+			// SystemJS.config({
+			// 	baseURL: '/vendors',
+			// 	//globalEvaluationScope: true,
+			// 	packages: {
+			// 		'app': {
+			// 			format: 'system',
+			// 			defaultExtension: 'js',
+			// 		}
+			// 	},
+			// 	map: {
+			// 		'react-dom': 		'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js',
+			// 		'react': 				'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js',
+			// 		'react-router': 'https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js',
+			// 	}
+			// });
 
 			// Import "window.fetch polyfill", because it is configured globally in typescript
 			// and thus it is not imported into source code.
 			// Path is not mapped, because of explicit import.
-			System.import('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.2/fetch.min.js');
+			//System.import('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.2/fetch.min.js');
 
 			// load application entry point last
-			SystemJS.import('app/main.js')
+			//SystemJS.import('app/main.js')
 			// .then(function(m) {
 			// 	m.AppStart();
 			// });
 		</script>
+		<script src="vendors/bundle.js"></script>
 	</body>
 </html>
