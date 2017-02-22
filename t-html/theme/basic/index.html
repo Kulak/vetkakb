@@ -29,52 +29,10 @@
 		<div id="app" class='uk-container uk-width-1-1'></div>
 		{{template "footer"}}
 		<script type="text/javascript">
-			// set our baseURL reference path
-			// *** map section ***
-			// 'react-dom' on left side is a "common" name of the package, a shortcut, an alias
-			// 'react/react-dom.js' is a script to load.  This path is prefixed with baseURL and it becomes:
-			// 'vendors/react/react-dom.js' (if base url is set to 'vendors')
-			// react-dom.js script imports react and thus we have to use the 'alias' name.
-			//
-			// https://github.com/systemjs/systemjs/blob/master/docs/config-api.md
-			// defaultJSExtensions: true allows to omit extension of the imported module
-			// This allows for
-			// 		import {ClassName} from './pages/landing'
-			// format instead of
-			//		import {ClassName} from './pages/landing.js'
-			// because .js does not map in TypeScript editor.
-			//
-			// react-router https scheme is used to work around Safari error message
-			// Cross-origin redirection denied by Cross-Origin Resource Sharing policy in Safari
-			// http://stackoverflow.com/questions/40711452/cross-origin-redirection-denied-by-cross-origin-resource-sharing-policy-in-safar
-			// Other solutions such as enabling cross-origin on the server for index.html did not work.
-			//     Changed URL to point to a specific version of react-router, because it is no longer a current version and is quite behind.
-			// SystemJS.config({
-			// 	baseURL: '/vendors',
-			// 	//globalEvaluationScope: true,
-			// 	packages: {
-			// 		'app': {
-			// 			format: 'system',
-			// 			defaultExtension: 'js',
-			// 		}
-			// 	},
-			// 	map: {
-			// 		'react-dom': 		'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js',
-			// 		'react': 				'https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js',
-			// 		'react-router': 'https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js',
-			// 	}
-			// });
-
 			// Import "window.fetch polyfill", because it is configured globally in typescript
 			// and thus it is not imported into source code.
 			// Path is not mapped, because of explicit import.
 			//System.import('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.2/fetch.min.js');
-
-			// load application entry point last
-			//SystemJS.import('app/main.js')
-			// .then(function(m) {
-			// 	m.AppStart();
-			// });
 		</script>
 		<script src="vendors/bundle.js"></script>
 	</body>
