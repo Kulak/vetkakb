@@ -17,6 +17,7 @@
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js'></script>
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js'></script>
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/react-router/2.8.1/ReactRouter.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.2/fetch.min.js'></script>
 
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.11/css/uikit.min.css" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.11/js/uikit.min.js"></script>
@@ -29,10 +30,6 @@
 		<div id="app" class='uk-container uk-width-1-1'></div>
 		{{template "footer"}}
 		<script type="text/javascript">
-			// Import "window.fetch polyfill", because it is configured globally in typescript
-			// and thus it is not imported into source code.
-			// Path is not mapped, because of explicit import.
-			//System.import('https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.2/fetch.min.js');
 		</script>
 		<script src="/vendors/bundle.js"></script>
 	</body>
